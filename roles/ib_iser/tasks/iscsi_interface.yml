@@ -1,0 +1,72 @@
+- name: Determine iSCSI initiatorname (IQN).
+  command:
+    cmd: "{{ eseries_ib_iser_iqn_command }}"
+  changed_when: false
+  register: iqn_command
+  become: true
+  when: eseries_iscsi_iqn is not defined
+
+- name: Determine InfiniBand iSER iSCSI bindings.
+  set_fact:
+    ib_iser_interfaces_info: |-
+      {%- set bindings = [] -%}
+      {%- for interface in eseries_ib_iser_interfaces -%}
+        {%- if bindings.append({"name": "iface-" ~ interface["name"],
+                                "interface": interface["name"],
+                                "iqn": eseries_iscsi_iqn | default(iqn_command["stdout"]),
+                                "address": interface["address"],
+                                "opensm_configure": interface["opensm_configure"] | default(eseries_ib_iser_opensm_configure),
+                                "opensm_subnet_prefix": interface["opensm_subnet_prefix"] | default(eseries_ib_iser_opensm_subnet_prefix),
+                                "opensm_priority": interface["opensm_priority"] | default(eseries_ib_iser_opensm_subnet_priority),
+                                "username": interface["username"] | default(eseries_ib_iser_username),
+                                "password": interface["password"] | default(eseries_ib_iser_password),
+                                "queue_depth": interface["queue_depth"] | default(eseries_ib_iser_queue_depth),
+                                "nr_sessions": interface["nr_sessions"] | default(eseries_ib_iser_nr_session),
+                                "mtu": interface["mtu"] | default(eseries_ib_iser_mtu),
+                                "session_replacement_timeout": interface["session_replacement_timeout"] | default(eseries_ib_iser_session_replacement_timeout),
+                                "target_portal": loop["index"]}) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ bindings }}
+
+- name: Ensure iSCSI ifaces path exists.
+  file:
+    state: directory
+    path: "{{ eseries_ib_iser_iface_path }}"
+    mode: "0751"
+  become: true
+
+- name: Ensure InfiniBand iSER iSCSI binding exist for each interface.
+  shell:
+    cmd: "iscsiadm -m iface -I iser > {{ eseries_ib_iser_iface_path }}{{ item['name'] }}"
+    creates: "{{ eseries_ib_iser_iface_path }}{{ item['name'] }}"
+  register: new_ib_iser_iscsi_bindings
+  loop: "{{ ib_iser_interfaces_info }}"
+  become: true
+
+- name: Update InfiniBand iSER iSCSI binding iface.net_ifacename.
+  lineinfile:
+    path: "{{ eseries_ib_iser_iface_path }}{{ item['name'] }}"
+    regex: "^iface.net_ifacename ?=.*"
+    line: "iface.net_ifacename = {{ item['interface'] }}"
+  register: iface_net_ifacename
+  loop: "{{ ib_iser_interfaces_info }}"
+  become: true
+
+- name: Update InfiniBand iSER iSCSI binding iface.initiatorname.
+  lineinfile:
+    path: "{{ eseries_ib_iser_iface_path }}{{ item['name'] }}"
+    regex: "^iface.initiatorname ?=.*"
+    line: "iface.initiatorname = {{ item['iqn'] }}"
+  register: iface_initiatorname
+  loop: "{{ ib_iser_interfaces_info }}"
+  become: true
+
+- name: Update InfiniBand iSER iSCSI binding iface.mtu.
+  lineinfile:
+    path: "{{ eseries_ib_iser_iface_path }}{{ item['name'] }}"
+    regex: "^iface.mtu ?=.*"
+    line: "iface.mtu = {{ item['mtu'] }}"
+  register: iface_mtu
+  loop: "{{ ib_iser_interfaces_info }}"
+  become: true

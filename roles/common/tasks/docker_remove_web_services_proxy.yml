@@ -1,0 +1,13 @@
+- name: Ensure Web Services Proxy is absent.
+  docker_container:
+    name: webservices
+    state: absent
+    pull: true
+    image: netapp/eseries-webservices
+    docker_host: "{{ eseries_common_docker_host }}"
+    ports:
+      - 8080:8080
+      - 8443:8443
+    env:
+      "ACCEPT_EULA": "true"
+  become: true

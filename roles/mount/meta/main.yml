@@ -1,0 +1,13 @@
+galaxy_info:
+  author: Nathan Swartz (@ndswartz)
+  description: Format and mount NetApp E-Series storage volumes on hosts.
+  company: NetApp
+  license: BSD-3-Clause
+  min_ansible_version: 2.9
+  galaxy_tags:
+    - netapp
+    - eseries
+    - mount
+    - format
+    - volume
+dependencies: []

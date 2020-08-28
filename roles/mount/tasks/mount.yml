@@ -1,0 +1,34 @@
+- name: Ensure volumes are formatted.
+  filesystem:
+    fstype: "{{ item['fs_type'] }}"
+    opts: "{{ item['fs_options'] }}"
+    dev: "{{ item['path'] }}"
+  loop: "{{ format_volumes_by_host[inventory_hostname] }}"
+  become: true
+
+- name: Ensure volumes are mounted with persistent mount points.
+  mount:
+    state: mounted
+    backup: true
+    path: "{{ item['mount_directory'] }}"
+    src: "{{ item['path'] }}"
+    fstype: "{{ item['fs_type'] }}"
+    opts: "{{ item['mount_options'] }}"
+  loop: "{{ volume_mount_info }}"
+  register: volume_mount
+  become: true
+
+- name: Add newly mounted volumes from the mount log.
+  netapp_eseries.host.file_list:
+    file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mount_log"
+    mode: add
+    items: "{{ volume_mounts }}"
+  become: true
+  vars:
+    volume_mounts: |-
+      {%- set entries = [] -%}
+      {%- for volume in volume_mount_info -%}
+        {%- set dev_mapper_path = "/dev/mapper/" ~ volume["name"] -%}
+        {%- if entries.append(volume["name"] ~ "," ~ volume["mount_directory"] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- entries -}}

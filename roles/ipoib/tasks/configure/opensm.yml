@@ -1,0 +1,117 @@
+- name: Determine available InfiniBand GUIDs.
+  command:
+    cmd: "ibstat -p"
+  changed_when: false
+  register: guids
+  become: true
+
+- name: Determine InfiniBand link information.
+  command:
+    cmd: "ip address show {{ item['name'] }}"
+  changed_when: false
+  register: interface_info
+  loop: "{{ eseries_ipoib_interfaces }}"
+  become: true
+
+- name: Determine interface GUID
+  set_fact:
+    interface_guid: |-
+      {%- set interfaces = {} -%}
+      {%- for interface in interface_info["results"] -%}
+        {%- if interface["item"]["opensm_configure"] | default(eseries_ipoib_opensm_configure) -%}
+          {%- for guid in guids["stdout_lines"] -%}
+            {%- for line in interface["stdout_lines"] -%}
+              {%- if line | regex_search(".*link/infiniband.*") and line | regex_replace(":", "") | regex_search(".*" ~ guid | replace("0x", "") ~ ".*") -%}
+                {%- if interfaces.update({interface["item"]["name"]: {"guid": guid}}) -%}{%- endif -%}
+                {%- if interfaces[interface["item"]["name"]].update(interface["item"]) -%}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ interfaces }}
+
+- name: Create OpenSM configuration temporary files.
+  command:
+    cmd: "opensm --create-config {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~
+                 --guid {{ item['value']['guid'] }}
+                 --priority {{ item['value']['opensm_priority'] | default(eseries_ipoib_opensm_subnet_priority) }}
+                 --subnet_prefix {{ item['value']['opensm_subnet_prefix'] | default(eseries_ipoib_opensm_subnet_prefix) }}
+                 --log_file {{ eseries_ipoib_opensm_log_path }}opensm.conf.99999{{ index }}.log
+                 --daemon"
+  changed_when: false
+  loop: "{{ interface_guid | dict2items }}"
+  loop_control:
+    index_var: index
+  become: true
+
+
+- name: Check whether changes have been to the the OpenSM configuration files.
+  command:
+    cmd: "diff {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~ {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}"
+  register: diff_opensm_config
+  changed_when: false
+  failed_when: false
+  loop: "{{ interface_guid | dict2items }}"
+  loop_control:
+    index_var: index
+  become: true
+
+- name: Determine existing OpenSM configuration files.
+  find:
+    path: "{{ eseries_ipoib_opensm_config_path }}"
+    pattern: "opensm.conf.99999[0-9]*"
+  register: existing_opensm_configs
+  become: true
+
+- name: Determine existing OpenSM configuration files that are no longer needed.
+  set_fact:
+    no_longer_needed_opensm_config_files: |-
+      {%- set files = [] -%}
+      {%- for existing_config_file in existing_opensm_configs["files"] -%}
+        {%- if files.append(existing_config_file["path"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for expected_config in interface_guid -%}
+        {%- set path = eseries_ipoib_opensm_config_path ~ "opensm.conf.99999" ~ loop["index"] -%}
+        {%- if path in files and files.pop(path) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ files }}
+
+- name: Update missing or changed OpenSM configuration files.
+  command:
+    cmd: "mv -f {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~ {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}"
+  register: update_opensm_config
+  loop: "{{ diff_opensm_config['results'] }}"
+  loop_control:
+    index_var: index
+  become: true
+  when: item['rc'] != '0'
+
+- name: Remove no longer needed OpenSM configuration files.
+  file:
+    state: absent
+    path: "{{ item }}"
+  register: delete_opensm_config
+  loop: "{{ no_longer_needed_opensm_config_files }}"
+  become: true
+
+- name: Remove OpenSM configuration temporary files.
+  file:
+    state: absent
+    path: "{{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~"
+  changed_when: false
+  loop: "{{ diff_opensm_config['results'] }}"
+  loop_control:
+    index_var: index
+  become: true
+  when: item['rc'] == '0'
+
+- name: Ensure subnet manager service is running and enabled.
+  systemd:
+    name: opensm.service
+    state: "{%- if update_opensm_config['changed'] or delete_opensm_config['changed'] -%}restarted{%- else -%}started{%- endif -%}"
+    daemon_reload: true
+    enabled: true
+  loop: "{{ interface_info['results'] }}"
+  become: true
+  when: item["item"]["opensm_configure"] | default(eseries_ipoib_opensm_configure)

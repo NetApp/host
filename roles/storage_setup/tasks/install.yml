@@ -1,0 +1,18 @@
+- name: Ensure multipath packages are installed.
+  include_role:
+    name: netapp_eseries.host.multipath
+    tasks_from: package.yml
+
+- name: Ensure multipath is configured.
+  include_role:
+    name: netapp_eseries.host.multipath
+    tasks_from: configure.yml
+
+- name: Ensure host is setup for expected protocol
+  include_role:
+    name: netapp_eseries.host.protocol
+
+- name: Ensure multipath is configured.
+  include_role:
+    name: netapp_eseries.host.multipath
+    tasks_from: configure_user_friendly_names.yml

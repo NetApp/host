@@ -1,0 +1,13 @@
+- name: Configure iSCSI network interfaces
+  block:
+    - name: Configure iSCSI network interfaces using ifupdown configuration.
+      include_tasks: interface/ifupdown.yml
+      when: eseries_iscsi_network_tool | default(eseries_iscsi_default_network_tool) == 'ifupdown'
+
+    - name: Configure iSCSI network interfaces using netplan configuration.
+      include_tasks: interface/netplan.yml
+      when: eseries_iscsi_network_tool | default(eseries_iscsi_default_network_tool) == 'netplan'
+  when: eseries_iscsi_configure_network
+
+- name: Configure iSCSI interface bindings.
+  import_tasks: interface/iscsi_interface.yml

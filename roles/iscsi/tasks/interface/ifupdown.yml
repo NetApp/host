@@ -1,0 +1,52 @@
+- name: Ensure ifcfg-* files exist for each iSCSI network interface (RHEL, SUSE).
+  template:
+    backup: true
+    src: ifupdown/ifcfg.j2
+    dest: "{{ eseries_iscsi_ifcfg_path }}ifcfg-{{ item['name'] }}"
+  register: ifcfg
+  loop: "{{ eseries_iscsi_interfaces }}"
+  become: true
+
+- name: Get the link status for interface
+  shell: ip -4 address show {{ item['name'] }} && ip -4 route show
+  changed_when: false
+  register: link_info
+  loop: "{{ eseries_iscsi_interfaces }}"
+  become: true
+
+- name: Determine changed interfaces.
+  set_fact:
+    changed_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for result in link_info["results"] -%}
+        {%- if "state UP" not in result["stdout"] or "inet " ~ result["item"]["address"] not in result["stdout"] or
+               ("mtu" in (result["item"].keys() | list) and "mtu " ~ result["item"]["mtu"] not in result["stdout"]) or
+               ("gateway" in (result["item"].keys() | list) and result["item"]["gateway"] ~ " dev " ~ result["item"]["name"] not in result["stdout"]) -%}
+          {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ interfaces | list }}
+
+- name: Flush iSCSI interface.
+  command: ip address flush dev {{ item }}
+  loop: "{{ changed_interfaces }}"
+  become: true
+
+- name: Bring iSCSI interface up.
+  command: ifup {{ item }}
+  loop: "{{ changed_interfaces }}"
+  register: ifup
+  failed_when: ifup['rc'] != 0 and not (ifup['stdout'] | regex_search('file exists', ignorecase=True))
+  ignore_errors: true
+  become: true
+
+- name: Wait for interfaces to be up.
+  shell: ip -4 address show {{ item }}
+  register: link_info
+  loop: "{{ changed_interfaces }}"
+  retries: 6
+  delay: 5
+  until: "'state UP' in link_info['stdout']"
+  changed_when: false
+  become: true
+

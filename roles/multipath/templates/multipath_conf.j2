@@ -1,0 +1,14 @@
+defaults {
+  user_friendly_names {% if eseries_multipath_configure_user_friendly_names == True %}yes{% else %}no{% endif %}
+
+}
+multipaths {
+{% if eseries_multipath_configure_user_friendly_names == True -%}
+{%- for volume in eseries_volumes %}
+  multipath {
+    wwid {{ volume["host_wwid"] }}
+    alias {{ volume["name"] }}
+  }
+{% endfor -%}
+{%- endif %}
+}

@@ -1,0 +1,29 @@
+- name: Discover mapped-volume information from associated storage systems.
+  include_role:
+    name: netapp_eseries.host.common
+    tasks_from: host_facts.yml
+  when: eseries_volumes is not defined
+
+- name: Configure multipath for eseries_volumes wwid/aliases.
+  block:
+    - name: Ensure multipath configuration directory exists.
+      file:
+        state: directory
+        path: "{{ eseries_multipath_conf_d_path }}"
+      become: true
+
+    - name: Configure multipath.conf.
+      template:
+        src: multipath_conf.j2
+        dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
+      register: multipath_conf
+      become: true
+
+    - name: Start and enable multipath service.
+      systemd:
+        name: multipathd.service
+        state: "{%- if multipath_conf['changed'] %}restarted{%- else %}started{%- endif %}"
+        daemon-reload: "{%- if multipath_conf['changed'] %}true{%- else %}false{%- endif %}"
+        enabled: true
+      become: true
+  when: eseries_volumes is defined

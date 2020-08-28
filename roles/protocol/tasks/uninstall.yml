@@ -1,0 +1,118 @@
+- name: Get the contents of installed protocol log.
+  netapp_eseries.host.file_list:
+    file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+    mode: content
+  become: true
+  register: protocol_log
+
+- name: Remove setup for iSCSI protocol.
+  block:
+    - name: Uninstall iSCSI protocol.
+      include_role:
+        name: netapp_eseries.host.iscsi
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["iscsi"]
+      become: true
+  when: "'iscsi' in protocol_log['list']"
+
+- name: Remove setup for FC protocol.
+  block:
+    - name: Remove setup for FC protocol.
+      include_role:
+        name: netapp_eseries.host.fc
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["fc"]
+      become: true
+  when: "'fc' in protocol_log['list']"
+
+- name: Remove setup for SAS protocol.
+  block:
+    - name: Remove setup for SAS protocol.
+      include_role:
+        name: netapp_eseries.host.sas
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["sas"]
+      become: true
+  when: "'sas' in protocol_log['list']"
+
+- name: Remove setup for InfiniBand SRP protocol.
+  block:
+    - name: Remove setup for InfiniBand SRP protocol.
+      include_role:
+        name: netapp_eseries.host.ib_srp
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["ib_srp"]
+      become: true
+  when: "'ib_srp' in protocol_log['list']"
+
+- name: Remove setup for InfiniBand iSER protocol.
+  block:
+    - name: Remove setup for InfiniBand iSER protocol.
+      include_role:
+        name: netapp_eseries.host.ib_iser
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["ib_iser"]
+      become: true
+  when: "'ib_iser' in protocol_log['list']"
+
+- name: Remove setup for NVMe over Infiniband protocol.
+  block:
+    - name: Remove setup for NVMe over Infiniband protocol.
+      include_role:
+        name: netapp_eseries.host.nvme_ib
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["nvme_ib"]
+      become: true
+  when: "'nvme_ib' in protocol_log['list']"
+
+- name: Remove setup for NVMe over FC protocol.
+  block:
+    - name: Remove setup for NVMe over FC protocol.
+      include_role:
+        name: netapp_eseries.host.nvme_fc
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["nvme_fc"]
+      become: true
+  when: "'nvme_fc' in protocol_log['list']"
+
+- name: Remove setup for NVMe over RoCE protocol.
+  block:
+    - name: Remove setup for NVMe over RoCE protocol.
+      include_role:
+        name: netapp_eseries.host.nvme_roce
+        tasks_from: uninstall.yml
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: remove
+        items: ["nvme_roce"]
+      become: true
+  when: "'nvme_roce' in protocol_log['list']"

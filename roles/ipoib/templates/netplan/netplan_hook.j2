@@ -1,0 +1,8 @@
+#!/bin/bash
+# Managed by NetApp E-Series Ansible
+
+if [ "$IFACE" = {{ item["name"] }} ]; then
+  echo "connected" > /sys/class/net/{{ item["name"] }}/mode
+  ip link set ib0 mtu {{ interface["mtu"] | default(eseries_ipoib_mtu) }}
+fi
+exit 0

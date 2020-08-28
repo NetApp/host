@@ -1,0 +1,37 @@
+- name: Get the multipathd maps
+  command: multipathd show maps raw format "%w,%d"
+  register: multipath_maps
+  changed_when: false
+  become: true
+
+- name: Find mapped volume paths on the host.
+  set_fact:
+    volume_paths: |-
+      {%- set paths = {} -%}
+      {%- for volume in initiator_volume_facts -%}
+        {%- if paths.update({volume["name"]: {"path": "", "sysfs": "", "host_wwid": "", "host_port_protocols": volume["host_port_protocols"]}}) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for volume in initiator_volume_facts -%}
+        {%- for map in multipath_maps["stdout_lines"] | default([])-%}
+          {%- set map_info = map.split(",") -%}
+
+          {%- if (volume["wwn"] and map_info[0] | regex_search(volume["wwn"], ignorecase=True)) or
+                 (volume["eui"] and map_info[0] | regex_search(volume["eui"], ignorecase=True)) -%}
+            {%- if paths[volume["name"]].update({"path": "/dev/" ~ map_info[1], "sysfs": map_info[1], "host_wwid": map_info[0]}) -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ paths }}
+
+- name: Determine whether mapped storage volumes are missing.
+  set_fact:
+    rescan: |-
+      {%- set rescan = {"iscsi": False, "fc": False, "sas": False, "ib_srp": False, "ib_iser": False, "nvme_ib": False, "nvme_fc": False, "nvme_roce": False} -%}
+      {%- for key, value in volume_paths.items() -%}
+        {%- if value["path"] == "" -%}
+          {%- for protocol in value["host_port_protocols"]  -%}
+            {%- if rescan.update({protocol: True}) -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ rescan }}

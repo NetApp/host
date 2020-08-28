@@ -1,0 +1,3 @@
+{% for protocol in protocol_list -%}
+{{ protocol }}{% if loop["index"] < loop["length"] %},{% endif -%}
+{%- endfor %}

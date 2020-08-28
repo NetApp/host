@@ -1,0 +1,8 @@
+- name: Ensure inventory information has been populated for the storage systems.
+  import_tasks: gather_storage_facts.yml
+
+- name: Determine volume information
+  import_tasks: volume_facts.yml
+
+- name: Determine host information
+  import_tasks: host_facts.yml

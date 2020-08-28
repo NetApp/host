@@ -1,0 +1,16 @@
+eseries_ib_iser_configure_network: true
+eseries_ib_iser_rdma_conf: /etc/rdma/rdma.conf
+eseries_ib_iser_opensm_configure: false
+eseries_ib_iser_opensm_subnet_prefix: "0xfe80000000000000"
+eseries_ib_iser_opensm_subnet_priority: 0
+eseries_ib_iser_port: 3260
+eseries_ib_iser_username: ""
+eseries_ib_iser_password: ""
+eseries_ib_iser_queue_depth: 32
+eseries_ib_iser_nr_session: 1
+eseries_ib_iser_mtu: ""
+eseries_ib_iser_session_replacement_timeout: 20
+eseries_ib_iser_iqn_command: grep -o iqn.* /etc/iscsi/initiatorname.iscsi  # This command must return the system iqn.
+
+eseries_iser_kernel_modules:
+  - ib_iser

@@ -1,0 +1,2 @@
+# example_project/group_vars/eseries_hosts.yml
+# Add all role variables common to E-Series storage systems from netapp_eseries.santricity collection or netapp_eseries.host collection here.

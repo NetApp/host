@@ -1,0 +1,6 @@
+- name: Check whether InfiniBand kernel modules are loaded.
+  modprobe:
+    state: present
+    name: "{{ item }}"
+  loop: "{{ eseries_ipoib_kernel_modules }}"
+  become: true

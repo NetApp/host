@@ -1,0 +1,7 @@
+- name: Ensure iSCSI packages are removed (RHEL).
+  yum:
+    state: absent
+    name:
+      - iscsi-initiator-utils
+  become: true
+# TODO: Remove ./iscsi/ifaces/ and ./iscsi/node/

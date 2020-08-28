@@ -1,0 +1,7 @@
+- name: Ensure iSCSI packages are removed (SUSE).
+  zypper:
+    state: absent
+    name:
+      - open-iscsi
+  become: true
+# TODO: Remove ./iscsi/ifaces/ and ./iscsi/node/

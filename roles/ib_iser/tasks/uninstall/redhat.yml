@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand iSER packages are removed (RHEL).
+  yum:
+    state: absent
+    name: "{{ eseries_iser_rhel_packages }}"
+  become: true

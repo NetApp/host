@@ -1,0 +1,11 @@
+galaxy_info:
+  author: Nathan Swartz (@ndswartz)
+  description: Mounts mapped NetApp E-Series storage volumes on target hosts.
+  company: NetApp
+  license: BSD-3-Clause
+  min_ansible_version: 2.9
+  galaxy_tags:
+    - netapp
+    - eseries
+    - volume
+dependencies: []

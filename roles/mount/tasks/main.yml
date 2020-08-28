@@ -1,0 +1,22 @@
+- name: Ensure volumes are mounted on hosts.
+  include_tasks: collect_facts.yml
+
+- name: Ensure expected mounted volumes are mounted.
+  include_tasks: mount.yml
+
+- name: Ensure expected unmounted volumes are not mounted.
+  include_role:
+    name: unmount
+  vars:
+    eseries_unmount_volumes: "{{ volume_unmount_list }}"
+    eseries_unmount_temporary_unmount: false
+    eseries_unmount_purge: false
+    eseries_unmount_unmap: false
+    eseries_unmount_delete: false
+    eseries_unmount_wipe_format_signatures: false
+  when: eseries_mount_skip_unmount == False and volume_unmount_list | length > 0
+
+- name: Ensure multipath is configured.
+  include_role:
+    name: netapp_eseries.host.multipath
+    tasks_from: configure_user_friendly_names.yml

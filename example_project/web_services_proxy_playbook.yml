@@ -1,0 +1,13 @@
+# web_services_proxy_playbook.yml should be executed to configure and add discovered E-Series storage systems to your SANtricity Web Services Proxy instance.
+#   See 'SANtricity Web Services Proxy Variables' in group_vars/eseries_storage_systems.yml for variable requirements.
+- hosts: eseries_storage_systems
+  gather_facts: false
+  connection: local
+  collections:
+    - netapp_eseries.santricity
+  tasks:
+
+    # Configure Web Services Proxy and discover E-Series storage systems.
+    - name: Ensure SANtricity Web Services Proxy is configured and determine storage system credentials.
+      import_role:
+        name: nar_santricity_common

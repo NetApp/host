@@ -1,0 +1,6 @@
+- name: Ensure RDMA is configured.
+  import_tasks: configure/rdma.yml
+
+- name: Ensure OpenSM is configured.
+  include_tasks: configure/opensm.yml
+  when: opensm_required == True

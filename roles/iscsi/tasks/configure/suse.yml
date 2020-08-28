@@ -1,0 +1,36 @@
+- name: Ensure expected iSCSI packages are installed (SUSE).
+  zypper:
+    name:
+      - open-iscsi
+  become: true
+
+- name: Ensure iSCSI settings are configured (SUSE).
+  lineinfile:
+    path: "{{ eseries_iscsi_conf_path }}iscsid.conf"
+    regexp: "^{{ item['key'] }}="
+    line: "{{ item['key'] }}={{ item['value'] }}"
+  register: iscsid_conf
+  loop: "{{ eseries_iscsi_node_settings | default({}) | dict2items }}"
+  become: true
+
+- name: Ensure iSCSI initiator name (i.e. IQN) has been set.
+  template:
+    src: initiatorname_iscsi.j2
+    dest: "{{ eseries_iscsi_conf_path }}initiatorname.iscsi"
+  register: initiatorname_iscsi
+  become: true
+  when: eseries_iscsi_iqn is defined and eseries_iscsi_iqn
+
+- name: Ensure iSCSI services are started (SUSE).
+  systemd:
+    name: iscsid.service
+    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"
+    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
+  become: true
+
+- name: Ensure iSCSI services are enabled (SUSE).
+  systemd:
+    name: iscsid.service
+    enabled: true
+  register: open_iscsi_service_enabled
+  become: true

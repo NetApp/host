@@ -1,0 +1,124 @@
+- name: Determine expected host protocol(s).
+  set_fact:
+    protocol_list: |-
+      {%- set protocols = [] -%}
+      {%- if eseries_protocol == "auto" -%}
+        {%- for result in storage_array_facts["results"] -%}
+          {%- if "storage_array_facts" in (result.keys() | list) and "netapp_volumes_by_initiators" in (result["storage_array_facts"].keys() | list) -%}
+            {%- if inventory_hostname in (result["storage_array_facts"]["netapp_volumes_by_initiators"].keys() | list) -%}
+              {%- for volume in result["storage_array_facts"]["netapp_volumes_by_initiators"][inventory_hostname] -%}
+                {%- for protocol in volume["host_port_protocols"] -%}
+                  {%- if protocol not in protocols and protocols.append(protocol) -%}{%- endif -%}
+                {%- endfor -%}
+              {%- endfor -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%-if protocols.append(eseries_protocol) -%}{%- endif -%}
+      {%- endif -%}
+      {{ protocols | list }}
+
+- name: Ensure host has been setup for iSCSI protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["iscsi"]
+      become: true
+    - name: Ensure iSCSI protocol has been setup.
+      include_role:
+        name: netapp_eseries.host.iscsi
+  when: "'iscsi' in protocol_list and eseries_iscsi_interfaces is defined"
+
+- name: Ensure host has been setup for FC protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["fc"]
+      become: true
+    - name: Ensure FC protocol has been setup
+      include_role:
+        name: netapp_eseries.host.fc
+  when: "'fc' in protocol_list"
+
+- name: Ensure host has been setup for SAS protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["sas"]
+      become: true
+    - name: Ensure SAS protocol has been setup
+      include_role:
+        name: netapp_eseries.host.sas
+  when: "'sas' in protocol_list"
+
+- name: Ensure host has been setup for protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["ib_srp"]
+      become: true
+    - name: Ensure InfiniBand SRP protocol has been setup
+      include_role:
+        name: netapp_eseries.host.ib_srp
+  when: "'ib_srp' in protocol_list"
+
+- name: Ensure host has been setup for InfiniBand iSER protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["ib_iser"]
+      become: true
+    - name: Ensure InfiniBand iSER protocol has been setup
+      include_role:
+        name: netapp_eseries.host.ib_iser
+  when: "'ib_iser' in protocol_list and eseries_ib_iser_interfaces is defined"
+
+- name: Ensure host has been setup for NVMe over Infiniband protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["nvme_ib"]
+      become: true
+    - name: Ensure NVMe over InfiniBand protocol has been setup.
+      include_role:
+        name: netapp_eseries.host.nvme_ib
+  when: "'nvme_ib' in protocol_list and eseries_nvme_ib_interfaces is defined"
+
+- name: Ensure host has been setup for NVMe over FC protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["nvme_fc"]
+      become: true
+    - name: Ensure NVMe over FC protocol has been setup.
+      include_role:
+        name: netapp_eseries.host.nvme_fc
+  when: "'nvme_fc' in protocol_list"
+
+- name: Ensure host has been setup for NVMe over RoCE protocol.
+  block:
+    - name: Update eseries_protocol_log
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
+        mode: add
+        items: ["nvme_roce"]
+      become: true
+    - name: Ensure NVMe over RoCE protocol has been setup.
+      include_role:
+        name: netapp_eseries.host.nvme_roce
+  when: "'nvme_roce' in protocol_list"

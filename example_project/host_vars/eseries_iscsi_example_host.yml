@@ -1,0 +1,10 @@
+# example_project/host_vars/eseries_iscsi_example_host.yml
+ansible_host: 192.168.1.102
+ansible_ssh_user: admin
+ansible_become_password: adminpass
+
+eseries_iscsi_interfaces:
+  - name: eth1
+    address: 192.168.2.10/24
+  - name: eth2
+    address: 192.168.3.10/24

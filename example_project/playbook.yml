@@ -1,0 +1,35 @@
+- hosts: eseries_storage_systems
+  gather_facts: false
+  connection: local
+  collections:
+    - netapp_eseries.santricity
+  tasks:
+
+    # Configure Web Services Proxy and discover E-Series storage systems.
+    - name: Ensure Web Services Proxy is configured and determine storage system credentials.
+      import_role:
+        name: nar_santricity_common
+        tasks_from: build_info.yml
+
+    # Configure E-Series storage system.
+    - name: Ensure storage systems are configured.
+      import_role:
+        name: nar_santricity_management
+
+    # Provision and map volumes to host.
+    - name: Ensure storage has been provisioned for hosts.
+      import_role:
+        name: nar_santricity_host
+
+
+# Configure hosts and create persistent mount points for mapped volumes.
+- hosts: eseries_hosts
+  collections:
+    - netapp_eseries.host
+  tasks:
+    - name: Ensure multipath and iscsi protocol are setup.
+      import_role:
+        name: storage_setup
+    - name: Ensure volumes are mounted.
+      import_role:
+        name: mount

@@ -1,0 +1,15 @@
+- name: Reboot nodes with missing volumes.
+  reboot:
+    test_command: "systemctl is-active multi-user.target"
+  become: true
+
+- name: Wait for test command to succeed on rebooted hosts.
+  command: "{{ eseries_mount_reboot_test_command }}"
+  become: true
+  failed_when: false
+  changed_when: false
+  register: command_result
+  retries: 36
+  delay: 5
+  until: command_result['rc'] == 0
+  when: eseries_mount_reboot_test_command is defined

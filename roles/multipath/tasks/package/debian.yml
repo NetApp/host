@@ -1,0 +1,8 @@
+- name: Ensure expected multipath packages are installed (Ubuntu).
+  apt:
+    state: present
+    name:
+      - multipath-tools
+      - multipath-tools-boot
+  register: multipath_packages
+  become: true

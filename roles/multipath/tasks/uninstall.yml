@@ -1,0 +1,23 @@
+- name: Stop multipathd
+  systemd:
+    state: stopped
+    name: multipathd
+    enabled: false
+  ignore_errors: true
+  failed_when: false
+  become: true
+
+- name: Uninstall all multipath packages.
+  include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure multipath.conf has been removed.
+  file:
+    state: absent
+    path: "/etc/multipath.conf"
+  become: true
+
+- name: Configure multipath.conf.
+  file:
+    state: absent
+    path: "{{ eseries_multipath_conf_d_path }}eseries_multipath.conf"
+  become: true

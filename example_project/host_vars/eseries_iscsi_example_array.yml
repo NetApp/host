@@ -1,0 +1,38 @@
+# example_project/host_vars/eseries_iscsi_example_array.yml
+# Credentials
+eseries_proxy_ssid: iscsi_example_array                         # Storage system identifier for SANtricity Web Services Proxy.
+eseries_system_serial: "012345678901"                           # Storage system chassis serial number (located on a label at the top-left towards the front on the device)
+eseries_system_password: adminpass                              # Storage system admin password
+
+# Global Settings
+eseries_system_name: iscsi_example_array
+
+# Management Interfaces
+eseries_management_interfaces:
+  config_method: static
+  subnet_mask: 255.255.255.0
+  gateway: 192.168.1.1
+  controller_a:
+    - address: 192.168.1.12
+  controller_b:
+    - address: 192.168.1.13
+
+# iSCSI interfaces
+eseries_initiator_protocol: iscsi
+eseries_controller_iscsi_port_config_method: static         # iSCSI interfaces' configuration method (Choices: static, dhcp)
+eseries_controller_iscsi_port_subnet_mask: 255.255.255.0    # iSCSI interfaces' subnet mask
+eseries_controller_iscsi_port:                              # List of iSCSI interface definitions
+  controller_a:
+    - address: 192.168.2.100
+  controller_b:
+    - address: 192.168.3.100
+
+# Storage Configuration
+eseries_storage_pool_configuration:         # List of storage pools and volume groups definitions
+  - name: example_vg1                       # Volume group name
+    raid_level: raid6                       # Volume group RAID level (Choices: raid0, raid1, raid5, raid6, raidDiskPool)
+    criteria_drive_count: 10                # Number of volumes to add to raid6 volume group
+    volumes:                                # List of volume definitions for example_vg1 volume group
+      - name: example_vg1_vol_1             # Volume name
+        host: eseries_iscsi_example_host    # Ansible inventory host name to map volume
+        size: 10                            # Volume size measured in gb

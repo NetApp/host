@@ -1,0 +1,12 @@
+- name: Ensure expected InfiniBand packages are installed (Ubuntu).
+  apt:
+    state: present
+    name: "{{ eseries_ipoib_ubuntu_packages }}"
+  become: true
+
+- name: Install OpenSM if required.
+  apt:
+    state: present
+    name: opensm
+  become: true
+  when: opensm_required == True

@@ -1,0 +1,21 @@
+- name: Rescan iSCSI sessions
+  command: "iscsiadm -m session --rescan"
+  failed_when: false
+  become: true
+  when: rescan['iscsi'] or rescan['ib_iser']
+
+- name: Rescan for all SCSI devices.
+  shell: "{{ item }}"
+  become: true
+  failed_when: false
+  loop:
+    - "for x in $(ls /sys/class/scsi_host); do echo '- - -' > /sys/class/scsi_host/$x/scan; done &> /dev/null"
+    - "for x in $(ls /sys/block); do echo 1 > /sys/block/$x/device/rescan; done &> /dev/null"
+
+- name: Reload multipath service.
+  systemd:
+    name: multipathd.service
+    state: restarted
+    daemon_reload: true
+  failed_when: false
+  become: true

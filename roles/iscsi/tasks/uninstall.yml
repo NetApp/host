@@ -1,0 +1,74 @@
+- name: Ensure Ubuntu iSCSI packages are uninstalled.
+  import_tasks: uninstall_packages.yml
+
+- name: Delete iSCSI session configuration directories.
+  file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - "{{ eseries_iscsi_node_path }}"
+    - "{{ eseries_iscsi_iface_path }}"
+    - "{{ eseries_iscsi_static_path }}"
+  become: true
+
+- name: Configure iSCSI network interfaces
+  block:
+    - name: Remove iSCSI network interfaces using ifupdown configuration.
+      block:
+        - name: Ensure ifcfg-* files is removed for each iSCSI network interface.
+          file:
+            state: absent
+            path: "{{ eseries_iscsi_ifcfg_path }}ifcfg-{{ item['name'] }}"
+          register: ifcfg
+          loop: "{{ eseries_iscsi_interfaces }}"
+          become: true
+
+        - name: Bring iSCSI interface down using ifdown.
+          command: ifdown {{ item['name'] }}
+          register: ip_down
+          changed_when: ip_down['rc'] != 0
+          failed_when: false
+          loop: "{{ eseries_iscsi_interfaces }}"
+          become: true
+
+        - name: Flush iSCSI interface.
+          command: ip address flush dev {{ item['name'] }}
+          register: ip_flush
+          changed_when: ip_flush['rc'] != 0
+          failed_when: false
+          loop: "{{ eseries_iscsi_interfaces }}"
+          become: true
+      when: eseries_iscsi_network_tool | default(eseries_iscsi_default_network_tool) == 'ifupdown'
+
+    - name: Remove iSCSI network interfaces using netplan configuration.
+      block:
+        - name: Ensure netplan iSCSI interfaces configuration files have been removed.
+          file:
+            state: absent
+            path: "{{ eseries_iscsi_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
+          register: netplan
+          loop: "{{ eseries_iscsi_interfaces }}"
+          become: true
+        - name: Apply changes to Netplan
+          command:
+            cmd: netplan apply
+          when: netplan['changed']
+          become: true
+
+        - name: Bring iSCSI interface down.
+          command: ip link set {{ item["name"] }} down
+          register: ip_down
+          changed_when: ip_down['rc'] != 0
+          failed_when: false
+          loop: "{{ eseries_iscsi_interfaces }}"
+          become: true
+
+        - name: Flush iSCSI interface.
+          command: ip address flush dev {{ item["name"] }}
+          register: ip_flush
+          changed_when: ip_flush['rc'] != 0
+          failed_when: false
+          loop: "{{ eseries_iscsi_interfaces }}"
+          become: true
+      when: eseries_iscsi_network_tool | default(eseries_iscsi_default_network_tool) == 'netplan'
+  when: eseries_iscsi_configure_network

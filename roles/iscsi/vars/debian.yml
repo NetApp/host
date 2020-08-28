@@ -1,0 +1,11 @@
+eseries_iscsi_default_network_tool: netplan
+
+eseries_iscsi_conf_path: /etc/iscsi/
+eseries_iscsi_node_path: /etc/iscsi/nodes/
+eseries_iscsi_iface_path: /etc/iscsi/ifaces/
+eseries_iscsi_static_path: /etc/iscsi/static/
+eseries_iscsi_ifcfg_path: /etc/network/interfaces.d/
+
+eseries_iscsi_netplan_path: /etc/netplan/
+eseries_iscsi_networkd_dispatcher_routable_d_path: /etc/networkd-dispatcher/routable.d/
+eseries_iscsi_networkd_ifup_d_path: /etc/network/if-up.d/

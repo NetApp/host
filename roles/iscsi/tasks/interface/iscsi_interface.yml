@@ -1,0 +1,77 @@
+- name: Determine iSCSI bindings.
+  set_fact:
+    iscsi_interfaces_info: |-
+      {%- set bindings = [] -%}
+      {%- for interface in eseries_iscsi_interfaces -%}
+        {%- if bindings.append({"name": interface["name"],
+                                "interface": interface["name"],
+                                "port": interface["port"] | default(eseries_iscsi_tcp_port),
+                                "username": interface["username"] | default(eseries_iscsi_username),
+                                "password": interface["password"] | default(eseries_iscsi_password),
+                                "address": interface["address"],
+                                "target_portal": loop["index"],
+                                "nr_sessions": interface["nr_sessions"] | default(eseries_iscsi_nr_session),
+                                "mtu": interface["mtu"] | default(eseries_iscsi_mtu),
+                                "queue_depth": interface["queue_depth"] | default(eseries_iscsi_queue_depth),
+                                "session_replacement_timeout": interface["session_replacement_timeout"] | default(eseries_iscsi_session_replacement_timeout)}) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ bindings }}
+
+- name: Ensure iSCSI binding exist for each interface.
+  command:
+    cmd: "iscsiadm -m iface -I {{ item['name'] }} -o new"
+    creates: "{{ eseries_iscsi_iface_path }}{{ item['name'] }}"
+  register: new_iscsi_bindings
+  loop: "{{ iscsi_interfaces_info }}"
+  become: true
+
+- name: Get current iSCSI iface values.
+  command:
+    cmd: "iscsiadm -m iface -I {{ item['interface'] }}"
+  register: iface_values
+  changed_when: false
+  loop: "{{ iscsi_interfaces_info }}"
+  become: true
+
+- name: Update iface.net_ifacename value.
+  command:
+    cmd: "iscsiadm -m iface -I {{ item['item']['interface'] }} -o update -n iface.net_ifacename -v {{ item['item']['interface'] }}"
+  register: iface_net_ifacename
+  loop: "{{ iface_values['results'] }}"
+  become: true
+  when: item['item']['interface'] != net_ifacename
+  vars:
+    net_ifacename: |-
+      {%- for line in item['stdout_lines'] -%}
+        {%- if line | regex_search("iface\.net_ifacename = .*") -%}
+          {{- line | regex_search("iface\.net_ifacename = .*") | regex_replace("iface\.net_ifacename = ", "") -}}
+        {%- endif -%}
+      {%- endfor -%}
+
+- name: Update iface.mtu value.
+  command:
+    cmd: "iscsiadm -m iface -I {{ item['item']['interface'] }} -o update -n iface.mtu -v {{ item['item']['mtu'] }}"
+  register: iface_mtu
+  loop: "{{ iface_values['results'] }}"
+  become: true
+  when: item['item']['mtu'] != mtu | int
+  vars:
+    mtu: |-
+      {%- for line in item['stdout_lines'] -%}
+        {%- if line | regex_search("iface\.mtu = .*") -%}
+          {{- line | regex_search("iface\.mtu = .*") | regex_replace("iface\.mtu = ", "") -}}
+        {%- endif -%}
+      {%- endfor -%}
+
+- name: Determine sessions which have their iface configurations modified.
+  set_fact:
+    ifaces_changed: |-
+      {%- set interfaces = [] -%}
+      {%- for iface in iface_net_ifacename["results"] -%}
+        {%- if iface['changed'] and iface["item"]["item"]["name"] not in interfaces and interfaces.append(iface["item"]["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for iface in iface_mtu["results"] -%}
+          {%- if iface['changed'] and iface["item"]["item"]["name"] not in interfaces and interfaces.append(iface["item"]["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}

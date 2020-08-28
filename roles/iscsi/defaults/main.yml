@@ -1,0 +1,9 @@
+eseries_iscsi_configure_network: true
+eseries_iscsi_tcp_port: 3260
+eseries_iscsi_username: ""
+eseries_iscsi_password: ""
+
+eseries_iscsi_nr_session: 1
+eseries_iscsi_mtu: 1500
+eseries_iscsi_queue_depth: 32
+eseries_iscsi_session_replacement_timeout: 20

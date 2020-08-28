@@ -1,0 +1,22 @@
+- name: Ensure Web Services Proxy is present and running.
+  docker_container:
+    name: webservices
+    state: started
+    pull: true
+    image: netapp/eseries-webservices
+    docker_host: "{{ eseries_common_docker_host }}"
+    ports:
+      - 8080:8080
+      - 8443:8443
+    env:
+      "ACCEPT_EULA": "true"
+  become: true
+
+- name: Wait for SANtricity Web Services Proxy to be ready.
+  uri:
+    url: https://{{ ansible_host }}:8443/devmgr/utils/about
+    validate_certs: false
+  register: about_response
+  retries: 20
+  delay: 3
+  until: about_response['status'] == 200

@@ -1,0 +1,7 @@
+- name: Setup multipath and the required protocol.
+  include_tasks: install.yml
+  when: not eseries_storage_setup_uninstall
+
+- name: Uninstall multipath and any installed protocols.
+  include_tasks: uninstall.yml
+  when: eseries_storage_setup_uninstall

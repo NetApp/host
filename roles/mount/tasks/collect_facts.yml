@@ -1,0 +1,144 @@
+- name: Discover mapped-volume information from associated storage systems.
+  include_role:
+    name: netapp_eseries.host.common
+    tasks_from: host_facts.yml
+
+- name: Mark all eseries volumes for mounting details
+  set_fact:
+    volume_mount_info: |-
+      {%- set info = [] -%}
+      {%- for volume in eseries_volumes -%}
+
+        {#- Determine hosts that should which volumes mounted -#}
+        {%- set is_mount_to_hosts_defined = "volume_metadata" in (volume.keys() | list) and "mount_to_hosts" in (volume["volume_metadata"].keys() | list) -%}
+        {%- set mounts_by_host = (volume["volume_metadata"]["mount_to_hosts"] | default("")).split(",") -%}
+        {%- set mounts_by_volume = eseries_mount_volumes | default([]) -%}
+
+        {%- if (is_mount_to_hosts_defined and inventory_hostname in mounts_by_host) or
+               (not is_mount_to_hosts_defined and (volume["name"] in mounts_by_volume or "all_volumes" in mounts_by_volume)) -%}
+
+          {#- Determine file system and mounting parameters -#}
+          {%- set fs_type = volume['volume_metadata']['format_type'] | default(hostvars[inventory_hostname]["eseries_mount_format_type"] | default(eseries_mount_format_type)) -%}
+          {%- set fs_options = volume['volume_metadata']['format_options'] |
+                               default(hostvars[inventory_hostname]['eseries_mount_format_options'] |
+                               default(hostvars[inventory_hostname]['eseries_mount_format_type_options'][volume['volume_metadata']['format_type']] |
+                               default(hostvars[inventory_hostname]['eseries_mount_format_type_options'][eseries_mount_format_type] |
+                               default(eseries_mount_format_type_options[eseries_mount_format_type])))) | regex_replace("VOLUME_SEGMENT_SIZE_KB", volume["segment_size_kb"] | string)
+                                                                                                        | regex_replace("VOLUME_STRIPE_COUNT", volume["stripe_count"] | string) -%}
+          {%- set mount_options = volume["volume_metadata"]["mount_options"] | default(eseries_mount_persistent_mount_options) -%}
+          {%- set mount_directory = (volume["volume_metadata"]["mount_dir"] | default(eseries_mount_root_directory)) | regex_replace('//*$', '') -%}
+
+          {#- Append volume info volume_mount_info -#}
+          {%- if info.append({"name": volume["name"],
+                              "wwn": volume["wwn"],
+                              "host_wwid": volume["host_wwid"],
+                              "eui": volume["eui"],
+                              "path": volume["path"],
+                              "fs_type": fs_type,
+                              "fs_options": fs_options,
+                              "mount_options": mount_options,
+                              "mount_directory": mount_directory ~ "/" ~ volume["name"]}) -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- info -}}
+
+- name: Get the multipathd maps
+  command: multipathd show maps raw format "%w,%d"
+  register: multipath_maps
+  changed_when: false
+  become: true
+
+- name: Get the /etc/fstab entries
+  command: "cat /etc/fstab"
+  changed_when: false
+  register: fstab
+  become: true
+
+- name: Determine all E-Series volume mounts.
+  set_fact:
+    fstab_volume_mounts: |-
+      {%- set mounts = [] -%}
+      {#- Search all fstab entries -#}
+      {%- for fstab_line in fstab["stdout_lines"] if fstab_line and not (fstab_line | regex_search("^#")) -%}
+        {%- set fstab_entry = fstab_line.split() -%}
+        {%- for multipath_map in multipath_maps["stdout_lines"] -%}
+
+          {%- set multipath_map_entry = multipath_map.split(",") -%}
+          {%- if multipath_map_entry[1] == fstab_entry[0].split("/")[-1] -%}
+
+            {%- for volume in eseries_volumes if volume["host_wwid"] == multipath_map_entry[0] -%}
+              {%- set dev_mapper_path = "/dev/mapper/" ~ volume["name"] -%}
+              {%- set expected_entry = volume["name"] ~ "," ~ fstab_entry[""] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path -%}
+              {%- if mounts.append(expected_entry) -%}{%- endif -%}
+            {%- endfor -%}
+
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- mounts -}}
+
+- name: Get the mount log content.
+  netapp_eseries.host.file_list:
+    file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mount_log"
+    mode: add
+    items: "{{ fstab_volume_mounts }}"
+  register: mount_log
+  become: true
+
+- name: Determine volumes that should be unmounted
+  set_fact:
+    volume_unmount_list: |-
+      {%- set info = [] -%}
+
+      {#- Create expected mount log entry list based on only volumes which should be mounted -#}
+      {%- set expected_mount_log_entries = [] -%}
+      {%- for volume in volume_mount_info -%}
+        {%- set dev_mapper_path = "/dev/mapper/" ~ volume["name"] -%}
+        {%- set expected_entry = volume["name"] ~ "," ~ volume["mount_directory"] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path -%}
+        {%- if expected_mount_log_entries.append(expected_entry) -%}{%- endif -%}
+      {%- endfor -%}
+
+      {#- Determine mount log entries that should be unmounted -#}
+      {%- for current_entry in mount_log["list"] if current_entry not in expected_mount_log_entries -%}
+        {%- if info.append(current_entry.split(",")[0]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- info -}}
+
+- name: Determine which host should handle the formatting if needed.
+  set_fact:
+    format_volumes_by_host: |-
+      {%- set info = {} -%}
+      {%- set volume_accounted_for = [] -%}
+
+      {#- Search each host in the inventory for eseries_volumes -#}
+      {%- for host in (hostvars.keys() | list) -%}
+        {%- if "eseries_volumes" in (hostvars[host].keys() | list) -%}
+
+          {#- Append volume information to host entry if its the first time the volume is encountered -#}
+          {%- if info.update({host: []}) -%}{%- endif -%}
+          {%- for volume in hostvars[host]["eseries_volumes"] -%}
+            {%- if volume["wwn"] ~ volume["eui"] not in volume_accounted_for -%}
+              {%- if volume_accounted_for.append(volume["wwn"] ~ volume["eui"]) -%}{%- endif -%}
+
+              {#- Determine file system and mounting parameters -#}
+              {%- set fs_type = volume['volume_metadata']['format_type'] | default(hostvars[host]["eseries_mount_format_type"] | default(eseries_mount_format_type)) -%}
+              {%- set fs_options = volume['volume_metadata']['format_options'] |
+                                   default(hostvars[host]['eseries_mount_format_options'] |
+                                   default(hostvars[host]['eseries_mount_format_type_options'][volume['volume_metadata']['format_type']] |
+                                   default(hostvars[host]['eseries_mount_format_type_options'][eseries_mount_format_type] |
+                                   default(eseries_mount_format_type_options[eseries_mount_format_type])))) | regex_replace("VOLUME_SEGMENT_SIZE_KB", volume["segment_size_kb"] | string)
+                                                                                                            | regex_replace("VOLUME_STRIPE_COUNT", volume["stripe_count"] | string) -%}
+              {#- Append volume info volume_mount_info -#}
+              {%- if info[host].append({"name": volume["name"],
+                                  "wwn": volume["wwn"],
+                                  "host_wwid": volume["host_wwid"],
+                                  "eui": volume["eui"],
+                                  "path": volume["path"],
+                                  "fs_type": fs_type,
+                                  "fs_options": fs_options}) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- info -}}
+  run_once: true

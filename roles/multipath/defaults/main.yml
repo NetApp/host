@@ -1,0 +1,5 @@
+eseries_multipath_conf_d_path: /etc/multipath/conf.d/
+eseries_multipath_kernel_modules:
+  - "dm_multipath"
+eseries_multipath_remove_installation: false
+eseries_multipath_configure_user_friendly_names: true

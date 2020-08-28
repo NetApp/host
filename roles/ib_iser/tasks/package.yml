@@ -1,0 +1,10 @@
+- name: Ensure InfiniBand iSER packages are installed
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
+
+- name: Check whether InfiniBand iSER's kernel modules are loaded.
+  modprobe:
+    state: present
+    name: "{{ item }}"
+  register: ib_iser_kernel_modules
+  loop: "{{ eseries_iser_kernel_modules }}"
+  become: true

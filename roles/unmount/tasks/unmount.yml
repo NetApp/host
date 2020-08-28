@@ -1,0 +1,38 @@
+- name: Unmount all unmapped volumes.
+  mount:
+    state: unmounted
+    path: "{{ item['mount_path'] }}"
+  loop: "{{ mounted_volume_info }}"
+  become: true
+
+- name: Remove all persistent mount information.
+  block:
+    - name: Remove mount points for all unmapped volumes.
+      mount:
+        state: absent
+        path: "{{ item['mount_path'] }}"
+      loop: "{{ mounted_volume_info }}"
+      become: true
+
+    - name: Remove unmounted volumes from the mount log.
+      netapp_eseries.host.file_list:
+        file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mount_log"
+        mode: remove
+        items: "{{ log_items }}"
+      become: true
+      vars:
+        log_items: |-
+          {%- set log_items = [] -%}
+          {%- for info in mounted_volume_info -%}
+            {%- if log_items.append(info["log_item"]) -%}{%- endif -%}
+          {%- endfor -%}
+          {{ log_items }}
+  when: eseries_unmount_temporary_unmount == False
+
+- name: Wipe all file system signatures on volume (Fast format).
+  include_tasks: wipe.yml
+  when: eseries_unmount_wipe_format_signatures == True
+
+- name: Purge volume from host.
+  include_tasks: purge.yml
+  when: eseries_unmount_purge == True

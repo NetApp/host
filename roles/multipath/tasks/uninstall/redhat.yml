@@ -1,0 +1,27 @@
+- name: Ensure expected multipath packages have been uninstalled (RHEL).
+  yum:
+    state: absent
+    name: device-mapper-multipath
+  become: true
+
+- name: Get list of current kernel modules.
+  command: dracut --list-modules
+  register: kernel_modules
+  changed_when: false
+  become: true
+
+- name: Update the ramdisk
+  command: dracut --force --omit multipath
+  register: initramfs
+  failed_when: initramfs['rc'] != 0
+  when: multipath_added_to_initramfs | bool
+  become: true
+  vars:
+    multipath_added_to_initramfs: |-
+      {%- set scratch = {"found": False} -%}
+      {%- for module in kernel_modules["stdout_lines"] -%}
+        {%- if module == "multipath" -%}
+          {%- if scratch.update({"found": True}) -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ scratch["found"] }}

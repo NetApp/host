@@ -1,0 +1,11 @@
+- name: Wipe volume format signatures.
+  command:
+    cmd: "wipefs --all /dev/{{ item['device'] }}"
+  delegate_to: "{{ item['host'] }}"
+  run_once: true
+#  no_log: true
+  loop: "{{ all_hosts_array_volume_info }}"
+  register: wipefs_device
+  failed_when: wipefs_device['rc'] == 1
+  changed_when: wipefs_device['rc'] == 0 and wipefs_device['stdout'] != ''
+  become: true

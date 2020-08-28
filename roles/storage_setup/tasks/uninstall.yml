@@ -1,0 +1,9 @@
+- name: Remove any previously installed protocol packages and configuration.
+  include_role:
+    name: netapp_eseries.host.protocol
+    tasks_from: uninstall.yml
+
+- name: Remove multipath packages and configuration.
+  include_role:
+    name: netapp_eseries.host.multipath
+    tasks_from: uninstall.yml

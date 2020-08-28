@@ -1,0 +1,25 @@
+- name: Ensure storage_array_facts has been populated.
+  include_tasks: gather_storage_facts.yml
+  when: storage_array_facts is not defined
+
+- name: Populate initiator_volume_facts variable for each host (Adds ansible_array_name and ansible_host to the volume information)
+  set_fact:
+    initiator_volume_facts: |-
+      {%- set volumes = [] -%}
+      {%- for result in storage_array_facts["results"] -%}
+        {%- if "storage_array_facts" in (result.keys() | list) and "netapp_volumes_by_initiators" in (result["storage_array_facts"].keys() | list) -%}
+          {%- if inventory_hostname in (result["storage_array_facts"]["netapp_volumes_by_initiators"].keys() | list) -%}
+            {%- set chassis_serial = result["storage_array_facts"]["netapp_storage_array"]["chassis_serial"] -%}
+            {%- for volume in result["storage_array_facts"]["netapp_volumes_by_initiators"][inventory_hostname] -%}
+              {%- if volume.update({"chassis_serial": chassis_serial}) -%}{%- endif -%}
+              {%- if volume.update({"ansible_array_name": result["item"], "ansible_host": inventory_hostname}) -%}{%- endif -%}
+              {%- if common_volume_workload_filter is defined -%}
+                {%- if volume["workload_name"] == common_volume_workload_filter and volumes.append(volume) -%}{%- endif -%}
+              {%- elif eseries_common_volume_workload_filter is not defined or volume["workload_name"] == eseries_common_volume_workload_filter -%}
+                {%- if volumes.append(volume) -%}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- volumes | list -}}

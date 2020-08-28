@@ -1,0 +1,13 @@
+# Managed by NetApp E-Series Ansible
+
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+{% for interface in eseries_iscsi_interfaces %}
+    {{ interface["name"] }}:
+      addresses:
+        - {{ interface["address"] }}
+{% if "gateway" in (item.keys() | list) %}      gateway4: {{ item["gateway"] }}{% endif %}
+      mtu: {{ interface["mtu"] | default(eseries_iscsi_mtu) }}
+{% endfor %}

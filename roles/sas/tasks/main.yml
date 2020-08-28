@@ -1,0 +1,6 @@
+- name: Include operating specific variables.
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Final host setup for FC protocol.
+  debug:
+    msg: "Sorry, the FC protocol setup has not been implemented yet."

@@ -1,0 +1,11 @@
+- name: Ensure multipath has been installed.
+  block:
+    - name: Ensure multipath packages are installed.
+      include_tasks: package.yml
+    - name: Ensure multipath is configured.
+      include_tasks: configure.yml
+  when: not eseries_multipath_remove_installation
+
+- name: Ensure multipath is removed.
+  include_tasks: uninstall.yml
+  when: eseries_multipath_remove_installation

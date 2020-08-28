@@ -1,0 +1,44 @@
+- name: Flush underlining multipath device devices.
+  command:
+    cmd: "multipath -f {{ item['device'] }}"
+  loop: "{{ mapped_volume_info }}"
+  register: multipath_device_flush
+  retries: 60
+  delay: 3
+  until: multipath_device_flush['rc'] == 0
+  become: true
+
+- name: Delete block devices for removed volume.
+  shell: "echo 1 > /sys/block/{{ item }}/device/delete"
+  loop: "{{ block_to_delete }}"
+  register: delete_device
+  failed_when: false
+  changed_when: delete_device['rc'] == 0
+  become: true
+  vars:
+    block_to_delete: |-
+      {%- set blocks = [] -%}
+      {%- for mounts in mapped_volume_info -%}
+        {%- if blocks.extend(mounts["blocks"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ blocks }}
+
+- name: Force multipath to update devmap.
+  command:
+    cmd: "multipath"
+  loop: "{{ mapped_volume_info }}"
+  become: true
+
+- name: Remove unmapped volumes from the host's eseries_mapped_log.
+  netapp_eseries.host.file_list:
+    file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mapped_log"
+    mode: remove
+    items: "{{ log_items }}"
+  become: true
+  vars:
+    log_items: |-
+      {%- set log_items = [] -%}
+      {%- for info in mapped_volume_info -%}
+        {%- if log_items.append(info["log_item"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ log_items }}

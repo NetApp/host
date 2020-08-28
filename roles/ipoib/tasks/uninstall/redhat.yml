@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand IPoIB packages are removed (RHEL).
+  yum:
+    state: absent
+    name: "{{ eseries_ipoib_rhel_packages }}"
+  become: true

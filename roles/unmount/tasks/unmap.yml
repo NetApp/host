@@ -1,0 +1,27 @@
+- name: Unmap E-Series volumes.
+  netapp_eseries.santricity.na_santricity_lun_mapping:
+    ssid: "{{ item['array_ssid'] }}"
+    api_url: "{{ item['array_api_url'] }}"
+    api_username: "{{ item['array_username'] }}"
+    api_password: "{{ item['array_password'] }}"
+    validate_certs: "{{ item['array_validate_certs'] }}"
+    state: absent
+    volume_name: "{{ item['volume_name'] }}"
+  loop: "{{ all_hosts_array_volume_info }}"
+  delegate_to: localhost
+  run_once: true
+  no_log: true
+
+- name: Remove unmapped volumes from the host's eseries_mapped_log.
+  netapp_eseries.host.file_list:
+    file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mapped_log"
+    mode: remove
+    items: "{{ log_items }}"
+  become: true
+  vars:
+    log_items: |-
+      {%- set log_items = [] -%}
+      {%- for info in mapped_volume_info -%}
+        {%- if log_items.append(info["log_item"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ log_items }}

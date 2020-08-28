@@ -1,0 +1,6 @@
+- name: Include operating specific variables.
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Final host setup for NVMe over RoCE protocol.
+  debug:
+    msg: "Sorry, the NVMe over RoCE protocol setup has not been implemented yet."

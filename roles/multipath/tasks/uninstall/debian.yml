@@ -1,0 +1,7 @@
+- name: Ensure expected multipath packages have been uninstalled (Ubuntu).
+  apt:
+    state: absent
+    name:
+      - multipath-tools
+      - multipath-tools-boot
+  become: true
