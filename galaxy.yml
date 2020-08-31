@@ -1,11 +1,11 @@
 namespace: "netapp_eseries"
 name: "host"
-version: "1.0.0"
+version: "0.1.0"
 readme: "README.md"
 authors:
   - Nathan Swartz (@ndswartz)
 dependencies:
-  netapp_eseries.santricity: ">=1.0.8"
+  netapp_eseries.santricity: ">=1.0.9"
 license:
   - "BSD-3-Clause"
 repository: "https://www.github.com/netapp-eseries/host"

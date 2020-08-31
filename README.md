@@ -70,7 +70,7 @@ Example Storage System Inventory (Minimum requirements. See netapp_eseries.santr
 
 Example Project
 ---------------
-See https://github.com/netappeseries/host/tree/master/example_project.
+    See https://github.com/netappeseries/host/tree/master/example_project.
 
 Example Playbook (Ensure mapped-volumes are mounted)
 ----------------------------------------------------
