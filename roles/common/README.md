@@ -8,8 +8,13 @@ Collect information about E-Series storage systems and host-mapped volumes.
 
 Variables
 --------------
-eseries_common_group:                     # (Required) Ansible host group or list of E-Series storage systems. (Default: eseries_storage_systems)
-eseries_common_volume_workload_filter:    # Filters the volumes added to eseries_volumes.
+    eseries_common_group:                            # Ansible host group or list of E-Series storage systems (Default: eseries_storage_systems).
+    eseries_common_volume_workload_filter:           # Filters the volumes added to eseries_volumes.
+    eseries_common_group: eseries_storage_systems    # Inventory group containing E-Series storage systems.
+    eseries_common_allow_host_reboot:                # Whether reboots will allowed in an attempt to discover E-Series volumes.
+    eseries_common_docker_host:                      # Docker host for SANtricity Web Services Proxy.
+    eseries_common_mapped_log_path: /var/log         # Path to eseries_mapped_log which is used to maintain a record of E-Series volumes that are mapped to the host and is used for properly removing the volumes from the host.
+    eseries_mount_log_path: /var/log                 # Path to eseries_mount_log which is used to maintain a record of E-Series volumes that are mounted on the host and is used for properly removing the volumes from the host.
 
 Notes
 ----------
