@@ -59,8 +59,8 @@
     fstab_volume_mounts: |-
       {%- set mounts = [] -%}
       {#- Search all fstab entries -#}
-      {%- for fstab_line in fstab["stdout_lines"] if fstab_line and not (fstab_line | regex_search("^#")) -%}
-        {%- set fstab_entry = fstab_line.split() -%}
+      {%- for fstab_line in fstab["stdout_lines"] if fstab_line and not (fstab_line | regex_search("\A(\s*#.*|\s*)\Z")) -%}
+        {%- set fstab_entry = (fstab_line | regex_replace("\s+", " ")).split(" ") -%}
         {%- for multipath_map in multipath_maps["stdout_lines"] -%}
 
           {%- set multipath_map_entry = multipath_map.split(",") -%}
@@ -68,7 +68,7 @@
 
             {%- for volume in eseries_volumes if volume["host_wwid"] == multipath_map_entry[0] -%}
               {%- set dev_mapper_path = "/dev/mapper/" ~ volume["name"] -%}
-              {%- set expected_entry = volume["name"] ~ "," ~ fstab_entry[""] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path -%}
+              {%- set expected_entry = volume["name"] ~ "," ~ fstab_entry[1] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path -%}
               {%- if mounts.append(expected_entry) -%}{%- endif -%}
             {%- endfor -%}
 
