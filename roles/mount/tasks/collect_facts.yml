@@ -43,7 +43,7 @@
       {{- info -}}
 
 - name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%d"
+  command: multipathd show maps raw format "%w,%n"
   register: multipath_maps
   changed_when: false
   become: true

@@ -1,5 +1,5 @@
 - name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%d"
+  command: multipathd show maps raw format "%w,%n"
   register: multipath_maps
   changed_when: false
   become: true
@@ -17,7 +17,7 @@
 
           {%- if (volume["wwn"] and map_info[0] | regex_search(volume["wwn"], ignorecase=True)) or
                  (volume["eui"] and map_info[0] | regex_search(volume["eui"], ignorecase=True)) -%}
-            {%- if paths[volume["name"]].update({"path": "/dev/" ~ map_info[1], "sysfs": map_info[1], "host_wwid": map_info[0]}) -%}{%- endif -%}
+            {%- if paths[volume["name"]].update({"path": "/dev/mapper/" ~ map_info[1], "sysfs": map_info[1], "host_wwid": map_info[0]}) -%}{%- endif -%}
           {%- endif -%}
         {%- endfor -%}
       {%- endfor -%}

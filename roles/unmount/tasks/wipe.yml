@@ -1,6 +1,6 @@
 - name: Wipe volume format signatures.
   command:
-    cmd: "wipefs --all /dev/{{ item['device'] }}"
+    cmd: "wipefs --all /dev/mapper/{{ item['device'] }}"
   delegate_to: "{{ item['host'] }}"
   run_once: true
 #  no_log: true
