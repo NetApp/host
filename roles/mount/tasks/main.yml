@@ -10,7 +10,7 @@
   vars:
     eseries_unmount_volumes: "{{ volume_unmount_list }}"
     eseries_unmount_temporary_unmount: false
-    eseries_unmount_purge: false
+    eseries_unmount_purge: true
     eseries_unmount_unmap: false
     eseries_unmount_delete: false
     eseries_unmount_wipe_format_signatures: false

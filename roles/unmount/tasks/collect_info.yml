@@ -1,155 +1,69 @@
-- name: Discover mapped-volume information from associated storage systems.
-  import_role:
-    name: netapp_eseries.host.common
-    tasks_from: volume_facts.yml
-
 - name: Get multipath path information for each mapping to be removed.
   command:
-    cmd: "multipathd show paths raw format '%w,%d,%i'"
+    cmd: "multipathd show maps raw format '%w,%d,%n,%N,%v,%p'"
   register: multipathd_path_info
   changed_when: false
   failed_when: false
   become: true
 
-- name: Get the contents of the mount log.
-  netapp_eseries.host.file_list:
-    file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mount_log"
-    mode: content
-  become: true
-  register: mount_log
-
-- name: Determine host volume mounts to remove.
-  set_fact:
-    mounted_volume_info: |-
-      {%- set mounts = [] -%}
-
-      {%- for existing_entry in mount_log["list"] -%}
-        {%- set info = existing_entry.split(",") -%}
-        {%- for volume in initiator_volume_facts if (eseries_unmount_volumes == "all_volumes" or eseries_unmount_volumes == ["all_volumes"] or volume["name"] in eseries_unmount_volumes) and
-                                                    ((volume["wwn"] and existing_entry | regex_search(volume["wwn"], ignorecase=True)) or
-                                                     (volume["eui"] and existing_entry | regex_search(volume["eui"], ignorecase=True))) -%}
-          {%- if mounts.append({"volume_info": volume, "log_item": existing_entry, "volume_name": info[0], "mount_path": info[1], "device": info[2], "wwid": info[3], "blocks": []}) -%}{%- endif -%}
-        {%- else -%}
-          {%- if eseries_unmount_volumes == "all_volumes" or eseries_unmount_volumes == ["all_volumes"] or info[0] in eseries_unmount_volumes -%}
-            {%- if mounts.append({"volume_info": {}, "log_item": existing_entry, "volume_name": info[0], "mount_path": info[1], "device": info[2], "wwid": info[3], "blocks": []}) -%}{%- endif -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endfor -%}
-
-      {%- for mount in mounts -%}
-        {%- for path_info in multipathd_path_info["stdout_lines"] | default([]) -%}
-          {%- set info = path_info.split(",") -%}
-          {%- if info[0] == mount["wwid"] -%}
-            {%- if mount["blocks"].append(info[1]) -%}{%- endif -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endfor -%}
-      {{ mounts }}
-
-- name: Get mapped volumes from the host's eseries_mapped_log.
-  netapp_eseries.host.file_list:
-    file: "{{ eseries_common_mapped_log_path | regex_replace('//*$', '') }}/eseries_mapped_log"
-    mode: content
-  become: true
-  register: mapped_log
-
+#- for volume in initiator_volume_facts if eseries_unmount_volumes == "all_volumes" or eseries_unmount_volumes == ["all_volumes"] or volume["name"] in eseries_unmount_volumes
 - name: Determine volumes to unmap.
   set_fact:
-    mapped_volume_info: |-
-      {%- set maps = [] -%}
+    unmapped_volume_info: |-
+      {%- set mapped_info = [] -%}
+      {%- set mapped_info_dict = {} -%}
       {%- if multipathd_path_info["rc"] == 0 -%}
-        {%- for existing_entry in mapped_log["list"] -%}
-          {%- set info = existing_entry.split(",") -%}
-          {%- for volume in initiator_volume_facts if (eseries_unmount_volumes == "all_volumes" or eseries_unmount_volumes == ["all_volumes"] or volume["name"] in eseries_unmount_volumes) and
-                                                      ((volume["wwn"] and existing_entry | regex_search(volume["wwn"], ignorecase=True)) or
-                                                       (volume["eui"] and existing_entry | regex_search(volume["eui"], ignorecase=True))) -%}
-              {%- if maps.append({"volume_info": volume, "log_item": existing_entry, "volume_name": info[0], "device": info[1], "wwid": info[2], "blocks": []}) -%}{%- endif -%}
-          {%- else -%}
-            {%- if eseries_unmount_volumes == "all_volumes" or eseries_unmount_volumes == ["all_volumes"] or info[0] in eseries_unmount_volumes -%}
-              {%- if maps.append({"volume_info": {}, "log_item": existing_entry, "volume_name": info[0], "device": info[1], "wwid": info[2], "blocks": []}) -%}{%- endif -%}
+        {%- for path_info in multipathd_path_info["stdout_lines"] if path_info | regex_search("NETAPP\s*,INF-01-00", ignorecase=True) -%}
+          {%- set info = path_info.split(",") -%}
+
+          {%- for volume_name in eseries_unmount_volumes if volume_name == "all_volumes" or volume_name == info[2] -%}
+
+            {#- Add host information -#}
+            {%- if volume_name not in (mapped_info_dict.keys() | list) -%}
+              {%- if mapped_info_dict.update({volume_name: {"volume_info": {}, "array_credentials": {}, "volume_name": volume_name, "wwid": info[0],
+                                                            "dev_mapper_path": "/dev/mapper/" ~ info[2], "blocks": [info[1]], "active_paths": info[3]}}) -%}{%- endif -%}
+            {%- else -%}
+              {%- if mapped_info_dict[volume_name]["blocks"].append(info[1]) -%}{%- endif -%}
             {%- endif -%}
-          {%- endfor -%}
-        {%- endfor -%}
 
-        {%- for map in maps -%}
-          {%- for path_info in multipathd_path_info["stdout_lines"] -%}
-            {%- set info = path_info.split(",") -%}
-            {%- if info[0] == map["wwid"] -%}
-              {%- if map["blocks"].append(info[1]) -%}{%- endif -%}
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endfor -%}
-      {%- endif -%}
-      {{ maps }}
+            {#- Attempt to retrieve volume information -#}
+            {%- for volume_info in initiator_volume_facts if info[0] | regex_search(volume_info["wwn"], ignorecase=True) or
+                                                             info[0] | regex_search(volume_info["eui"], ignorecase=True) -%}
+              {%- if mapped_info_dict[volume_name]["volume_info"].update(volume_info) -%}{%- endif -%}
 
-- name: Determine array volume information.
-  set_fact:
-    array_volume_info: |-
-      {%- set volumes = [] -%}
-      {%- set scratch = {"found": False} -%}
-      {%- if multipathd_path_info["rc"] == 0 -%}
-        {%- for volume_info in mapped_volume_info if volume_info["volume_info"] -%}
-          {%- set device = volume_info["device"] -%}
-          {%- set volume_name = volume_info["volume_info"]["name"] -%}
-          {%- set array_ssid = hostvars[volume_info['volume_info']['ansible_array_name']]['current_eseries_ssid'] |
-                               default(hostvars[volume_info['volume_info']['ansible_array_name']]['eseries_ssid'] | default('1')) -%}
-          {%- set array_api_url = hostvars[volume_info['volume_info']['ansible_array_name']]['current_eseries_api_url'] |
-                                  default(hostvars[volume_info['volume_info']['ansible_array_name']]['eseries_system_api_url']) -%}
-          {%- set array_username = hostvars[volume_info['volume_info']['ansible_array_name']]['current_eseries_api_username'] |
-                                   default(hostvars[volume_info['volume_info']['ansible_array_name']]['eseries_system_username'] | default('admin')) -%}
-          {%- set array_password = hostvars[volume_info['volume_info']['ansible_array_name']]['current_eseries_api_password'] |
-                                   default(hostvars[volume_info['volume_info']['ansible_array_name']]['eseries_system_password']) -%}
-          {%- set array_validate_certs = hostvars[volume_info['volume_info']['ansible_array_name']]['current_eseries_validate_certs'] |
-                                         default(hostvars[volume_info['volume_info']['ansible_array_name']]['eseries_validate_certs']) -%}
-          {%- if scratch.update({"found": False}) -%}{%- endif -%}
-          {%- for volume in volumes -%}
-            {%- if volume["volume_name"] == volume_name and volume["array_ssid"] == array_ssid and volume["array_api_url"] == array_api_url -%}
-              {%- if scratch.update({"found": True}) -%}{%- endif -%}
-            {%- endif -%}
-          {%- endfor -%}
-          {%- if scratch["found"] == False -%}
-            {%- if volumes.append({"device": device, "volume_name": volume_name, "array_ssid": array_ssid, "array_api_url": array_api_url,
-                                   "array_username": array_username, "array_password": array_password, "array_validate_certs": array_validate_certs}) -%}{%- endif -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-      {{- volumes -}}
-  no_log: true
-
-- name: Join all targetted host array volume information.
-  set_fact:
-    all_hosts_array_volume_info: |-
-      {%- set all_volume_info = [] -%}
-      {%- set scratch = {"found": False} -%}
-
-      {%- if multipathd_path_info["rc"] == 0 -%}
-
-        {#- Search all hosts for array_volume_info. -#}
-        {%- for host in (hostvars.keys() | list) -%}
-
-          {#- Add volume to all_volume_info list if not already added. -#}
-          {%- if "array_volume_info" in hostvars[host] -%}
-            {%- for volume_info in hostvars[host]["array_volume_info"] -%}
-
-              {#- Search for whether the volume has already been added. -#}
-              {%- if scratch.update({"found": False}) -%}{%- endif -%}
-                {%- for entry in all_volume_info -%}
-                  {%- if entry["array_api_url"] == volume_info["array_api_url"] and
-                         entry["array_ssid"] == volume_info["array_ssid"] and
-                         entry["volume_name"] == volume_info["volume_name"] -%}
-
-                    {%- if scratch.update({"found": True}) -%}{%- endif -%}
-                  {%- endif -%}
-                {%- endfor -%}
-
-              {%- if scratch["found"] == False -%}
-                {%- if volume_info.update({"host": host}) -%}{%- endif -%}
-                {%- if all_volume_info.append(volume_info) -%}{%- endif -%}
+              {%- set array_info = hostvars[volume_info['ansible_array_name']] -%}
+              {%- set array_info_keys = array_info.keys() | list -%}
+              {%- if "current_eseries_ssid" in array_info_keys -%}
+                {%- if mapped_info_dict[volume_name]["array_credentials"].update({"ssid": array_info['current_eseries_ssid'],
+                                                                             "api_url": array_info["current_eseries_api_url"],
+                                                                             "api_username": array_info["current_eseries_api_username"] | default("admin"),
+                                                                             "api_password": array_info["current_eseries_api_password"],
+                                                                             "validate_certs": array_info["current_eseries_validate_certs"]}) -%}{%- endif -%}
+              {%- elif "eseries_system_api_url" in array_info_keys and "eseries_system_password" in array_info_keys -%}
+                {%- if mapped_info_dict[volume_name]["array_credentials"].update({"ssid": "1",
+                                                                             "api_url": array_info["eseries_system_api_url"],
+                                                                             "api_username": array_info["eseries_system_username"] | default("admin"),
+                                                                             "api_password": array_info["eseries_system_password"],
+                                                                             "validate_certs": array_info["eseries_validate_certs"] | default(omit)}) -%}{%- endif -%}
+              {%- elif "eseries_proxy_ssid" in array_info_keys and "eseries_proxy_api_url" in array_info_keys and "eseries_proxy_api_password" in array_info_keys -%}
+                {%- if mapped_info_dict[volume_name]["array_credentials"].update({"ssid": array_info["eseries_proxy_ssid"],
+                                                                             "api_url": array_info["eseries_proxy_api_url"],
+                                                                             "api_username": array_info["eseries_proxy_api_username"] | default("admin"),
+                                                                             "api_password": array_info["eseries_proxy_api_password"],
+                                                                             "validate_certs": array_info["eseries_validate_certs"] | default(omit)}) -%}{%- endif -%}
+              {%- elif "eseries_api_url" in array_info_keys and "eseries_api_password" in array_info_keys -%}
+                {%- if mapped_info_dict[volume_name]["array_credentials"].update({"ssid": array_info["eseries_ssid"] | default("1"),
+                                                                             "api_url": array_info["eseries_api_url"],
+                                                                             "api_username": array_info["eseries_api_username"] | default("admin"),
+                                                                             "api_password": array_info["eseries_api_password"],
+                                                                             "validate_certs": array_info["eseries_validate_certs"] | default(omit)}) -%}{%- endif -%}
               {%- endif -%}
             {%- endfor -%}
-          {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+
+        {%- for key, value in mapped_info_dict.items() -%}
+          {%- if mapped_info.append(value) -%}{%- endif -%}
         {%- endfor -%}
       {%- endif -%}
-      {{- all_volume_info -}}
-  run_once: true
-  no_log: true
+      {{ mapped_info }}

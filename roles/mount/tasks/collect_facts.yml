@@ -43,66 +43,27 @@
       {{- info -}}
 
 - name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%n"
+  command: multipathd show maps raw format "%w,%n,%v,%p"
   register: multipath_maps
   changed_when: false
-  become: true
-
-- name: Get the /etc/fstab entries
-  command: "cat /etc/fstab"
-  changed_when: false
-  register: fstab
-  become: true
-
-- name: Determine all E-Series volume mounts.
-  set_fact:
-    fstab_volume_mounts: |-
-      {%- set mounts = [] -%}
-      {#- Search all fstab entries -#}
-      {%- for fstab_line in fstab["stdout_lines"] if fstab_line and not (fstab_line | regex_search("\A(\s*#.*|\s*)\Z")) -%}
-        {%- set fstab_entry = (fstab_line | regex_replace("\s+", " ")).split(" ") -%}
-        {%- for multipath_map in multipath_maps["stdout_lines"] -%}
-
-          {%- set multipath_map_entry = multipath_map.split(",") -%}
-          {%- if multipath_map_entry[1] == fstab_entry[0].split("/")[-1] -%}
-
-            {%- for volume in eseries_volumes if volume["host_wwid"] == multipath_map_entry[0] -%}
-              {%- set dev_mapper_path = "/dev/mapper/" ~ volume["name"] -%}
-              {%- set expected_entry = volume["name"] ~ "," ~ fstab_entry[1] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path -%}
-              {%- if mounts.append(expected_entry) -%}{%- endif -%}
-            {%- endfor -%}
-
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endfor -%}
-      {{- mounts -}}
-
-- name: Get the mount log content.
-  netapp_eseries.host.file_list:
-    file: "{{ eseries_mount_log_path | regex_replace('//*$', '') }}/eseries_mount_log"
-    mode: add
-    items: "{{ fstab_volume_mounts }}"
-  register: mount_log
   become: true
 
 - name: Determine volumes that should be unmounted
   set_fact:
     volume_unmount_list: |-
-      {%- set info = [] -%}
-
-      {#- Create expected mount log entry list based on only volumes which should be mounted -#}
-      {%- set expected_mount_log_entries = [] -%}
-      {%- for volume in volume_mount_info -%}
-        {%- set dev_mapper_path = "/dev/mapper/" ~ volume["name"] -%}
-        {%- set expected_entry = volume["name"] ~ "," ~ volume["mount_directory"] ~ "," ~ volume["path"].split("/")[-1] ~ "," ~ volume["host_wwid"] ~ "," ~ dev_mapper_path -%}
-        {%- if expected_mount_log_entries.append(expected_entry) -%}{%- endif -%}
+      {%- set unmount_volumes = [] -%}
+      {%- for line in multipath_maps["stdout_lines"] -%}
+        {%- for volume in volume_mount_info if volume["wwn"] and line | regex_search(volume["wwn"], ignorecase=True) or
+                                               volume["eui"] and line | regex_search(volume["eui"], ignorecase=True) -%}
+          {#- DO NOTHING -#}
+        {%- else -%}
+          {#- Verify the unmapped volume is eseries -#}
+          {%- if line | regex_search("NETAPP\s*,INF-01-00", ignorecase=True) -%}
+            {%- if unmount_volumes.append(line.split(",")[1]) -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
       {%- endfor -%}
-
-      {#- Determine mount log entries that should be unmounted -#}
-      {%- for current_entry in mount_log["list"] if current_entry not in expected_mount_log_entries -%}
-        {%- if info.append(current_entry.split(",")[0]) -%}{%- endif -%}
-      {%- endfor -%}
-      {{- info -}}
+      {{- unmount_volumes -}}
 
 - name: Determine which host should handle the formatting if needed.
   set_fact:

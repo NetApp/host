@@ -9,7 +9,7 @@
     volume_paths: |-
       {%- set paths = {} -%}
       {%- for volume in initiator_volume_facts -%}
-        {%- if paths.update({volume["name"]: {"path": "", "sysfs": "", "host_wwid": "", "host_port_protocols": volume["host_port_protocols"]}}) -%}{%- endif -%}
+        {%- if paths.update({volume["name"]: {"path": "", "host_wwid": "", "host_port_protocols": volume["host_port_protocols"]}}) -%}{%- endif -%}
       {%- endfor -%}
       {%- for volume in initiator_volume_facts -%}
         {%- for map in multipath_maps["stdout_lines"] | default([])-%}
@@ -17,7 +17,7 @@
 
           {%- if (volume["wwn"] and map_info[0] | regex_search(volume["wwn"], ignorecase=True)) or
                  (volume["eui"] and map_info[0] | regex_search(volume["eui"], ignorecase=True)) -%}
-            {%- if paths[volume["name"]].update({"path": "/dev/mapper/" ~ map_info[1], "sysfs": map_info[1], "host_wwid": map_info[0]}) -%}{%- endif -%}
+            {%- if paths[volume["name"]].update({"path": "/dev/mapper/" ~ map_info[1], "host_wwid": map_info[0]}) -%}{%- endif -%}
           {%- endif -%}
         {%- endfor -%}
       {%- endfor -%}

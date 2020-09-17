@@ -12,7 +12,7 @@
   include_tasks: delete.yml
   when: eseries_unmount_delete == True
 
-- name: Ensure multipath user friendly names are configured.
+- name: Ensure multipath user friendly name aliases are updated.
   block:
     - name: Discover mapped-volume information from associated storage systems.
       include_role:
