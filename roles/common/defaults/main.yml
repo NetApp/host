@@ -4,3 +4,8 @@ eseries_common_docker_host: unix://var/run/docker.sock
 eseries_common_mapped_log_path: /var/log
 
 eseries_mount_log_path: /var/log
+
+# Volume Discovery Protocol Action Lists (Do not modify)
+eseries_common_discovery_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser", "nvme_ib", "nvme_fc", "nvme_roce"]
+eseries_common_discovery_rescan_iscsi_session_protocol_list: ["iscsi", "ib_iser"]
+eseries_common_discovery_rescan_scsi_bus_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser"]

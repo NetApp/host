@@ -18,6 +18,8 @@
       {%- endfor -%}
       {{ bindings }}
 
+# TODO: Ensure that they're is at least one iSCSI interface to configure.
+
 - name: Ensure iSCSI binding exist for each interface.
   command:
     cmd: "iscsiadm -m iface -I {{ item['name'] }} -o new"

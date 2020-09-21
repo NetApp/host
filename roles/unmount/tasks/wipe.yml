@@ -1,10 +1,9 @@
 - name: Wipe volume format signatures.
   command:
-    cmd: "wipefs --all /dev/mapper/{{ item['device'] }}"
-  delegate_to: "{{ item['host'] }}"
-  run_once: true
+    cmd: "wipefs --all {{ item['dev_mapper_path'] }}"
 #  no_log: true
-  loop: "{{ all_hosts_array_volume_info }}"
+  loop: "{{ unmapped_volume_info }}"
+  when: item['active_paths'] > 0
   register: wipefs_device
   failed_when: wipefs_device['rc'] == 1
   changed_when: wipefs_device['rc'] == 0 and wipefs_device['stdout'] != ''

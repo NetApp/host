@@ -29,6 +29,8 @@
       {%- endfor -%}
       {{ bindings }}
 
+# TODO: Ensure that they're is at least one IB iSER-iSCSI interface to configure.
+
 - name: Ensure iSCSI ifaces path exists.
   file:
     state: directory

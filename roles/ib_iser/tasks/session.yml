@@ -27,6 +27,7 @@
       {%- endfor -%}
       {{ targets }}
 
+# TODO: Ensure that they're is at least one IB iSER-iSCSI target to configure.
 - name: Determine whether
   fail:
     msg: "Error: Unable to establish communication with the storage system. Check physical connections and interface configuration."

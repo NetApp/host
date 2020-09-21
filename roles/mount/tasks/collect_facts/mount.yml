@@ -1,28 +1,3 @@
-- name: Discover mapped-volume information from associated storage systems.
-  include_role:
-    name: netapp_eseries.host.common
-    tasks_from: host_facts.yml
-
-- name: Get current mount information.
-  command:
-    cmd: "mount"
-    warn: false
-  register: mount_info
-  changed_when: false
-  failed_when: false
-  become: true
-
-- name: Determine volumes to unmap.
-  set_fact:
-    current_mounts: |-
-      {#- Create dictionary mapping mount devices to mount path -#}
-      {%- set mounted_volume_info = {} -%}
-      {%- for line in mount_info["stdout_lines"] -%}
-        {%- set info = line.split() -%}
-        {%- if mounted_volume_info.update({info[0]: info[2]}) -%}{%- endif -%}
-      {%- endfor -%}
-      {{- mounted_volume_info -}}
-
 - name: Mark all eseries volumes for mounting details
   set_fact:
     volume_mount_info: |-
@@ -61,29 +36,6 @@
         {%- endif -%}
       {%- endfor -%}
       {{- info -}}
-
-- name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%n,%v,%p"
-  register: multipath_maps
-  changed_when: false
-  become: true
-
-- name: Determine volumes that should be unmounted
-  set_fact:
-    volume_unmount_list: |-
-      {%- set unmount_volumes = [] -%}
-      {%- for line in multipath_maps["stdout_lines"] -%}
-        {%- for volume in volume_mount_info if volume["wwn"] and line | regex_search(volume["wwn"], ignorecase=True) or
-                                               volume["eui"] and line | regex_search(volume["eui"], ignorecase=True) -%}
-          {#- DO NOTHING -#}
-        {%- else -%}
-          {#- Verify the unmapped volume is eseries -#}
-          {%- if line | regex_search("NETAPP\s*,INF-01-00", ignorecase=True) -%}
-            {%- if unmount_volumes.append(line.split(",")[1]) -%}{%- endif -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endfor -%}
-      {{- unmount_volumes -}}
 
 - name: Determine which host should handle the formatting if needed.
   set_fact:

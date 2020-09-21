@@ -1,3 +1,8 @@
+- name: Discover mapped-volume information from associated storage systems.
+  include_role:
+    name: netapp_eseries.host.common
+    tasks_from: volume_facts.yml
+
 - name: Collect host mount information for E-Series volumes.
   import_tasks: collect_info.yml
 
@@ -12,7 +17,7 @@
   include_tasks: delete.yml
   when: eseries_unmount_delete == True
 
-- name: Ensure multipath user friendly names are configured.
+- name: Ensure multipath user friendly name aliases are updated.
   block:
     - name: Discover mapped-volume information from associated storage systems.
       include_role:

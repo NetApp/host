@@ -2,7 +2,7 @@
   command: "iscsiadm -m session --rescan"
   failed_when: false
   become: true
-  when: rescan['iscsi'] or rescan['ib_iser']
+  when: "'rescan_iscsi_sessions' in rescan_actions"
 
 - name: Rescan for all SCSI devices.
   shell: "{{ item }}"

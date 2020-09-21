@@ -28,6 +28,8 @@
       {%- endfor -%}
       {{ targets }}
 
+# TODO: Ensure that they're is at least one iSCSI target to configure.
+
 - name: Ensure iSCSI target nodes has been created
   command:
     cmd: "iscsiadm -m node -T {{ item['value']['iqn'] }} -p {{ item['value']['address'] }}:{{  item['value']['port'] }},{{ item['value']['target_portal'] }} -o new -I {{ item['value']['name'] }}"
