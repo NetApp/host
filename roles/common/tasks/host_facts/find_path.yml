@@ -23,15 +23,32 @@
       {%- endfor -%}
       {{ paths }}
 
-- name: Determine whether mapped storage volumes are missing.
+- name: Determine the protocols for which mapped volumes are missing.
   set_fact:
-    rescan: |-
-      {%- set rescan = {"iscsi": False, "fc": False, "sas": False, "ib_srp": False, "ib_iser": False, "nvme_ib": False, "nvme_fc": False, "nvme_roce": False} -%}
+    rescan_protocols: |-
+      {%- set rescan = [] -%}
       {%- for key, value in volume_paths.items() -%}
         {%- if value["path"] == "" -%}
-          {%- for protocol in value["host_port_protocols"]  -%}
-            {%- if rescan.update({protocol: True}) -%}{%- endif -%}
+          {%- for protocol in value["host_port_protocols"] if protocol in eseries_common_discovery_protocol_list -%}
+            {%- if rescan.append(protocol) -%}{%- endif -%}
           {%- endfor -%}
         {%- endif -%}
       {%- endfor -%}
       {{ rescan }}
+
+- name: Determine required rescan actions.
+  set_fact:
+    rescan_actions: |-
+      {%- set actions = [] -%}
+      {%- for protocol in rescan_protocols -%}
+        {%- if protocol in eseries_common_discovery_protocol_list -%}
+          {%- if actions.append("rescan") -%}{%- endif -%}
+        {%- endif -%}
+        {%- if protocol in eseries_common_discovery_rescan_iscsi_session_protocol_list -%}
+          {%- if actions.append("rescan_iscsi_sessions") -%}{%- endif -%}
+        {%- endif -%}
+        {%- if protocol in eseries_common_discovery_rescan_scsi_bus_protocol_list -%}
+          {%- if actions.append("rescan_scsi_bus") -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- actions -}}

@@ -20,7 +20,8 @@
       block:
         - name: Volumes are not available...Rescanning SCSI buses.
           include_tasks: host_facts/rescue/rescan_scsi_bus.yml
-          when: rescan['iscsi'] or rescan['fc'] or rescan['sas'] or rescan['ib_srp'] or rescan['ib_iser']
+          when: "'rescan_scsi_bus' in rescan_actions"
+
         - name: Rescan for all mapped volume paths.
           include_tasks: host_facts/find_path.yml
 
@@ -34,7 +35,7 @@
         - name: Fail when volumes are not available.
           fail:
             msg: "Failed to discover E-Series volumes!"
-      when: rescan['iscsi'] or rescan['fc'] or rescan['sas'] or rescan['ib_srp'] or rescan['ib_iser'] or rescan['nvme_ib'] or rescan['nvme_fc'] or rescan['nvme_roce']
+      when: "'rescan' in rescan_actions"
 
     - name: Add volume paths to volumes
       import_tasks: host_facts/add_path.yml
