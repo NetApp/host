@@ -3,6 +3,26 @@
     name: netapp_eseries.host.common
     tasks_from: host_facts.yml
 
+- name: Get current mount information.
+  command:
+    cmd: "mount"
+    warn: false
+  register: mount_info
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Determine volumes to unmap.
+  set_fact:
+    current_mounts: |-
+      {#- Create dictionary mapping mount devices to mount path -#}
+      {%- set mounted_volume_info = {} -%}
+      {%- for line in mount_info["stdout_lines"] -%}
+        {%- set info = line.split() -%}
+        {%- if mounted_volume_info.update({info[0]: info[2]}) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- mounted_volume_info -}}
+
 - name: Mark all eseries volumes for mounting details
   set_fact:
     volume_mount_info: |-

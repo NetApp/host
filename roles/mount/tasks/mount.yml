@@ -17,4 +17,3 @@
   loop: "{{ volume_mount_info }}"
   register: volume_mount
   become: true
-
