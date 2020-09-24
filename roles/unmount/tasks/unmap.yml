@@ -10,4 +10,3 @@
   loop: "{{ unmapped_volume_info }}"
   when: '"array_credentials" in (item.keys() | list)'
   delegate_to: localhost
-  no_log: true

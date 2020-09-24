@@ -11,7 +11,7 @@
 
 - name: Unmap E-Series volume from host.
   include_tasks: unmap.yml
-  when: eseries_unmount_unmap == True and eseries_unmount_delete == False
+  when: eseries_unmount_unmap == True
 
 - name: Delete E-Series volumes from host.
   include_tasks: delete.yml
