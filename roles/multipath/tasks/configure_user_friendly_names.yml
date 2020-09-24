@@ -25,6 +25,5 @@
         state: "{%- if multipath_conf['changed'] %}reloaded{%- else %}started{%- endif %}"
         daemon-reload: "{%- if multipath_conf['changed'] %}true{%- else %}false{%- endif %}"
         enabled: true
-      register: multipathd_service
       become: true
   when: eseries_volumes is defined

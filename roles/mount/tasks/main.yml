@@ -40,7 +40,6 @@
       include_role:
         name: netapp_eseries.host.common
         tasks_from: host_facts.yml
-  when: multipathd_service
 
 - name: Ensure volumes are mounted on hosts.
   include_tasks: collect_facts/mount.yml
