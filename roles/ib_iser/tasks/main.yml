@@ -9,6 +9,12 @@
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
     name: ipoib
+  vars:
+    eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_ib_iser_interfaces | default(omit)) }}"
+    eseries_ipoib_opensm_configure: "{{ eseries_ipoib_opensm_configure | default(eseries_ib_iser_opensm_configure | default(omit)) }}"
+    eseries_ipoib_opensm_subnet_prefix: "{{ eseries_ipoib_opensm_subnet_prefix | default(eseries_ib_iser_opensm_subnet_prefix | default(omit)) }}"
+    eseries_ipoib_opensm_subnet_priority: "{{ eseries_ipoib_opensm_subnet_priority | default(eseries_ib_iser_opensm_subnet_priority | default(omit)) }}"
+    eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_ib_iser_mtu | default(omit)) }}"
 
 - name: Ensure InfiniBand iSER kernel modules are installed.
   import_tasks: module.yml

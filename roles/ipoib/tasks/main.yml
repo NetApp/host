@@ -1,31 +1,6 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Ensure eseries_ipoib_interfaces inventory structure exists.
-  set_fact:
-    eseries_ipoib_interfaces: "{{ eseries_ib_iser_interfaces }}"
-  when: eseries_ipoib_interfaces is not defined and eseries_ib_iser_interfaces is defined and eseries_ib_iser_interfaces
-
-- name: Ensure eseries_ipoib_opensm_configure is defined.
-  set_fact:
-    eseries_ipoib_opensm_configure: "{{ eseries_ib_iser_opensm_configure }}"
-  when: eseries_ipoib_interfaces is not defined and eseries_ib_iser_opensm_configure is defined and eseries_ib_iser_opensm_configure
-
-- name: Ensure eseries_ipoib_opensm_subnet_prefix is defined.
-  set_fact:
-    eseries_ipoib_opensm_subnet_prefix: "{{ eseries_ib_iser_opensm_subnet_prefix }}"
-  when: eseries_ipoib_opensm_subnet_prefix is not defined and eseries_ib_iser_opensm_subnet_prefix is defined and eseries_ib_iser_opensm_subnet_prefix
-
-- name: Ensure eseries_ipoib_opensm_subnet_priority is defined.
-  set_fact:
-    eseries_ipoib_opensm_subnet_priority: "{{ eseries_ib_iser_opensm_subnet_priority }}"
-  when: eseries_ipoib_opensm_subnet_priority is not defined and eseries_ib_iser_opensm_subnet_priority is defined and eseries_ib_iser_opensm_subnet_priority
-
-- name: Ensure eseries_ipoib_mtu is defined.
-  set_fact:
-    eseries_ipoib_opensm_subnet_priority: "{{ eseries_ib_iser_mtu }}"
-  when: eseries_ipoib_mtu is not defined and eseries_ib_iser_mtu is defined and eseries_ib_iser_mtu
-
 - name: Deterine whether OpenSM is required.
   set_fact:
     opensm_required: |-
