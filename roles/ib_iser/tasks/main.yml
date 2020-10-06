@@ -22,11 +22,6 @@
 - name: Configure iSCSI interface bindings for InfiniBand iSER.
   import_tasks: iscsi_interface.yml
 
-- name: Update storage system facts.
-  import_role:
-    name: netapp_eseries.host.common
-    tasks_from: gather_storage_facts.yml
-
 - name: Discover mapped-volume information from associated storage systems.
   import_role:
     name: netapp_eseries.host.common
