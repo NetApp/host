@@ -28,7 +28,10 @@
       {%- endfor -%}
       {{ targets }}
 
-# TODO: Ensure that they're is at least one iSCSI target to configure.
+- name: Ensure that they're is at least one iSCSI target to configure.
+  fail:
+    msg: "There are no usable iSCSI targets found! Check host inventory and network configuration. Host: [ {{ inventory_hostname }} ]."
+  when: targets | length == 0
 
 - name: Ensure iSCSI target nodes has been created
   command:
