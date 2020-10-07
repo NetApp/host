@@ -106,6 +106,14 @@
         {%- endif -%}
       {%- endfor -%}
 
+- name: Ensure iSCSI services are started.
+  systemd:
+    name: "{{ eseries_iscsi_initiator_service }}"
+    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"    # iscsisd_conf and initiatorname_iscsi are in configure/x.yml files
+    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
+    enabled: true
+  become: true
+
 - name: Ensure iscsid is running.
   systemd:
     name: iscsid.service

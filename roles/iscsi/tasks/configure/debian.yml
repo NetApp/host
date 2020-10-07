@@ -1,9 +1,7 @@
 - name: Ensure expected iSCSI packages are installed (Ubuntu).
   apt:
     state: present
-    purge: true
-    name:
-      - open-iscsi
+    name: open-iscsi
   become: true
 
 - name: Ensure iSCSI settings are configured (Ubuntu).
@@ -22,17 +20,3 @@
   register: initiatorname_iscsi
   become: true
   when: eseries_iscsi_iqn is defined and eseries_iscsi_iqn
-
-- name: Ensure iSCSI services are started (Ubuntu).
-  systemd:
-    name: open-iscsi.service
-    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"
-    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
-    enabled: true
-  become: true
-
-- name: Ensure iSCSI services are started (Ubuntu).
-  systemd:
-    name: open-iscsi.service
-    enabled: true
-  become: true
