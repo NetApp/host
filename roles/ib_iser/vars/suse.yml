@@ -1,3 +1,5 @@
+eseries_iscsi_initiator_service: iscsi.service
+
 eseries_ib_iser_default_network_tool: ifupdown
 
 eseries_ib_iser_ifcfg_path: /etc/sysconfig/network/
