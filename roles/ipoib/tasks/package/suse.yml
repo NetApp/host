@@ -1,5 +1,6 @@
 - name: Ensure expected InfiniBand packages are installed (SUSE).
   zypper:
+    state: present
     name: "{{ eseries_ipoib_suse_packages }}"
   register: packages
   become: true
