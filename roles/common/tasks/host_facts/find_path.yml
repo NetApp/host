@@ -29,7 +29,7 @@
       {%- set rescan = [] -%}
       {%- for key, value in volume_paths.items() -%}
         {%- if value["path"] == "" -%}
-          {%- for protocol in value["host_port_protocols"] if protocol in eseries_common_discovery_protocol_list -%}
+          {%- for protocol in value["host_port_protocols"] if protocol in eseries_common_discovery_protocol_list and protocol not in rescan -%}
             {%- if rescan.append(protocol) -%}{%- endif -%}
           {%- endfor -%}
         {%- endif -%}
@@ -41,13 +41,13 @@
     rescan_actions: |-
       {%- set actions = [] -%}
       {%- for protocol in rescan_protocols -%}
-        {%- if protocol in eseries_common_discovery_protocol_list -%}
+        {%- if protocol in eseries_common_discovery_protocol_list and "rescan" not in actions -%}
           {%- if actions.append("rescan") -%}{%- endif -%}
         {%- endif -%}
-        {%- if protocol in eseries_common_discovery_rescan_iscsi_session_protocol_list -%}
+        {%- if protocol in eseries_common_discovery_rescan_iscsi_session_protocol_list and "rescan_iscsi_sessions" not in actions  -%}
           {%- if actions.append("rescan_iscsi_sessions") -%}{%- endif -%}
         {%- endif -%}
-        {%- if protocol in eseries_common_discovery_rescan_scsi_bus_protocol_list -%}
+        {%- if protocol in eseries_common_discovery_rescan_scsi_bus_protocol_list and "rescan_scsi_bus" not in actions -%}
           {%- if actions.append("rescan_scsi_bus") -%}{%- endif -%}
         {%- endif -%}
       {%- endfor -%}
