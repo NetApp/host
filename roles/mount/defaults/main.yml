@@ -10,5 +10,3 @@ eseries_mount_format_type_options:
 eseries_mount_format_options: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
 eseries_mount_persistent_mount_options: "_netdev"  #"noatime,nodiratime,nobarrier,_netdev"
 eseries_mount_root_directory: /mnt/
-
-eseries_mount_log_path: /var/log/

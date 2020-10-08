@@ -96,10 +96,6 @@ Common Variables (common)
     eseries_common_volume_workload_filter:           # Filters the volumes added to eseries_volumes.
     eseries_common_allow_host_reboot:                # Whether reboots will allowed in an attempt to discover E-Series volumes. (Default: false)
     eseries_common_docker_host:                      # Docker host for SANtricity Web Services Proxy. (Default: unix://var/run/docker.sock)
-    eseries_common_mapped_log_path:                  # Path to eseries_mapped_log which is used to maintain a record of E-Series volumes that are mapped to the
-                                                     #   host and is used for properly removing the volumes from the host. (Default: /var/log)
-    eseries_mount_log_path: /var/log                 # Path to eseries_mount_log which is used to maintain a record of E-Series volumes that are mounted on the
-                                                     #   host and is used for properly removing the volumes from the host. (Default: /var/log)
 
 Multipath Variables (multipath)
 -------------------------------
@@ -133,10 +129,17 @@ Mount Variables (mount)
                                                # Defaults: xfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
                                                #           ext4: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
                                                #           btrfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
-    eseries_mount_log_path:                    # Path to eseries_mount_log which is used to maintain a record of E-Series volumes that are mounted on the host
-                                               #   and is used for properly removing the volumes from the host. (Default: /var/log)
 
     *Tip: Add mount_to_hosts, format_type, format_options, mount_directory, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See SANtricity collection for more details.
+
+Unmount Variables (unmount)
+---------------------------
+    eseries_common_group:                      # Inventory group containing E-Series storage systems (Default: eseries_storage_systems).
+    eseries_unmount_volumes:                   # (Required) E-Series volume name list to unmount (Default: []).
+    eseries_unmount_purge:                     # Purge volume completely from host (Default: false).
+    eseries_unmount_unmap:                     # Unmap E-Series volume from host (Default: false).
+    eseries_unmount_delete:                    # Delete E-Series volume from host (Default: false).
+    eseries_unmount_wipe_format_signatures:    # Clear the format signatures from the E-Series volume (Default: false)
 
 IP over InfiniBand Variables (ipoib)
 ------------------------------------

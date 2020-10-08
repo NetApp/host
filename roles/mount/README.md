@@ -13,7 +13,6 @@ eseries_mount_format_options:             # Volume format type options (Default:
                                           #   VOLUME_STRIPE_COUNT will be replaced with the volume's RAID stripe count.
 eseries_mount_persistent_mount_options:   # Volume mount options (Default: _netdev)
 eseries_mount_root_directory:             # Volume mount path directory. (Default: /mnt/)
-eseries_mount_log_path:                   # Mount log file path. This is used to track what volumes are mounted. (Default: /var/log/)
 
 
 Tips
