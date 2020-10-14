@@ -19,7 +19,7 @@
       register: multipath_conf
       become: true
 
-    - name: Start and enable multipath service.
+    - name: Reload multipathd service.
       systemd:
         name: multipathd.service
         state: "{%- if multipath_conf['changed'] %}reloaded{%- else %}started{%- endif %}"
