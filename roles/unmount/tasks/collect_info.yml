@@ -99,8 +99,23 @@
           {%- endfor -%}
         {%- endfor -%}
 
-        {%- for key, value in mapped_info_dict.items() -%}
-          {%- if mapped_info.append(value) -%}{%- endif -%}
+        {# Add volumes to mapped_info -#}
+        {%- for volume_name, volume_info in mapped_info_dict.items() -%}
+          {%- if mapped_info.append(volume_info) -%}{%- endif -%}
         {%- endfor -%}
       {%- endif -%}
       {{ mapped_info }}
+
+- name: Determine volume control hosts.
+  set_fact:
+    volume_host_control_map: |-
+      {%- set volume_host_control_map = {} -%}
+      {%- for host in ansible_play_hosts_all if "unmapped_volume_info" in (hostvars[host].keys() | list) -%}
+        {%- for info in hostvars[host]["unmapped_volume_info"] if info["volume_info"] != {} -%}
+          {%- if info["volume_info"]["wwn"] not in volume_host_control_map -%}
+            {%- if volume_host_control_map.update({info["volume_info"]["wwn"]: host}) -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- volume_host_control_map -}}
+  run_once: true
