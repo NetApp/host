@@ -39,7 +39,7 @@ eseries_ipoib_interfaces:                  # (Required) List of InfiniBand inter
 eseries_ipoib_mtu:                         # Default maximum transmission unit measured in bytes (Default: "").
 eseries_ipoib_opensm_configure:            # Default for whether to configure OpenSM. eseries_ib_iser_opensm_configure can be used instead (Default: true).
 eseries_ipoib_opensm_subnet_prefix:        # Default OpenSM subnet manager's subnet prefix. eseries_ib_iser_opensm_subnet_prefix can be used instead (Default: "0xfe80000000000000").
-eseries_ipoib_opensm_subnet_priority:      # Default OpenSM subnet manager's priority. eseries_ib_iser_opensm_subnet_priority can be used instead (Default: 0).
+eseries_ipoib_opensm_subnet_priority:      # Default OpenSM subnet manager's priority. eseries_ib_iser_opensm_subnet_priority can be used instead (Default: 1). Choices: 1-15 (15 is highest).
 eseries_ipoib_ubuntu_packages:             # Default packages for ubuntu (Default: [rdma-core, infiniband-diags]).
 eseries_ipoib_suse_packages:               # Default packages for ubuntu (Default: [rdma-core, infiniband-diags]).
 eseries_ipoib_rhel_packages:               # Default packages for ubuntu (Default: [rdma-core, infiniband-diags]).

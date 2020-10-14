@@ -12,10 +12,20 @@
     - "for x in $(ls /sys/class/scsi_host); do echo '- - -' > /sys/class/scsi_host/$x/scan; done &> /dev/null"
     - "for x in $(ls /sys/block); do echo 1 > /sys/block/$x/device/rescan; done &> /dev/null"
 
-- name: Reload multipath service.
-  systemd:
-    name: multipathd.service
-    state: restarted
-    daemon_reload: true
+- name: Reset wwids file information to only include current devices.
+  command:
+    cmd: multipath -W
+  failed_when: false
+  become: true
+
+- name: Reload multipath.
+  command:
+    cmd: multipath
+  failed_when: false
+  become: true
+
+- name: Reconfigure multipath.
+  command:
+    cmd: multipathd reconfigure
   failed_when: false
   become: true

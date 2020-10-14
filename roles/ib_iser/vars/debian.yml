@@ -1,3 +1,5 @@
+eseries_iscsi_initiator_service: open-iscsi.service
+
 eseries_ib_iser_default_network_tool: netplan
 
 eseries_ib_iser_ifcfg_path: /etc/network/interfaces.d/

@@ -6,6 +6,14 @@
     name: iscsi
     tasks_from: configure.yml
 
+- name: Determine variable values required for ipoib role.
+  set_fact:
+    eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_ib_iser_interfaces | default(omit)) }}"
+    eseries_ipoib_opensm_configure: "{{ eseries_ipoib_opensm_configure | default(eseries_ib_iser_opensm_configure | default(omit)) }}"
+    eseries_ipoib_opensm_subnet_prefix: "{{ eseries_ipoib_opensm_subnet_prefix | default(eseries_ib_iser_opensm_subnet_prefix | default(omit)) }}"
+    eseries_ipoib_opensm_subnet_priority: "{{ eseries_ipoib_opensm_subnet_priority | default(eseries_ib_iser_opensm_subnet_priority | default(omit)) }}"
+    eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_ib_iser_mtu | default(omit)) }}"
+
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
     name: ipoib
@@ -15,11 +23,6 @@
 
 - name: Configure iSCSI interface bindings for InfiniBand iSER.
   import_tasks: iscsi_interface.yml
-
-- name: Update storage system facts.
-  import_role:
-    name: netapp_eseries.host.common
-    tasks_from: gather_storage_facts.yml
 
 - name: Discover mapped-volume information from associated storage systems.
   import_role:

@@ -1,6 +1,8 @@
 eseries_ipoib_configure_network: true
 eseries_ipoib_rdma_conf: /etc/rdma/rdma.conf
 eseries_ipoib_opensm_configure: false
+eseries_ipoib_opensm_subnet_prefix:   "0xfe80000000000000"
+eseries_ipoib_opensm_subnet_priority: 1
 eseries_ipoib_mtu: ""
 eseries_ipoib_ubuntu_packages:
   - rdma-core

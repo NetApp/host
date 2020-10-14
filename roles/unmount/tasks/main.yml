@@ -38,4 +38,4 @@
       include_role:
         name: netapp_eseries.host.multipath
         tasks_from: configure_user_friendly_names.yml
-  when: eseries_unmount_purge == True or eseries_unmount_unmap == True or eseries_unmount_delete == True
+  when: eseries_unmount_unmap == True or eseries_unmount_delete == True

@@ -1,7 +1,7 @@
 - name: Ensure expected iSCSI packages are installed (SUSE).
   zypper:
-    name:
-      - open-iscsi
+    state: present
+    name: open-iscsi
   become: true
 
 - name: Ensure iSCSI settings are configured (SUSE).
@@ -20,17 +20,3 @@
   register: initiatorname_iscsi
   become: true
   when: eseries_iscsi_iqn is defined and eseries_iscsi_iqn
-
-- name: Ensure iSCSI services are started (SUSE).
-  systemd:
-    name: iscsid.service
-    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"
-    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
-  become: true
-
-- name: Ensure iSCSI services are enabled (SUSE).
-  systemd:
-    name: iscsid.service
-    enabled: true
-  register: open_iscsi_service_enabled
-  become: true

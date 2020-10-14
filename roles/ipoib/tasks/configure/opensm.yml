@@ -33,11 +33,11 @@
 
 - name: Create OpenSM configuration temporary files.
   command:
-    cmd: "opensm --create-config {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~
+    cmd: "opensm --create-config {{ eseries_ipoib_opensm_config_path }}opensm.conf.1{{ index }}.tmp~
                  --guid {{ item['value']['guid'] }}
                  --priority {{ item['value']['opensm_priority'] | default(eseries_ipoib_opensm_subnet_priority) }}
                  --subnet_prefix {{ item['value']['opensm_subnet_prefix'] | default(eseries_ipoib_opensm_subnet_prefix) }}
-                 --log_file {{ eseries_ipoib_opensm_log_path }}opensm.conf.99999{{ index }}.log
+                 --log_file {{ eseries_ipoib_opensm_log_path }}opensm.conf.1{{ index }}.log
                  --daemon"
   changed_when: false
   loop: "{{ interface_guid | dict2items }}"
@@ -48,7 +48,7 @@
 
 - name: Check whether changes have been to the the OpenSM configuration files.
   command:
-    cmd: "diff {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~ {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}"
+    cmd: "diff {{ eseries_ipoib_opensm_config_path }}opensm.conf.1{{ index }}.tmp~ {{ eseries_ipoib_opensm_config_path }}opensm.conf.1{{ index }}"
   register: diff_opensm_config
   changed_when: false
   failed_when: false
@@ -60,7 +60,7 @@
 - name: Determine existing OpenSM configuration files.
   find:
     path: "{{ eseries_ipoib_opensm_config_path }}"
-    pattern: "opensm.conf.99999[0-9]*"
+    pattern: "opensm.conf.1[0-9]*"
   register: existing_opensm_configs
   become: true
 
@@ -72,14 +72,14 @@
         {%- if files.append(existing_config_file["path"]) -%}{%- endif -%}
       {%- endfor -%}
       {%- for expected_config in interface_guid -%}
-        {%- set path = eseries_ipoib_opensm_config_path ~ "opensm.conf.99999" ~ loop["index"] -%}
+        {%- set path = eseries_ipoib_opensm_config_path ~ "opensm.conf.1" ~ loop["index"] -%}
         {%- if path in files and files.pop(path) -%}{%- endif -%}
       {%- endfor -%}
       {{ files }}
 
 - name: Update missing or changed OpenSM configuration files.
   command:
-    cmd: "mv -f {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~ {{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}"
+    cmd: "mv -f {{ eseries_ipoib_opensm_config_path }}opensm.conf.1{{ index }}.tmp~ {{ eseries_ipoib_opensm_config_path }}opensm.conf.1{{ index }}"
   register: update_opensm_config
   loop: "{{ diff_opensm_config['results'] }}"
   loop_control:
@@ -98,7 +98,7 @@
 - name: Remove OpenSM configuration temporary files.
   file:
     state: absent
-    path: "{{ eseries_ipoib_opensm_config_path }}opensm.conf.99999{{ index }}.tmp~"
+    path: "{{ eseries_ipoib_opensm_config_path }}opensm.conf.1{{ index }}.tmp~"
   changed_when: false
   loop: "{{ diff_opensm_config['results'] }}"
   loop_control:

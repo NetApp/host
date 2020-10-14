@@ -112,7 +112,24 @@
 - name: Ensure iscsid is running.
   systemd:
     name: iscsid.service
-    state: "{%- if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] -%} restarted {%- else -%} started {%- endif %}"
+    state: "{%- if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] -%}restarted{%- else -%}started{%- endif %}"
+    daemon-reload: true
+    enabled: true
+  register: iscsid_service
+  become: true
+
+- name: Ensure iSCSI services are started.
+  systemd:
+    name: "{{ eseries_iscsi_initiator_service }}"
+    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"    # iscsisd_conf and initiatorname_iscsi are in configure/x.yml files
+    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
+    enabled: true
+  become: true
+
+- name: Ensure iscsid is running.
+  systemd:
+    name: iscsid.service
+    state: "{%- if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] %}restarted{%- else %}started{%- endif %}"
     daemon-reload: true
     enabled: true
   register: iscsid_service

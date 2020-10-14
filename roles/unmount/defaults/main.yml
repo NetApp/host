@@ -4,6 +4,3 @@ eseries_unmount_purge: false
 eseries_unmount_unmap: false
 eseries_unmount_delete: false
 eseries_unmount_wipe_format_signatures: false
-
-eseries_mount_log_path: /var/log/
-eseries_common_mapped_log_path: /var/log

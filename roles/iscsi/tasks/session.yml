@@ -28,7 +28,10 @@
       {%- endfor -%}
       {{ targets }}
 
-# TODO: Ensure that they're is at least one iSCSI target to configure.
+- name: Ensure that they're is at least one iSCSI target to configure.
+  fail:
+    msg: "There are no usable iSCSI targets found! Check host inventory and network configuration. Host: [ {{ inventory_hostname }} ]."
+  when: targets | length == 0
 
 - name: Ensure iSCSI target nodes has been created
   command:
@@ -105,6 +108,14 @@
           {{- line | regex_search("node\.session\.queue_depth = .*") | regex_replace("node\.session\.queue_depth = ", "") -}}
         {%- endif -%}
       {%- endfor -%}
+
+- name: Ensure iSCSI services are started.
+  systemd:
+    name: "{{ eseries_iscsi_initiator_service }}"
+    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"    # iscsisd_conf and initiatorname_iscsi are in configure/x.yml files
+    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
+    enabled: true
+  become: true
 
 - name: Ensure iscsid is running.
   systemd:

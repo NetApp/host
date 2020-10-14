@@ -18,7 +18,10 @@
       {%- endfor -%}
       {{ bindings }}
 
-# TODO: Ensure that they're is at least one iSCSI interface to configure.
+- name: Ensure that they're is at least one iSCSI interface to configure.
+  fail:
+    msg: "There are no usable iSCSI interfaces found! Check host inventory. Host: [ {{ inventory_hostname }} ]."
+  when: iscsi_interfaces_info | length == 0
 
 - name: Ensure iSCSI binding exist for each interface.
   command:

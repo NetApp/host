@@ -36,10 +36,7 @@
   command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
-#- name: Bring iSCSI interface down.
-#  command: ip link set {{ item }} down
-#  loop: "{{ changed_interfaces }}"
-#  become: true
+
 - name: Bring iSCSI interface up.
   command: ip link set {{ item }} up
   loop: "{{ changed_interfaces }}"
