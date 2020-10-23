@@ -2,7 +2,6 @@ netapp_eseries.host.mount
 =========
 Discover, format, and assign persistent mount point for NetApp E-Series mapped volumes on host.
 
-
 Role Variables
 --------------
 eseries_common_group:                     # Inventory group containing E-Series storage systems (Default: eseries_storage_systems).
@@ -14,10 +13,9 @@ eseries_mount_format_options:             # Volume format type options (Default:
 eseries_mount_persistent_mount_options:   # Volume mount options (Default: _netdev)
 eseries_mount_root_directory:             # Volume mount path directory. (Default: /mnt/)
 
-
 Tips
 ----
-Add mount_to_hosts, format_type, format_options, mount_directory, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See inventory example below and SANtricity collection for more details.
+Add mount_to_hosts, format_type, format_options, mount_dir, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See inventory example below and SANtricity collection for more details.
 
     mount_to_hosts
     # Example inventory structure for E-Series storages system.
@@ -38,11 +36,9 @@ Add mount_to_hosts, format_type, format_options, mount_directory, mount_options 
             host: ansible_hostsgroup
             size: 10
 
-
 License
 -------
     BSD-3-Clause
-
 
 Author Information
 ------------------
