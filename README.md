@@ -5,11 +5,7 @@ NetApp E-Series Host Collection
     The roles in this collection can be used to configure your host storage connection for iSCSI, InfiniBand, and NVMe; Discover mapped E-Series volumes, format them to your specifications, and assign persistent mount points to them.
 
     Roles:
-        - mount: Discover, format, and assign persistent mount points to your mapped E-Series volumes.
-
-            This is the collection's main role since the mount role will, by default, include the multipath and protocol roles which calls the protocol roles themselves (iscsi, ib_iser, etc). The inventory variables eseries_mount_multipath_setup and eseries_mount_protocol_setup can be set to false avoid multipath and protocol configuration. However, the mount role's main functionality is to ensure that any mapped volumes are presented with persistent mounts on the host. This also means that if volumes are unmapped or removed, rerunning the role will remove them and clean up any mounting configuration.
-            The mount role integrates with the SANtricity collection by utilizing the volume_metadata. Specify format_type, format_options, mount_dir, and/or mount_options in volume's metadata for the volume's mount and format details. The volumes name will be used as the mount directory.
-
+        - mount: Format and assign persistent mount points to your mapped E-Series volumes.
         - multipath: Install and configure multipath.
         - protocol: Automatically installs the required protocols on the host. This will call the required protocol roles (iscsi, ib_iser, etc).
         - sanitize_volume: Delete, unmapped, and wipe format metadata from volumes on host.
@@ -130,7 +126,7 @@ Mount Variables (mount)
                                                #           ext4: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
                                                #           btrfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
 
-    *Tip: Add mount_to_hosts, format_type, format_options, mount_directory, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See SANtricity collection for more details.
+    *Tip: Add mount_to_hosts, format_type, format_options, mount_dir, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See SANtricity collection for more details.
 
 Unmount Variables (unmount)
 ---------------------------
