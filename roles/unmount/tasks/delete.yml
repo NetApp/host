@@ -7,6 +7,6 @@
     validate_certs: "{{ item['array_credentials']['validate_certs'] }}"
     state: absent
     name: "{{ item['volume_name'] }}"
-  loop: "{{ unmapped_volume_info }}"
+  loop: "{{ unmap_volume_info }}"
   when: '("volume_info" in item.keys() | list) and item["volume_info"] != {} and volume_host_control_map[item["volume_info"]["wwn"]] == inventory_hostname and "array_credentials" in (item.keys() | list) and item["array_credentials"]'
   delegate_to: localhost

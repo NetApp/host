@@ -2,7 +2,7 @@
   mount:
     state: unmounted
     path: "{{ item['mount_path'] }}"
-  loop: "{{ unmapped_volume_info }}"
+  loop: "{{ unmount_volume_info }}"
   when: item['mount_path'] != ''
   become: true
 
@@ -12,7 +12,7 @@
       mount:
         state: absent
         path: "{{ item['mount_path'] }}"
-      loop: "{{ unmapped_volume_info }}"
+      loop: "{{ unmount_volume_info }}"
       when: item['mount_path'] != ''
       become: true
   when: eseries_unmount_temporary_unmount == False

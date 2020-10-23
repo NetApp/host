@@ -1,7 +1,7 @@
 - name: Flush underlining multipath device devices.
   command:
     cmd: "multipath -f {{ item['dev_mapper_path'] }}"
-  loop: "{{ unmapped_volume_info }}"
+  loop: "{{ unmount_volume_info }}"
   register: multipath_device_flush
   retries: 60
   delay: 3
@@ -18,7 +18,7 @@
   vars:
     block_to_delete: |-
       {%- set blocks = [] -%}
-      {%- for mounts in unmapped_volume_info -%}
+      {%- for mounts in unmount_volume_info -%}
         {%- if blocks.extend(mounts["blocks"]) -%}{%- endif -%}
       {%- endfor -%}
       {{ blocks }}
@@ -26,5 +26,5 @@
 - name: Force multipath to update devmap.
   command:
     cmd: "multipath"
-  loop: "{{ unmapped_volume_info }}"
+  loop: "{{ unmount_volume_info }}"
   become: true
