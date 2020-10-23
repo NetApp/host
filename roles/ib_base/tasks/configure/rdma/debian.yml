@@ -1,0 +1,13 @@
+- name: Ensure infiniband.conf is configured.
+  template:
+    backup: true
+    src: debian/infiniband_conf.j2
+    dest: "{{ eseries_ib_base_infiniband_conf }}"
+  become: true
+
+- name: Ensure rdma.conf is configured.
+  template:
+    backup: true
+    src: debian/rdma_conf.j2
+    dest: "{{ eseries_ib_base_rdma_conf }}"
+  become: true

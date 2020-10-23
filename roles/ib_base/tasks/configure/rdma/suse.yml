@@ -1,0 +1,6 @@
+- name: Ensure RDMA is configured.
+  template:
+    backup: true
+    src: suse/rdma_conf.j2
+    dest: "{{ eseries_ib_base_rdma_conf }}"
+  become: true

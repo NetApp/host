@@ -1,6 +1,3 @@
-- name: Ensure RDMA is configured.
-  import_tasks: configure/rdma.yml
-
-- name: Ensure OpenSM is configured.
-  include_tasks: configure/opensm.yml
-  when: opensm_required == True
+- name: Ensure InfiniBand network interaces and iSCSI bindings are configured.
+  include_tasks: configure/interface.yml
+  when: eseries_ipoib_configure_network

@@ -1,5 +1,0 @@
-- name: Ensure expected iSCSI packages are removed (Ubuntu).
-  apt:
-    state: absent
-    name: "{{ eseries_iser_ubuntu_packages }}"
-  become: true

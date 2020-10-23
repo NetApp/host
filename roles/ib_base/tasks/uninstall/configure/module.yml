@@ -1,0 +1,6 @@
+- name: Ensure InfiniBand kernel modules are unloaded.
+  modprobe:
+    state: absent
+    name: "{{ item }}"
+  loop: "{{ eseries_ib_base_uninstall_kernel_modules }}"
+  become: true

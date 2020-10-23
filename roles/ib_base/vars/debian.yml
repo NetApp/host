@@ -1,0 +1,2 @@
+eseries_ib_base_infiniband_conf: /etc/rdma/modules/infiniband.conf
+eseries_ib_base_rdma_conf: /etc/rdma/modules/rdma.conf

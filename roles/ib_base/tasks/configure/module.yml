@@ -1,0 +1,30 @@
+- name: Check whether InfiniBand base kernel modules are loaded.
+  modprobe:
+    state: present
+    name: "{{ item }}"
+  loop: "{{ eseries_ib_base_kernel_modules }}"
+  become: true
+
+- name: Ensure InfiniBand IPoIB kernel modules are loaded.
+  modprobe:
+    state: present
+    name: "{{ item }}"
+  loop: "{{ eseries_ib_base_ipoib_kernel_modules }}"
+  when: eseries_ib_base_ipoib_enabled == True
+  become: true
+
+- name: Ensure InfiniBand iSER kernel modules are loaded.
+  modprobe:
+    state: present
+    name: "{{ item }}"
+  loop: "{{ eseries_ib_base_iser_kernel_modules }}"
+  when: eseries_ib_base_iser_enabled == True
+  become: true
+
+- name: Ensure InfiniBand SRP kernel modules are loaded.
+  modprobe:
+    state: present
+    name: "{{ item }}"
+  loop: "{{ eseries_ib_base_srp_kernel_modules }}"
+  when: eseries_ib_base_srp_enabled == True
+  become: true

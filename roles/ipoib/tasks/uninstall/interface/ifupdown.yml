@@ -1,0 +1,23 @@
+- name: Ensure ifcfg-* files exist for each InfiniBand iSER network interface (RHEL, SUSE).
+  file:
+    state: absent
+    path: "{{ eseries_ipoib_ifcfg_path }}ifcfg-{{ item['name'] }}"
+  register: ifcfg
+  loop: "{{ eseries_ipoib_interfaces }}"
+  become: true
+
+- name: Bring InfiniBand iSER interface down using ifdown.
+  command: ifdown {{ item['name'] }}
+  register: ip_down
+  changed_when: ip_down['rc'] != 0 and ip_down['stderr'] is not defined
+  failed_when: false
+  loop: "{{ eseries_ipoib_interfaces }}"
+  become: true
+
+- name: Flush InfiniBand iSER interface.
+  command: ip address flush dev {{ item['name'] }}
+  register: ip_flush
+  changed_when: ip_flush['rc'] != 0 and ip_flush['stderr'] is not defined
+  failed_when: false
+  loop: "{{ eseries_ipoib_interfaces }}"
+  become: true

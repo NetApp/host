@@ -1,0 +1,11 @@
+galaxy_info:
+  author: Nathan Swartz (@ndswartz)
+  description: Setup and configure InfiniBand IPoIB on host.
+  company: NetApp
+  license: BSD-3-Clause
+  min_ansible_version: 2.9
+  galaxy_tags:
+    - netapp
+    - eseries
+    - ib
+dependencies: []

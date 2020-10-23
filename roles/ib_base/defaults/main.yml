@@ -1,0 +1,37 @@
+eseries_ib_base_rdma_conf: /etc/rdma/rdma.conf
+eseries_ib_base_rdma_memory_conf: /etc/security/limits.d/rdma.conf
+eseries_ib_base_ipoib_enabled: false
+eseries_ib_base_iser_enabled: false
+eseries_ib_base_srp_enabled: false
+
+eseries_ib_base_ubuntu_packages:
+  - rdma-core
+  - infiniband-diags
+
+eseries_ib_base_suse_packages:
+  - rdma-core
+  - infiniband-diags
+
+eseries_ib_base_rhel_packages:
+  - rdma-core
+  - infiniband-diags
+
+eseries_ib_base_kernel_modules:
+  - rdma_cm
+  - mlx5_core
+
+eseries_ib_base_ipoib_kernel_modules:
+  - ib_ipoib
+
+eseries_ib_base_srp_kernel_modules:
+  - ib_srp
+
+eseries_ib_base_iser_kernel_modules:
+  - ib_iser
+
+eseries_ib_base_uninstall_kernel_modules:
+  - mlx5_ib
+  - mlx5_core
+  - ib_ipoib
+  - ib_iser
+  - ib_srp

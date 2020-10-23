@@ -1,0 +1,14 @@
+# Managed by NetApp E-Series Ansible
+
+# These modules are loaded by the system if any InfiniBand device is installed
+# InfiniBand over IP netdevice
+{{ "ib_ipoib" if eseries_ib_base_ipoib_enabled == True else "# ib_ipoib" }}
+
+# SCSI Remote Protocol (SRP) target support.
+{{ "ib_srpt" if eseries_ib_base_srp_enabled == True else "# ib_srpt" }}
+
+# Access to fabric management SMPs and GMPs from userspace.
+ib_umad
+
+# ib_ucm provides the obsolete /dev/infiniband/ucm0
+# ib_ucm

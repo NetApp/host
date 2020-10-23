@@ -1,29 +1,13 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Deterine whether OpenSM is required.
+- name: Determine variable values required for ib_base role.
   set_fact:
-    opensm_required: |-
-      {%- set scratch = {"required": False} -%}
-      {%- if eseries_ipoib_opensm_configure == True -%}
-        {%- if scratch.update({"required": True}) -%}{%- endif -%}
-      {%- else -%}
-        {%- for interface in eseries_ipoib_interfaces -%}
-          {%- if "opensm_configure" in eseries_ipoib_interfaces and eseries_ipoib_interfaces["opensm_configure"] == True -%}
-            {%- if scratch.update({"required": True}) -%}{%- endif -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-      {{- scratch["required"] | bool -}}
+    eseries_ib_base_ipoib_enabled: true
 
-- name: Ensure InfiniBand IPoIB packages are installed.
-  include_tasks: "package/{{  ansible_os_family | lower }}.yml"
-
-- name: Ensure required kernel modules are loaded.
-  import_tasks: module.yml
-
-- name: Ensure InfiniBand network interaces and iSCSI bindings are configured.
-  import_tasks: interface.yml
+- name: Ensure InfiniBand base has been installed and configured.
+  import_role:
+    name: ib_base
 
 - name: Ensure InfiniBand IPoIB is configured.
   import_tasks: configure.yml

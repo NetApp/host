@@ -2,9 +2,9 @@
   block:
     - name: Configure InfiniBand IP network interfaces using ifupdown configuration.
       include_tasks: interface/ifupdown.yml
-      when: eseries_ipoib_network_tool | default(eseries_ipoib_default_network_tool) == 'ifupdown'
+      when: eseries_ib_base_network_tool | default(eseries_ib_base_default_network_tool) == 'ifupdown'
 
     - name: Configure InfiniBand IP network interfaces using netplan configuration.
       include_tasks: interface/netplan.yml
-      when: eseries_ipoib_network_tool | default(eseries_ipoib_default_network_tool) == 'netplan'
-  when: eseries_ipoib_configure_network
+      when: eseries_ib_base_network_tool | default(eseries_ib_base_default_network_tool) == 'netplan'
+  when: eseries_ib_base_configure_network

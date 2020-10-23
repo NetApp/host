@@ -1,0 +1,11 @@
+- name: Ensure infiniband.conf is configured.
+  file:
+    state: absent
+    path: "{{ eseries_ib_base_infiniband_conf }}"
+  become: true
+
+- name: Ensure rdma.conf is configured.
+  file:
+    state: absent
+    path: "{{ eseries_ib_base_rdma_conf }}"
+  become: true

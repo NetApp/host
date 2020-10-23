@@ -1,0 +1,6 @@
+- name: Ensure expected InfiniBand packages are installed (RHEL).
+  yum:
+    state: present
+    name: "{{ eseries_ib_base_rhel_packages }}"
+  register: packages
+  become: true

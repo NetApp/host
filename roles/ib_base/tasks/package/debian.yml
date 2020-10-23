@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand packages are installed (Ubuntu).
+  apt:
+    state: present
+    name: "{{ eseries_ib_base_ubuntu_packages }}"
+  become: true

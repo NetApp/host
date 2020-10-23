@@ -29,7 +29,10 @@
       {%- endfor -%}
       {{ bindings }}
 
-# TODO: Ensure that they're is at least one IB iSER-iSCSI interface to configure.
+- name: Ensure that they're is at least one InfiniBand iSER interface to configure.
+  fail:
+    msg: "There are no usable InfiniBand iSER interfaces found! Check host inventory. Host: [ {{ inventory_hostname }} ]."
+  when: ib_iser_interfaces_info | length == 0
 
 - name: Ensure iSCSI ifaces path exists.
   file:

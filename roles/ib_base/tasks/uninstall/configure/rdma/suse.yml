@@ -1,0 +1,5 @@
+- name: Ensure RDMA is configured.
+  file:
+    state: absent
+    path: "{{ eseries_ib_base_rdma_conf }}"
+  become: true
