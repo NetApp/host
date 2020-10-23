@@ -6,7 +6,7 @@
 
 - name: Discover mapped-volume information from associated storage systems.
   import_role:
-    name: netapp_eseries.host.common
+    name: common
     tasks_from: volume_facts.yml
 
 - name: Ensure iSCSI sessions are configured and established.

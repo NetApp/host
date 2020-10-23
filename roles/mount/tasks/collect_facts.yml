@@ -1,6 +1,6 @@
 - name: Discover mapped-volume information from associated storage systems.
   include_role:
-    name: netapp_eseries.host.common
+    name: common
     tasks_from: host_facts.yml
 
 - name: Get current mount information.

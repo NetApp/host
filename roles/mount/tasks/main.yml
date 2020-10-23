@@ -1,6 +1,6 @@
 - name: Discover mapped-volume information from associated storage systems.
   include_role:
-    name: netapp_eseries.host.common
+    name: common
     tasks_from: host_facts.yml
 
 - name: Ensure volumes are mounted on hosts.
@@ -23,22 +23,22 @@
 
 - name: Ensure multipath is configured.
   include_role:
-    name: netapp_eseries.host.multipath
+    name: multipath
     tasks_from: configure_user_friendly_names.yml
 
 - name: Re-discover mapped-volume information from associated storage systems.
   block:
     - name: Discover mapped-volume information from associated storage systems.
       include_role:
-        name: netapp_eseries.host.common
+        name: common
         tasks_from: gather_storage_facts.yml
     - name: Discover mapped-volume information from associated storage systems.
       include_role:
-        name: netapp_eseries.host.common
+        name: common
         tasks_from: volume_facts.yml
     - name: Discover mapped-volume information from associated storage systems.
       include_role:
-        name: netapp_eseries.host.common
+        name: common
         tasks_from: host_facts.yml
 
 - name: Ensure volumes are mounted on hosts.
