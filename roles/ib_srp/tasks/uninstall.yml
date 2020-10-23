@@ -1,0 +1,15 @@
+#- name: Ensure InfiniBand SRP is configured.
+#  import_tasks: configure.yml
+- name: Ensure InfiniBand SRP packages are installed.
+  include_tasks: "uninstall/package/{{  ansible_os_family | lower }}.yml"
+
+- name: Ensure srp_daemon.conf file is removed.
+  file:
+    state: absent
+    path: "{{ eseries_ib_srp_daemon_conf }}"
+  become: true
+
+- name: Ensure InfiniBand base has been installed and configured.
+  import_role:
+    name: ib_base
+    tasks_from: uninstall.yml

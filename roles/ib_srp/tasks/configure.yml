@@ -1,0 +1,48 @@
+- name: Get a list of all InfiniBand SRP ports.
+  command:
+    cmd: ls -1 /sys/class/infiniband_srp
+  register: srp_ports
+  changed_when: false
+  become: true
+
+- name: Determine all available SRP targets.
+  command:
+    cmd: ibsrpdm
+  register: ibsrpdm_info
+  changed_when: false
+  become: true
+
+- name: Determine all available SRP targets.
+  command:
+    cmd: ibsrpdm -c
+  register: ibsrpdm_targets
+  changed_when: false
+  become: true
+
+- name: Add targets to InfiniBand SRP ports.
+  shell: "{{ item }}"
+  register: add_target
+  loop: "{{ add_target_commands }}"
+  changed_when: add_target['rc'] == 0
+  failed_when: add_target['rc'] != 0 and not add_target['stdout'] | regex_search('File exists', ignorecase=True)
+  ignore_errors: true
+  become: true
+  vars:
+    add_target_commands: |-
+      {%- set commands = [] -%}
+      {%- for line in ibsrpdm_info["stdout_lines"] if line | regex_search("NetApp", ignorecase=True) -%}
+        {%- set info = (line | regex_replace("\s+", ",")).split(",") -%}
+        {%- for target in ibsrpdm_targets["stdout_lines"] if target | regex_search(info[-1], ignorecase=True) -%}
+          {%- for port in srp_ports["stdout_lines"] -%}
+            {%- if commands.append("echo -n " ~ target ~ " > /sys/class/infiniband_srp/" ~ port ~ "/add_target") -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- commands -}}
+
+- name: Ensure srp_daemon.service is updated, running and enabled
+  systemd:
+    name: srp_daemon.service
+    state: "{{ 'restarted' if add_target['changed'] == True else 'started' }}"
+    enabled: true
+  become: true

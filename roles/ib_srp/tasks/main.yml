@@ -1,6 +1,24 @@
-- name: Include operating specific variables.
-  include_vars: "{{ ansible_os_family | lower }}.yml"
+- name: Determine variable values required for ib_base role.
+  set_fact:
+    eseries_ib_base_srp_enabled: true
 
-- name: Host setup for InfiniBand SRP protocol.
-  debug:
-    msg: "Sorry, the InfiniBand SRP protocol setup has not been implemented yet."
+- name: Ensure InfiniBand base has been installed and configured.
+  import_role:
+    name: ib_base
+
+- name: Ensure InfiniBand SRP packages are installed.
+  include_tasks: "package/{{  ansible_os_family | lower }}.yml"
+
+- name: Discover mapped-volume information from associated storage systems.
+  import_role:
+    name: common
+    tasks_from: volume_facts.yml
+
+- name: Ensure InfiniBand SRP is configured.
+  import_tasks: configure.yml
+
+- name: Uninstall InfiniBand SRP.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - ib_srp_uninstall

@@ -1,2 +1,22 @@
----
-# defaults file for netapp_eseries.iscsi
+eseries_ib_srp_daemon_conf: /etc/srp_daemon.conf
+eseries_ib_srp_opensm_configure: false
+eseries_ib_srp_opensm_subnet_prefix:   "0xfe80000000000000"
+eseries_ib_srp_opensm_subnet_priority: 1
+eseries_ib_srp_mtu: ""
+eseries_ib_srp_interfaces:
+  - name:                                           # (Required) Name of iSCSI interface (i.e. ib0, ib1).
+    opensm_configure:                               # Whether to configure OpenSM for port.
+    opensm_subnet_prefix:                           # OpenSM subnet manager's subnet prefix.
+    opensm_priority:                                # OpenSM subnet manager's priority.
+
+eseries_ib_srp_modules:
+  - ib_umad
+
+eseries_ib_srp_ubuntu_packages:
+  - srptools
+
+eseries_ib_srp_suse_packages:
+  - srptools
+
+eseries_ib_srp_rhel_packages:
+  - srptools
