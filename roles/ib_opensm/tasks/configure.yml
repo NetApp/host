@@ -1,0 +1,27 @@
+- name: Determine whether OpenSM service needs to be running and/or updated.
+  set_fact:
+    opensm_running: false
+    opensm_update: false
+    opensm_type: "no_opensm_service"
+    interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- if eseries_ib_opensm_interfaces is defined and eseries_ib_opensm_interfaces | length > 0 -%}
+        {%- for interface in eseries_ib_opensm_interfaces if "configure" not in (interface.keys() | list) or interface["configure"] == True -%}
+          {%- if interfaces.append(interface) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{- interfaces -}}
+
+- name: Ensure standard InfiniBand OpenSM subnet managers are configured.
+  include_tasks: configure/standard.yml
+  when: eseries_ib_opensm_subnet_manager_configure == True and (eseries_ib_opensm_interfaces is not defined or interfaces | length == 0)
+
+- name: Ensure non_standard InfiniBand OpenSM subnet managers are configured.
+  include_tasks: configure/non_standard.yml
+  when: interfaces | length > 0
+
+- name: Ensure InfiniBand OpenSM subnet managers are configured.
+  include_tasks: configure/unconfigure.yml
+
+- name: Ensure systemd service loader is installed and configured.
+  include_tasks: "service/{{ ansible_os_family | lower }}.yml"

@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand IPoIB packages are removed (Ubuntu).
+  apt:
+    state: absent
+    name: "{{ eseries_ib_opensm_ubuntu_packages }}"
+  become: true

@@ -1,0 +1,37 @@
+- name: Determine existing OpenSM configuration files.
+  find:
+    path: "{{ eseries_ib_opensm_config_path }}"
+    pattern: "opensm.conf(.[0-9]+)?$"
+    use_regex: true
+  register: existing_opensm_configs
+  become: true
+
+- name: Determine existing OpenSM configuration files that are no longer needed.
+  set_fact:
+    no_longer_needed_opensm_config_files: |-
+      {%- set expected_files = [] -%}
+      {%- if eseries_ib_opensm_subnet_manager_configure == True and interfaces | length == 0 -%}
+        {%- if expected_files.append(eseries_ib_opensm_config_path ~ "opensm.conf") -%}{%- endif -%}
+      {%- else -%}
+        {%- for entry in ib_devices | default([]) -%}
+          {%- if expected_files.append(eseries_ib_opensm_config_path ~ "opensm.conf." ~ loop["index0"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- set files = [] -%}
+      {%- for existing_config_file in existing_opensm_configs["files"] if existing_config_file["path"] not in expected_files -%}
+        {%- if files.append(existing_config_file["path"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ files }}
+
+- name: Remove no longer needed OpenSM configuration files.
+  file:
+    state: absent
+    path: "{{ item }}"
+  register: delete_opensm_config
+  loop: "{{ no_longer_needed_opensm_config_files }}"
+  become: true
+
+- name: Determine whether OpenSM service needs to be running and/or updated.
+  set_fact:
+    opensm_update: "{{ opensm_update == True or delete_opensm_config['changed'] == True }}"
