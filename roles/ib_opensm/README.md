@@ -39,9 +39,9 @@ eseries_ib_opensm_interfaces:                  # List of InfiniBand interfaces.
     configure:                                 # Whether to configure OpenSM for port (Default: True).
     subnet_prefix:                             # OpenSM subnet manager's subnet prefix.
     priority:                                  # OpenSM subnet manager's priority.
-eseries_ib_opensm_ubuntu_packages:             # Default packages for ubuntu (Default: [opensm]).
-eseries_ib_opensm_suse_packages:               # Default packages for ubuntu (Default: [opensm]).
-eseries_ib_opensm_rhel_packages:               # Default packages for ubuntu (Default: [opensm]).
+eseries_ib_opensm_ubuntu_packages:             # Default package list for ubuntu (Default: opensm).
+eseries_ib_opensm_suse_packages:               # Default package list for ubuntu (Default: opensm).
+eseries_ib_opensm_rhel_packages:               # Default package list for ubuntu (Default: opensm).
 eseries_ib_opensm_kernel_modules:              # Default loaded kernel modules (Default: [rdma_cm, mlx5_core, ib_ipoib]).
 eseries_ib_opensm_log_path: /var/log/          # Default log path. Individual logs will be produced for each interface defined (opensm.conf.X.log); otherwise,
                                                #    all logging will be issued to opensm.log.

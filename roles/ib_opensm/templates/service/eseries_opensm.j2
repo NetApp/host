@@ -4,21 +4,14 @@
 rc=0
 
 start() {
-{% if ib_devices is defined %}
 {% for entry in ib_devices %}
     echo -n "Starting opensm on port {{ entry['port_guid'] }}..."
     /usr/sbin/opensm -F {{ eseries_ib_opensm_config_path }}opensm.conf.{{ loop["index0"] }} --daemon
     rc=$?||$rc
     echo "Done"
-{% endfor %}
 {% else %}
-{% for guid in ibsport_guids['stdout_lines'] %}
-    echo -n "Starting opensm on port {{ guid }}..."
-    /usr/sbin/opensm -g {{ guid }} -f /var/log/opensm.conf.{{ guid }}.log --daemon
-    rc=$?||$rc
-    echo "Done"
+    echo "No OpenSM subnet managers to start."
 {% endfor %}
-{% endif %}
 }
 
 stop() {
