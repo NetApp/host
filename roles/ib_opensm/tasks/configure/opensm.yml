@@ -44,29 +44,50 @@
       {%- endfor -%}
       {{- device_ports -}}
 
-- name: Organize InfiniBand device-port information.
+- name: Determine expected interfaces.
   set_fact:
-    ib_devices: |-
-      {%- set ib_devices = [] -%}
+    expected_interfaces: |-
+      {%- set expected_interfaces = [] -%}
       {%- for result in ibstat_device_port_information_output["results"] -%}
-        {%- set device_info = {"aliases": [result["item"]["device"] ~ "_" ~ result["item"]["port"]]} -%}
+        {%- set device_name = result["item"]["device"] ~ "_" ~ result["item"]["port"] -%}
+        {%- set device_info = {"name": device_name, "aliases": [device_name]} -%}
 
+        {#- Append InfiniBand port information -#}
         {%- for line in result["stdout_lines"] -%}
           {%- set line_info = (line | regex_replace("\s+", "_") | lower).split(":_") -%}
           {%- if line_info | length == 2 and device_info.update({line_info[0]: line_info[1]}) -%}{%- endif -%}
         {%- endfor -%}
 
+        {#- Check for IPoIB interface name -#}
         {%- for link in ip_link_output["stdout_lines"] if "infiniband" | regex_search("infiniband", ignorecase=True) -%}
           {%- if link | regex_replace(":", "") | lower | regex_search(device_info["port_guid"][2:]) -%}
             {%- if device_info["aliases"].append(link.split(": ")[1]) -%}{%- endif -%}
           {%- endif -%}
         {%- endfor -%}
 
-        {%- for interface in eseries_ib_opensm_interfaces if interface["name"] in device_info["aliases"] and
-                                                             ("configure" not in (interface.keys() | list) or interface["configure"] == True) -%}
-          {%- if device_info.update(interface) -%}{%- endif -%}
-          {%- if ib_devices.append(device_info) -%}{%- endif -%}
+        {#- Add expected interface -#}
+        {%- for interface in eseries_ib_opensm_interfaces if interface["name"] in device_info["aliases"] -%}
+          {%- if device_info.update({"configure": interface["configure"] | default(True),
+                                     "subnet_prefix": interface["subnet_prefix"] | default("%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"])),
+                                     "priority": interface["priority"] | default(eseries_ib_opensm_subnet_priority)}) -%}{%- endif -%}
+          {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
+        {%- else -%}
+          {%- if eseries_ib_opensm_subnet_manager_configure == True -%}
+            {%- if device_info.update({"configure": True,
+                                       "subnet_prefix": "%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"]),
+                                       "priority": eseries_ib_opensm_subnet_priority}) -%}{%- endif -%}
+            {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
+          {%- endif -%}
         {%- endfor -%}
+      {%- endfor -%}
+      {{- expected_interfaces -}}
+
+- name: Organize InfiniBand device-port information.
+  set_fact:
+    ib_devices: |-
+      {%- set ib_devices = [] -%}
+      {%- for interface in expected_interfaces if interface["configure"] == True -%}
+        {%- if ib_devices.append(interface) -%}{%- endif -%}
       {%- endfor -%}
       {{- ib_devices -}}
 
@@ -99,11 +120,12 @@
     index_var: index
   become: true
 
+# Note: --subnet-prefix is not available on Ubuntu versions of OpenSM. So to simplify automation, just modify the single line in the temporary conf files.
 - name: Update the subnet_prefix in temporary files.
   lineinfile:
     path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~"
     regexp: '^subnet_prefix'
-    line: "subnet_prefix {{ item['subnet_prefix'] | default(eseries_ib_opensm_subnet_prefix) }}"
+    line: "subnet_prefix {{ item['subnet_prefix'] | default(eseries_ib_opensm_subnet_prefix_base) }}"
   changed_when: false
   loop: "{{ ib_devices }}"
   loop_control:
@@ -141,8 +163,37 @@
     index_var: index
   become: true
 
+- name: Determine existing OpenSM configuration files.
+  find:
+    path: "{{ eseries_ib_opensm_config_path }}"
+    pattern: "opensm.conf(.[0-9]+)?$"
+    use_regex: true
+  register: existing_opensm_configs
+  become: true
+
+- name: Determine existing OpenSM configuration files that are no longer needed.
+  set_fact:
+    no_longer_needed_opensm_config_files: |-
+      {%- set expected_files = [] -%}
+      {%- for entry in ib_devices -%}
+        {%- if expected_files.append(eseries_ib_opensm_config_path ~ "opensm.conf." ~ loop["index0"]) -%}{%- endif -%}
+      {%- endfor -%}
+
+      {%- set files = [] -%}
+      {%- for existing_config_file in existing_opensm_configs["files"] if existing_config_file["path"] not in expected_files -%}
+        {%- if files.append(existing_config_file["path"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ files }}
+
+- name: Remove no longer needed OpenSM configuration files.
+  file:
+    state: absent
+    path: "{{ item }}"
+  register: delete_opensm_config
+  loop: "{{ no_longer_needed_opensm_config_files }}"
+  become: true
+
 - name: Determine whether OpenSM service needs to be running and/or updated.
   set_fact:
     opensm_running: "{{ ib_devices | length > 0 }}"
-    opensm_update: "{{ update_opensm_config['changed'] == True }}"
-    opensm_type: "non_standard"
+    opensm_update: "{{ update_opensm_config['changed'] == True or delete_opensm_config['changed'] == True }}"
