@@ -1,79 +1,34 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Ensure eseries_ib_opensm_interfaces inventory structure exists.
-  set_fact:
-    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
-  when: eseries_ib_opensm_interfaces is not defined and eseries_ib_iser_interfaces is defined and eseries_ib_iser_interfaces
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
 
-- name: Configure InfiniBand iSER network interfaces
-  block:
-    - name: Remove InfiniBand iSER network interfaces using ifupdown configuration.
-      block:
-        - name: Ensure ifcfg-* files exist for each InfiniBand iSER network interface (RHEL, SUSE).
-          file:
-            state: absent
-            path: "{{ eseries_ib_opensm_ifcfg_path }}ifcfg-{{ item['name'] }}"
-          register: ifcfg
-          loop: "{{ eseries_ib_opensm_interfaces }}"
-          become: true
-
-        - name: Bring InfiniBand iSER interface down using ifdown.
-          command: ifdown {{ item['name'] }}
-          register: ip_down
-          changed_when: ip_down['rc'] != 0 and ip_down['stderr'] is not defined
-          failed_when: false
-          loop: "{{ eseries_ib_opensm_interfaces }}"
-          become: true
-
-        - name: Flush InfiniBand iSER interface.
-          command: ip address flush dev {{ item['name'] }}
-          register: ip_flush
-          changed_when: ip_flush['rc'] != 0 and ip_flush['stderr'] is not defined
-          failed_when: false
-          loop: "{{ eseries_ib_opensm_interfaces }}"
-          become: true
-      when: eseries_ib_opensm_network_tool | default(eseries_ib_opensm_default_network_tool) == 'ifupdown'
-
-    - name: Remove InfiniBand iSER network interfaces using netplan configuration.
-      block:
-        - name: Ensure InfiniBand iSER interfaces configuration files have been removed.
-          file:
-            state: absent
-            path: "{{ eseries_ib_opensm_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
-          register: netplan
-          loop: "{{ eseries_ib_opensm_interfaces }}"
-          become: true
-        - name: Apply changes to Netplan
-          command:
-            cmd: netplan apply
-          when: netplan['changed']
-          become: true
-
-        - name: Bring InfiniBand iSER interface down.
-          command: ip link set {{ item["name"] }} down
-          register: ip_down
-          changed_when: ip_down['rc'] != 0 and ip_down['stderr'] is not defined
-          failed_when: false
-          loop: "{{ eseries_ib_opensm_interfaces }}"
-          become: true
-
-        - name: Flush InfiniBand iSER interface.
-          command: ip address flush dev {{ item["name"] }}
-          register: ip_flush
-          changed_when: ip_flush['rc'] != 0 and ip_flush['stderr'] is not defined
-          failed_when: false
-          loop: "{{ eseries_ib_opensm_interfaces }}"
-          become: true
-      when: eseries_ib_opensm_network_tool | default(eseries_ib_opensm_default_network_tool) == 'netplan'
-  when: eseries_ib_opensm_configure_network
+- name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
+  systemd:
+    name: opensm.service
+    state: stopped
+    enabled: false
+    daemon_reload: true
+  when: "'opensm.service' in (ansible_facts['services'].keys() | list)"
+  become: true
 
 - name: Ensure InfiniBand packages are uninstalled.
   include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
 
-- name: Ensure kernel modules are removed.
-  modprobe:
+- name: Determine existing OpenSM configuration files.
+  find:
+    path: "{{ eseries_ib_opensm_config_path }}"
+    pattern: "opensm.conf(.[0-9]+)?$"
+    use_regex: true
+  register: existing_opensm_configs
+  become: true
+
+- name: Remove no longer needed OpenSM configuration files.
+  file:
     state: absent
-    name: "{{ item }}"
-  loop: "{{ eseries_ib_opensm_uninstall_kernel_modules }}"
+    path: "{{ item }}"
+  register: delete_opensm_config
+  loop: "{{ existing_opensm_configs['files'] }}"
   become: true
