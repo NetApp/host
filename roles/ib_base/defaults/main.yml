@@ -1,37 +1,43 @@
-eseries_ib_base_rdma_conf: /etc/rdma/rdma.conf
+eseries_ib_base_rdma: /etc/rdma/
 eseries_ib_base_rdma_memory_conf: /etc/security/limits.d/rdma.conf
+eseries_ib_base_modules_d: /etc/modules-load.d/
 eseries_ib_base_ipoib_enabled: false
 eseries_ib_base_iser_enabled: false
 eseries_ib_base_srp_enabled: false
 
 eseries_ib_base_ubuntu_packages:
   - rdma-core
-  - infiniband-diags
 
 eseries_ib_base_suse_packages:
   - rdma-core
-  - infiniband-diags
 
 eseries_ib_base_rhel_packages:
   - rdma-core
-  - infiniband-diags
 
 eseries_ib_base_kernel_modules:
-  - rdma_cm
+  - ib_core
+  - ib_umad     # Access to fabric management SMPs and GMPs from userspace.
+  - ib_uverbs   # User access to RDMA verbs (supports libibverbs)
   - mlx5_core
+  - mlx5_ib
+  - rdma_cm     # RDMA connection management
+  - rdma_ucm    # User access to RDMA connection management (supports librdmacm)
 
 eseries_ib_base_ipoib_kernel_modules:
-  - ib_ipoib
+  - ib_ipoib    # InfiniBand over IP net device
 
 eseries_ib_base_srp_kernel_modules:
-  - ib_srp
+  - ib_srp      # SCSI Remote Protocol client support
 
 eseries_ib_base_iser_kernel_modules:
-  - ib_iser
+  - ib_ipoib    # InfiniBand over IP net device
+  - ib_iser     # iSCSI over RDMA client support
 
 eseries_ib_base_uninstall_kernel_modules:
   - mlx5_ib
+  - ib_umad
+  - ib_uverbs
+  - rdma_ucm
+  - rdma_cm
+  - ib_core
   - mlx5_core
-  - ib_ipoib
-  - ib_iser
-  - ib_srp

@@ -6,6 +6,3 @@
     limit_item: memlock
     value: unlimited
   become: true
-
-- name: Ensure InfiniBand kernel modules are configured.
-  include_tasks: "rdma/{{  ansible_os_family | lower }}.yml"

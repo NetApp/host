@@ -1,30 +1,52 @@
-- name: Check whether InfiniBand base kernel modules are loaded.
-  modprobe:
-    state: present
-    name: "{{ item }}"
-  loop: "{{ eseries_ib_base_kernel_modules }}"
+- name: Determine required InfiniBand modules.
+  set_fact:
+    expected_kernel_modules: |-
+      {%- set modules = eseries_ib_base_kernel_modules -%}
+      {%- if eseries_ib_base_ipoib_enabled == True -%}
+        {%- if modules.extend(eseries_ib_base_ipoib_kernel_modules) -%}{%- endif -%}
+      {%- endif -%}
+      {%- if eseries_ib_base_iser_enabled == True -%}
+        {%- if modules.extend(eseries_ib_base_iser_kernel_modules) -%}{%- endif -%}
+      {%- endif -%}
+      {%- if eseries_ib_base_srp_enabled == True -%}
+        {%- if modules.extend(eseries_ib_base_srp_kernel_modules) -%}{%- endif -%}
+      {%- endif -%}
+      {{- modules -}}
+
+- name: "Ensure {{ eseries_ib_base_rdma }}rdma.conf is correct (RHEL)."
+  template:
+    src: configure/redhat/rdma_conf.j2
+    dest: "{{ eseries_ib_base_rdma }}rdma.conf"
+  when: "(ansible_os_family | lower) == 'redhat'"
   become: true
 
-- name: Ensure InfiniBand IPoIB kernel modules are loaded.
-  modprobe:
-    state: present
-    name: "{{ item }}"
-  loop: "{{ eseries_ib_base_ipoib_kernel_modules }}"
-  when: eseries_ib_base_ipoib_enabled == True
+- name: "Ensure {{ eseries_ib_base_rdma }}modules/infiniband.conf is correct."
+  template:
+    src: configure/infiniband_conf.j2
+    dest: "{{ eseries_ib_base_rdma }}modules/infiniband.conf"
   become: true
 
-- name: Ensure InfiniBand iSER kernel modules are loaded.
-  modprobe:
-    state: present
-    name: "{{ item }}"
-  loop: "{{ eseries_ib_base_iser_kernel_modules }}"
-  when: eseries_ib_base_iser_enabled == True
+- name: "Ensure {{ eseries_ib_base_rdma }}modules/srp_daemon.conf is correct."
+  template:
+    src: configure/srp_daemon_conf.j2
+    dest: "{{ eseries_ib_base_rdma }}modules/srp_daemon.conf"
   become: true
 
-- name: Ensure InfiniBand SRP kernel modules are loaded.
+- name: "Ensure {{ eseries_ib_base_rdma }}modules/rdma.conf is correct."
+  template:
+    src: configure/rdma_conf.j2
+    dest: "{{ eseries_ib_base_rdma }}modules/rdma.conf"
+  become: true
+
+- name: Ensure required InfiniBand modules are loaded.
   modprobe:
     state: present
     name: "{{ item }}"
-  loop: "{{ eseries_ib_base_srp_kernel_modules }}"
-  when: eseries_ib_base_srp_enabled == True
+  loop: "{{ expected_kernel_modules }}"
+  become: true
+
+- name: Ensure InfiniBand kernel modules have been added to boot.
+  template:
+    src: configure/eseries_ib_base_conf.j2
+    dest: "{{ eseries_ib_base_modules_d }}eseries_ib_base.conf"
   become: true

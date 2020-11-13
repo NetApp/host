@@ -1,6 +1,19 @@
-- name: Ensure InfiniBand kernel modules are unloaded.
+- name: Ensure RDMA configuration files are removed.
+  file:
+    state: absent
+    path: "{{ eseries_ib_base_rdma }}"
+  become: true
+
+- name: Remove InfiniBand kernel modules from boot.
+  file:
+    state: absent
+    path: "{{ eseries_ib_base_modules_d }}eseries_ib_base.conf"
+  become: true
+
+- name: Remove InfiniBand kernel modules.
   modprobe:
     state: absent
     name: "{{ item }}"
   loop: "{{ eseries_ib_base_uninstall_kernel_modules }}"
   become: true
+  ignore_errors: true

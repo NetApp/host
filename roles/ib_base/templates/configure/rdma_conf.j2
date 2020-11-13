@@ -1,15 +1,17 @@
 # Managed by NetApp E-Series Ansible
-# These modules are loaded by the system if any RDMA devices is installed
 
-# iSCSI over RDMA client and targert support.
-{{ "ib_iser" if eseries_ib_base_iser_enabled == True else "# ib_iser" }}
-{{ "ib_isert" if eseries_ib_base_iser_enabled == True else "# ib_isert" }}
+# These modules are loaded by the system if any RDMA devices is installed
+# iSCSI over RDMA client support
+# ib_iser
+
+# iSCSI over RDMA target support
+# ib_isert
 
 # User access to RDMA verbs (supports libibverbs)
-ib_uverbs
+# ib_uverbs
 
 # User access to RDMA connection management (supports librdmacm)
-rdma_ucm
+# rdma_ucm
 
 # RDS over RDMA support
 # rds_rdma
