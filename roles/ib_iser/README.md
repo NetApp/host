@@ -25,10 +25,6 @@ eseries_ib_iser_mtu:                                # Default maximum transmissi
 eseries_ib_iser_queue_depth:                        # Default queue depth (Default: 32).
 eseries_ib_iser_session_replacement_timeout:        # Default session replacement should a timeout occur (Default: 20).
 
-eseries_ib_opensm_subnet_manager_configure:         # Default for whether to configure OpenSM (Default: false).
-eseries_ib_opensm_subnet_prefix_base:               # Default OpenSM subnet manager's subnet prefix base. The last two digits will be determined by device port ordering (Default: "0xfe800000000000").
-eseries_ib_opensm_subnet_priority:                  # Default OpenSM subnet manager's priority. eseries_ib_iser_opensm_subnet_priority can be used instead (Default: 0). Choices: 0-15 (15 is highest priority).
-
 License
 -------
     BSD-3-Clause

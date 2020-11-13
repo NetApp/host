@@ -6,25 +6,19 @@
     name: iscsi
     tasks_from: configure.yml
 
-- name: Determine variable values required for ipoib role.
+- name: Determine variable values required for ipoib and ib_opensm roles.
   set_fact:
     eseries_ib_base_iser_enabled: true
     eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_ib_iser_interfaces | default(omit)) }}"
     eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_ib_iser_mtu | default(omit)) }}"
+    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
     name: ipoib
 
-- name: Ensure InfiniBand iSER kernel modules are loaded.
-  import_tasks: module.yml
-
 - name: Configure iSCSI interface bindings for InfiniBand iSER.
   import_tasks: iscsi_interface.yml
-
-- name: Determine variable values required for ib_opensm role.
-  set_fact:
-    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
