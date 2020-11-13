@@ -1,5 +1,4 @@
 #!/bin/sh
-. /lib/lsb/init-functions
 
 rc=0
 
@@ -16,7 +15,7 @@ start() {
 
 stop() {
     /usr/bin/pkill opensm
-    rc=$?||$rc
+    rc=$? || $rc
 }
 
 case $1 in
