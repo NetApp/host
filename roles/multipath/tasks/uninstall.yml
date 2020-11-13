@@ -21,3 +21,9 @@
     state: absent
     path: "{{ eseries_multipath_conf_d_path }}eseries_multipath.conf"
   become: true
+
+- name: Remove multipath modules from boot.
+  file:
+    state: absent
+    path: "{{ eseries_multipath_modules_d }}eseries_multipath.conf"
+  become: true

@@ -1,0 +1,6 @@
+# Managed by NetApp E-Series Ansible
+
+# The following modules are required for netapp_eseries.host.multipath role.
+{% for module in eseries_multipath_kernel_modules %}
+{{ module }}
+{% endfor %}

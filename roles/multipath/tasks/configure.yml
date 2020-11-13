@@ -3,6 +3,7 @@
     path: "/etc/multipath.conf"
   register: multipath_conf
   become: true
+
 - name: Ensure that multipath.conf exists.
   file:
     state: touch
@@ -10,12 +11,10 @@
   when: not multipath_conf["stat"]["exists"]
   become: true
 
-- name: Check whether multipath kernel module has been loaded.
-  modprobe:
-    state: present
-    name: "{{ item }}"
-  register: multipath_module
-  loop: "{{ eseries_multipath_kernel_modules }}"
+- name: Ensure multipath modules have been added to boot.
+  template:
+    src: eseries_multipath_conf.j2
+    dest: "{{ eseries_multipath_modules_d }}eseries_multipath.conf"
   become: true
 
 - name: Ensure multipathd daemon has been started and is enabled.
