@@ -15,4 +15,4 @@
 - name: Ensure multipath is configured.
   include_role:
     name: multipath
-    tasks_from: configure_user_friendly_names.yml
+    tasks_from: configure/configure_user_friendly_names.yml

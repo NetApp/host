@@ -37,5 +37,5 @@
     - name: Ensure multipath user friendly names are configured.
       include_role:
         name: multipath
-        tasks_from: configure_user_friendly_names.yml
+        tasks_from: configure/configure_user_friendly_names.yml
   when: eseries_unmount_unmap == True or eseries_unmount_delete == True
