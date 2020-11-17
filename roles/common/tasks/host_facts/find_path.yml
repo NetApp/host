@@ -2,6 +2,7 @@
   command: multipathd show maps raw format "%w,%n"
   register: multipath_maps
   changed_when: false
+  failed_when: false
   become: true
 
 - name: Find mapped volume paths on the host.

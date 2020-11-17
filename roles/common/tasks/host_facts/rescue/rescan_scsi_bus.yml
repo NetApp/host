@@ -17,26 +17,14 @@
   loop: "{{ scsi_hosts['stdout_lines'] }}"
   become: true
 
-- name: Reload multipath.
-  command:
-    cmd: multipath
-  failed_when: false
-  become: true
-
-- name: Reconfigure multipath.
-  command:
-    cmd: multipathd reconfigure
-  failed_when: false
-  become: true
-
 - name: Reset wwids file information to only include current devices.
   command:
     cmd: multipath -W
   failed_when: false
   become: true
 
-#- name: Restart multipathd daemon.
-#  systemd:
-#    name: multipathd.service
-#    state: restarted
-#  become: true
+- name: Restart multipathd daemon.
+  systemd:
+    name: multipathd.service
+    state: restarted
+  become: true
