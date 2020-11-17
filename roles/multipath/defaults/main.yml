@@ -1,10 +1,12 @@
 eseries_multipath_conf_d_path: /etc/multipath/conf.d/
 eseries_multipath_modules_d: /etc/modules-load.d/
+eseries_multipath_initramfs_modules_path: /etc/initramfs-tools/modules
+eseries_multipath_dracut_conf_d: /etc/dracut.conf.d/
 eseries_multipath_remove_installation: false
 eseries_multipath_configure_user_friendly_names: true
 
-eseries_multipath_kernel_modules:
-  - dm_multipath
+eseries_multipath_initramfs_modules:
+  - multipath
 
 eseries_multipath_rhel_packages:
   - device-mapper-multipath

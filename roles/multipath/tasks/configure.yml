@@ -1,3 +1,6 @@
+- name: Ensure multipath is configured.
+  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
+
 - name: Check whether /etc/multipath.conf exists
   stat:
     path: "/etc/multipath.conf"
@@ -9,12 +12,6 @@
     state: touch
     path: "/etc/multipath.conf"
   when: not multipath_conf["stat"]["exists"]
-  become: true
-
-- name: Ensure multipath modules have been added to boot.
-  template:
-    src: eseries_multipath_conf.j2
-    dest: "{{ eseries_multipath_modules_d }}eseries_multipath.conf"
   become: true
 
 - name: Ensure multipathd daemon has been started and is enabled.

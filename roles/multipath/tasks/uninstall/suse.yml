@@ -1,3 +1,15 @@
+- name: Ensure multipath has been added to /etc/initramfs/modules file.
+  file:
+    state: absent
+    path: "{{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf"
+  become: true
+  register: dracut_modules
+
+- name: Update initramfs image.
+  command: dracut --force
+  become: true
+  when: dracut_modules['changed'] == True
+
 - name: Ensure expected multipath packages have been uninstalled (SUSE).
   zypper:
     state: absent

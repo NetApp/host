@@ -7,7 +7,7 @@
   failed_when: false
   become: true
 
-- name: Uninstall all multipath packages.
+- name: Unconfigure and uninstall multipath.
   include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure multipath.conf has been removed.

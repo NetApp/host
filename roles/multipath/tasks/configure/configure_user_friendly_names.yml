@@ -22,8 +22,8 @@
     - name: Reload multipathd service.
       systemd:
         name: multipathd.service
-        state: "{%- if multipath_conf['changed'] %}reloaded{%- else %}started{%- endif %}"
-        daemon-reload: "{%- if multipath_conf['changed'] %}true{%- else %}false{%- endif %}"
+        state: "{%- if multipath_conf['changed'] %}restarted{%- else %}started{%- endif %}"
         enabled: true
+        daemon-reload: true  #"{%- if multipath_conf['changed'] %}true{%- else %}false{%- endif %}"
       become: true
   when: eseries_volumes is defined
