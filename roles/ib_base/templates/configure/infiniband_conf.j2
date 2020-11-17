@@ -2,13 +2,13 @@
 
 # These modules are loaded by the system if any InfiniBand device is installed
 # InfiniBand over IP netdevice
-# ib_ipoib
+{{ "ib_ipoib" if eseries_ib_base_ipoib_enabled == True or eseries_ib_base_iser_enabled == True else "# ib_ipoib" }}
 
 # Access to fabric management SMPs and GMPs from userspace.
-# ib_umad
+ib_umad
 
 # SCSI Remote Protocol target support
-# ib_srpt
+{{ "ib_srpt" if eseries_ib_base_srp_enabled == True else "# ib_srpt" }}
 
 # ib_ucm provides the obsolete /dev/infiniband/ucm0
 # ib_ucm

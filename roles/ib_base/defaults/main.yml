@@ -6,12 +6,15 @@ eseries_ib_base_iser_enabled: false
 eseries_ib_base_srp_enabled: false
 
 eseries_ib_base_ubuntu_packages:
+  - infiniband-diags
   - rdma-core
 
 eseries_ib_base_suse_packages:
+  - infiniband-diags
   - rdma-core
 
 eseries_ib_base_rhel_packages:
+  - infiniband-diags
   - rdma-core
 
 eseries_ib_base_kernel_modules:
