@@ -7,6 +7,14 @@
   loop: "{{ eseries_ipoib_interfaces }}"
   become: true
 
+- name: Ensure gateway route exists for each InfiniBand iSER network interface (SUSE).
+  lineinfile:
+    path: "{{ eseries_ipoib_ifcfg_path }}ifroute-{{ item['name'] }}"
+    line: "default {{ item['gateway'] }} - {{ item['name'] }}"
+    create: true
+  loop: "{{ eseries_ipoib_interfaces }}"
+  when: "(ansible_os_family | lower) == 'suse' and 'gateway' in (item.keys() | list)"
+
 - name: Get the link status for interface
   command:
     cmd: ip -4 address show {{ item['name'] }}

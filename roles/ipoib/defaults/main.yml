@@ -1,8 +1,2 @@
 eseries_ipoib_configure_network: true
 eseries_ipoib_mtu: ""
-
-eseries_ipoib_kernel_modules:
-  - ib_ipoib
-
-eseries_ipoib_uninstall_kernel_modules:
-  - ib_ipoib
