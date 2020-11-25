@@ -21,4 +21,4 @@
 - name: Ensure iSCSI packages are uninstalled.
   import_role:
     name: iscsi
-    tasks_from: uninstall_packages.yml
+    tasks_from: uninstall/package.yml

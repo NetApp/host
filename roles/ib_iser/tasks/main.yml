@@ -1,7 +1,12 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Ensure iSCSI packages are installed and configured.
+- name: Ensure iSCSI packages are installed.
+  include_role:
+    name: iscsi
+    tasks_from: package.yml
+
+- name: Ensure iSCSI is configured.
   import_role:
     name: iscsi
     tasks_from: configure.yml
@@ -9,9 +14,10 @@
 - name: Determine variable values required for ipoib and ib_opensm roles.
   set_fact:
     eseries_ib_base_iser_enabled: true
+    eseries_ipoib_configure_network: "{{ eseries_ib_iser_configure_network }}"
     eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_ib_iser_interfaces | default(omit)) }}"
     eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_ib_iser_mtu | default(omit)) }}"
-    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
+    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces | default(omit) }}"
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
