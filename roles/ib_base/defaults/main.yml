@@ -21,10 +21,10 @@ eseries_ib_base_kernel_modules:
   - ib_core
   - ib_umad     # Access to fabric management SMPs and GMPs from userspace.
   - ib_uverbs   # User access to RDMA verbs (supports libibverbs)
-  - mlx5_core
-  - mlx5_ib
   - rdma_cm     # RDMA connection management
   - rdma_ucm    # User access to RDMA connection management (supports librdmacm)
+  - mlx5_core
+  - mlx5_ib
 
 eseries_ib_base_ipoib_kernel_modules:
   - ib_ipoib    # InfiniBand over IP net device
@@ -38,9 +38,9 @@ eseries_ib_base_iser_kernel_modules:
 
 eseries_ib_base_uninstall_kernel_modules:
   - mlx5_ib
-  - ib_umad
-  - ib_uverbs
+  - mlx5_core
   - rdma_ucm
   - rdma_cm
+  - ib_umad
+  - ib_uverbs
   - ib_core
-  - mlx5_core

@@ -4,45 +4,28 @@ netapp_eseries.host.ib_base
 
 Variables (Values specified are the defaults)
 ---------
-eseries_ib_base_ipoib_enabled: false                                # Whether RDMA should be configured for InfiniBand IPoIB.
-eseries_ib_base_iser_enabled: false                                 # Whether RDMA should be configured for InfiniBand iSER.
-eseries_ib_base_srp_enabled: false                                  # Whether RDMA should be configured for InfiniBand SRP.
-eseries_ib_base_rdma_conf: /etc/rdma/rdma.conf                      # Absolute path to the rdma.conf file for configuring rdma modules.
-eseries_ib_base_rdma_memory_conf: /etc/security/limits.d/rdma.conf  # Absolute path to the rdma.conf file for configuring rdma security limitations.
-eseries_ib_base_ubuntu_packages:                                    # Packages to install for hosts running Ubuntu
-  - rdma-core
-  - infiniband-diags
-eseries_ib_base_suse_packages:                                      # Packages to install for hosts running SUSE
-  - rdma-core
-  - infiniband-diags
-eseries_ib_base_rhel_packages:                                      # Packages to install for hosts running RHEL
-  - rdma-core
-  - infiniband-diags
-eseries_ib_base_kernel_modules:                                     # InfiniBand base kernel modules.
-  - rdma_cm
-  - mlx5_core
-eseries_ib_ipoib_kernel_modules:                                    # InfiniBand IPoIB kernel modules.
-  - ib_ipoib
-eseries_ib_srp_kernel_modules:                                      # InfiniBand SRP kernel modules.
-  - ib_srp
-eseries_ib_iser_kernel_modules:                                     # InfiniBand iSER kernel modules.
-  - ib_iser
-eseries_ib_base_uninstall_kernel_modules:                           # InfiniBand kernel modules that should be unloaded during uninstallation.
-  - mlx5_ib
-  - mlx5_core
-  - ib_ipoib
-  - ib_iser
-  - ib_srp
+eseries_ib_base_ipoib_enabled:          # Whether InfiniBand IPoIB should be configured (Default: false).
+eseries_ib_base_iser_enabled:           # Whether InfiniBand iSER should be configured (Default: false).
+eseries_ib_base_srp_enabled:            # Whether InfiniBand SRP should be configured (Default: false).
+eseries_ib_base_rdma:                   # Directory for RDMA configuration files (Default: /etc/rdma/).
+eseries_ib_base_rdma_memory_conf:       # Absolute path to the rdma.conf file for configuring rdma security limitations (Default: /etc/security/limits.d/rdma.conf).
+eseries_ib_base_modules_d:              # Systemd module configuration files directory (Default: file/etc/modules-load.d/).
+eseries_ib_base_ubuntu_packages:        # Packages to install for hosts running Ubuntu (Default: [infiniband-diags, rdma-core]).
+eseries_ib_base_suse_packages:          # Packages to install for hosts running SUSE (Default: [infiniband-diags, rdma-core]).
+eseries_ib_base_rhel_packages:          # Packages to install for hosts running RedHat (Default: [infiniband-diags, rdma-core]).
+eseries_ib_base_kernel_modules:         # InfiniBand base kernel modules (Default: [ib_core, ib_umad, ib_uverbs, rdma_cm, rdma_ucm, mlx5_core, mlx5_ib])
+eseries_ib_base_ipoib_kernel_modules:   # InfiniBand base kernel modules for InfiniBand IPoIB (Default: [ib_ipoib]).
+eseries_ib_base_srp_kernel_modules:     # InfiniBand base kernel modules for InfiniBand SRP (Default: [ib_srp]).
+eseries_ib_base_iser_kernel_modules:    # InfiniBand base kernel modules for InfiniBand iSER (Default: [ib_ipoib, ib_iser]).
 
 Notes
 -----
-If using connectX-3 or earlier, override eseries_ib_base_kernel_modules and eseries_ib_base_uninstall_kernel_modules defaults in your inventory to use mlx4.
+If using connectX-3 or earlier, override eseries_ib_base_kernel_modules and eseries_ib_base_uninstall_kernel_modules defaults in your inventory to use mlx4. Be sure to include all required modules.
 
 
 Uninstall
 ---------
-To uninstall InfiniBand IPoIB, add '--tags ib_base_uninstall' to the ansible-playbook command. Note that only kernel modules mlx5_ib, mlx5_core, ib_ipoib, ib_iser and ib_srp will be unloaded.
-
+To uninstall, add '--tags ib_base_uninstall' to the ansible-playbook command.
     ansible-playbook -i inventory.yml playbook --tags ib_base_uninstall
 
 License
