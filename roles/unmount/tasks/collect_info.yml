@@ -1,6 +1,7 @@
 - name: Get multipath map information for each mapping to be removed.
   command:
-    cmd: "multipathd show maps raw format '%w,%n,%N,%v,%p'"
+    cmd: "multipathd show maps raw format '%w,%n,%N,%s'"
+    #cmd: "multipathd show maps raw format '%w,%n,%N,%v,%p'"
   register: multipathd_map_info
   changed_when: false
   failed_when: false
@@ -85,7 +86,7 @@
       {%- set mapped_info_dict = {} -%}
       {%- if multipathd_map_info["rc"] == 0 -%}
         {%- for map_info_line in multipathd_map_info["stdout_lines"] if map_info_line | regex_search("NETAPP\s*,INF-01-00", ignorecase=True) -%}
-          {%- set map_info = map_info_line.split(",") -%}
+          {%- set map_info = (map_info_line | regex_replace("\s*", "")).split(",") -%}
 
           {%- for volume_name in eseries_unmount_volumes if map_info[1] not in (mapped_info_dict.keys() | list) and (volume_name == "all_volumes" or volume_name == map_info[1]) -%}
 
