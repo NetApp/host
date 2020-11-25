@@ -1,7 +1,4 @@
-eseries_ib_srp_daemon_conf: /etc/srp_daemon.conf
-eseries_ib_srp_modules:
-  - ib_umad
-
+eseries_ib_srp_daemon_service: /etc/systemd/system/srp_daemon.service
 eseries_ib_srp_ubuntu_packages:
   - srptools
 
