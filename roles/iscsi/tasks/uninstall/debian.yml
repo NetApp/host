@@ -1,7 +1,0 @@
-- name: Ensure iSCSI packages are removed (Ubuntu).
-  apt:
-    state: absent
-    name:
-      - open-iscsi
-  become: true
-# TODO: Remove ./iscsi/ifaces/ and ./iscsi/node/

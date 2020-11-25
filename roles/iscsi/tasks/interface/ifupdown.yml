@@ -7,6 +7,14 @@
   loop: "{{ eseries_iscsi_interfaces }}"
   become: true
 
+- name: Ensure gateway route exists for each iSCSI network interface (SUSE).
+  lineinfile:
+    path: "{{ eseries_iscsi_ifcfg_path }}ifroute-{{ item['name'] }}"
+    line: "default {{ item['gateway'] }} - {{ item['name'] }}"
+    create: true
+  loop: "{{ eseries_iscsi_interfaces }}"
+  when: "(ansible_os_family | lower) == 'suse' and 'gateway' in (item.keys() | list)"
+
 - name: Get the link status for interface
   shell: ip -4 address show {{ item['name'] }} && ip -4 route show
   changed_when: false

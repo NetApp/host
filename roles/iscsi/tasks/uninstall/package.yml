@@ -2,4 +2,4 @@
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure iSCSI packages are uninstalled.
-  include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
+  include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"

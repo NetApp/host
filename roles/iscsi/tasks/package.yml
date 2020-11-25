@@ -1,0 +1,2 @@
+- name: Ensure iSCSI packages are installed.
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
