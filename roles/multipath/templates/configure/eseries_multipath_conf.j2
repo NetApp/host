@@ -2,3 +2,4 @@
 
 # The following modules are required for netapp_eseries.host.multipath role.
 add_dracutmodules+=" {% for module in eseries_multipath_initramfs_modules %}{{ module }} {% endfor %}"
+force_drivers+=" {% for module in eseries_multipath_kernel_drivers %}{{ module }} {% endfor %}"
