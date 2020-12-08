@@ -1,4 +1,0 @@
-# Managed By NetApp E-Series Ansible -- DO NOT DELETE
-{% for volume in eseries_volumes %}
-{{ (volume['volume_metadata']['mount_dir'] | default(eseries_mount_root_directory)) | regex_replace('//*$', '') }}/{{ volume['name'] }},{{ volume['path'].split('/')[-1] }},{{ volume['host_wwid'] }}
-{% endfor %}
