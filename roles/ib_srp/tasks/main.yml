@@ -6,20 +6,12 @@
   import_role:
     name: ib_base
 
-- name: Ensure InfiniBand SRP packages are installed.
-  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
-
 - name: Ensure InfiniBand SRP is configured.
   import_tasks: configure.yml
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
     name: ib_opensm
-
-- name: Discover mapped-volume information from associated storage systems.
-  import_role:
-    name: common
-    tasks_from: volume_facts.yml
 
 - name: Uninstall InfiniBand SRP.
   import_tasks: uninstall.yml

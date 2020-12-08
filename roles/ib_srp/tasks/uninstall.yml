@@ -1,6 +1,3 @@
-- name: Ensure InfiniBand SRP packages are installed.
-  include_tasks: "uninstall/package/{{  ansible_os_family | lower }}.yml"
-
 - name: Delete srp_daemon.service
   file:
     state: absent

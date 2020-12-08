@@ -1,5 +1,0 @@
-- name: Ensure expected InfiniBand SRP packages are installed (Ubuntu).
-  apt:
-    state: present
-    name: "{{ eseries_ib_srp_ubuntu_packages }}"
-  become: true

@@ -1,9 +1,1 @@
 eseries_ib_srp_daemon_service: /etc/systemd/system/srp_daemon.service
-eseries_ib_srp_ubuntu_packages:
-  - srptools
-
-eseries_ib_srp_suse_packages:
-  - srptools
-
-eseries_ib_srp_rhel_packages:
-  - srptools
