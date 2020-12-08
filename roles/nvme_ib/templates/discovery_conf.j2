@@ -1,0 +1,5 @@
+# Managed by NetApp E-Series Ansible
+
+{% for id, target in targets.items() %}
+--transport=rdma --traddr={{ target["address"] }} --trsvcid={{ eseries_nvme_ib_port }} --hostnqn={{ target["hostnqn"] }}
+{% endfor %}

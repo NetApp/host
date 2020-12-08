@@ -1,7 +1,7 @@
 # Managed by NetApp E-Series Ansible
 
 # Load IPoIB
-IPOIB_LOAD={{ "yes" if eseries_ib_base_ipoib_enabled == True or eseries_ib_base_iser_enabled == True else "no" }}
+IPOIB_LOAD={{ "yes" if eseries_ib_base_ipoib_enabled == True or eseries_ib_base_iser_enabled == True or eseries_ib_base_nvme_enabled == true else "no" }}
 # Load SRP (SCSI Remote Protocol initiator support) module
 SRP_LOAD={{ "yes" if eseries_ib_base_srp_enabled == True else "no" }}
 # Load SRPT (SCSI Remote Protocol target support) module

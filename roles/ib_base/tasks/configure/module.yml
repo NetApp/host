@@ -11,7 +11,10 @@
       {%- if eseries_ib_base_srp_enabled == True -%}
         {%- if modules.extend(eseries_ib_base_srp_kernel_modules) -%}{%- endif -%}
       {%- endif -%}
-      {{- modules -}}
+      {%- if eseries_ib_base_nvme_enabled == True -%}
+        {%- if modules.extend(eseries_ib_base_nvme_kernel_modules) -%}{%- endif -%}
+      {%- endif -%}
+      {{- modules | unique | sort -}}
 
 - name: "Ensure {{ eseries_ib_base_rdma }}rdma.conf is correct (RHEL)."
   template:

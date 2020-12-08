@@ -4,27 +4,63 @@ eseries_ib_base_modules_d: /etc/modules-load.d/
 eseries_ib_base_ipoib_enabled: false
 eseries_ib_base_iser_enabled: false
 eseries_ib_base_srp_enabled: false
+eseries_ib_base_nvme_enabled: false
 
 eseries_ib_base_ubuntu_packages:
-  - infiniband-diags
-  - rdma-core
-
-eseries_ib_base_suse_packages:
-  - infiniband-diags
-  - rdma-core
+  ipoib:
+    - infiniband-diags
+    - rdma-core
+  srp:
+    - infiniband-diags
+    - rdma-core
+    - srptools
+  iser:
+    - infiniband-diags
+    - rdma-core
+  nvme:
+    - infiniband-diags
+    - rdma-core
+    - nvme-cli
 
 eseries_ib_base_rhel_packages:
-  - infiniband-diags
-  - rdma-core
+  ipoib:
+    - infiniband-diags
+    - rdma-core
+  srp:
+    - infiniband-diags
+    - rdma-core
+    - srptools
+  iser:
+    - infiniband-diags
+    - rdma-core
+  nvme:
+    - infiniband-diags
+    - rdma-core
+    - nvme-cli
+
+eseries_ib_base_suse_packages:
+  ipoib:
+    - infiniband-diags
+    - rdma-core
+  srp:
+    - infiniband-diags
+    - rdma-core
+    - srptools
+  iser:
+    - infiniband-diags
+    - rdma-core
+  nvme:
+    - infiniband-diags
+    - rdma-core
+    - nvme-cli
 
 eseries_ib_base_kernel_modules:
+  - mlx5_ib
   - ib_core
   - ib_umad     # Access to fabric management SMPs and GMPs from userspace.
   - ib_uverbs   # User access to RDMA verbs (supports libibverbs)
   - rdma_cm     # RDMA connection management
   - rdma_ucm    # User access to RDMA connection management (supports librdmacm)
-  - mlx5_core
-  - mlx5_ib
 
 eseries_ib_base_ipoib_kernel_modules:
   - ib_ipoib    # InfiniBand over IP net device
@@ -36,9 +72,13 @@ eseries_ib_base_iser_kernel_modules:
   - ib_ipoib    # InfiniBand over IP net device
   - ib_iser     # iSCSI over RDMA client support
 
+eseries_ib_base_nvme_kernel_modules:
+  - ib_ipoib    # InfiniBand over IP net device
+  - nvme_core
+  - nvme-rdma
+  - nvme_fabrics
+
 eseries_ib_base_uninstall_kernel_modules:
-  - mlx5_ib
-  - mlx5_core
   - rdma_ucm
   - rdma_cm
   - ib_umad

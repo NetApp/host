@@ -101,8 +101,20 @@
 
             {#- Add host information -#}
             {%- set dev_mapper_path = "/dev/mapper/" ~ map_info[1] -%}
-            {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {}, "volume_name": map_info[1], "wwid": map_info[0], "dev_mapper_path": dev_mapper_path,
-                                                          "mount_path": unmount_volume_info[dev_mapper_path] | default(""), "blocks": [], "active_paths": map_info[2]}}) -%}{%- endif -%}
+            {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
+                                                          "volume_name": map_info[1],
+                                                          "wwid": map_info[0],
+                                                          "blocks": [],
+                                                          "active_paths": map_info[2],
+                                                          "dev_mapper_path": dev_mapper_path,
+                                                          "mount_path": unmount_volume_info[dev_mapper_path] | default(""),
+                                                          "is_nvme": map_info[3] | regex_search("NVME", ignorecase=True) != ""}}) -%}{%- endif -%}
+
+            {#- Collect storage volume information -#}
+            {%- for volume_info in initiator_volume_facts if (volume_info["wwn"] and map_info[0] | regex_search(volume_info["wwn"], ignorecase=True)) or
+                                                             (volume_info["eui"] and map_info[0] | regex_search(volume_info["eui"], ignorecase=True)) -%}
+              {%- if mapped_info_dict[map_info[1]]["volume_info"].update(volume_info) -%}{%- endif -%}
+            {%- endfor -%}
 
             {#- Add path block devices -#}
             {%- for path_info_line in multipathd_path_info["stdout_lines"] if path_info_line | regex_search(map_info[0], ignorecase=True) -%}

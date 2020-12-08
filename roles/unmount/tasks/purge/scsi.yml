@@ -1,0 +1,34 @@
+- name: Flush underlining multipath device devices.
+  command:
+    cmd: "multipath -f {{ item['dev_mapper_path'] }}"
+  loop: "{{ unmount_volume_info }}"
+  when: item['is_nvme'] == False
+  register: multipath_device_flush
+  retries: 60
+  delay: 3
+  until: multipath_device_flush['rc'] == 0
+  become: true
+
+
+# THIS ONLY WORKS FOR SCSI DEVICES NOT NVMe...Well maybe not
+- name: Delete block devices for removed volume.
+  shell: "echo 1 > /sys/block/{{ item }}/device/delete"
+  loop: "{{ block_to_delete }}"
+  register: delete_device
+  failed_when: false
+  changed_when: delete_device['rc'] == 0
+  become: true
+  vars:
+    block_to_delete: |-
+      {%- set blocks = [] -%}
+      {%- for mounts in unmount_volume_info if mounts['is_nvme'] == False -%}
+        {%- if blocks.extend(mounts["blocks"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ blocks }}
+
+- name: Force multipath to update devmap.
+  command:
+    cmd: "multipath"
+  loop: "{{ unmount_volume_info }}"
+  when: item['is_nvme'] == False
+  become: true

@@ -1,0 +1,51 @@
+#!/bin/sh
+
+rc=0
+
+start() {
+    echo "Discover all storage targets specified in {{ eseries_nvme_ib_discovery_conf }}..."
+    nvme discover
+    rc=$?
+    if [ $rc != 0 ]; then
+        echo "Failed to complete storage target discovery!"
+        exit $rc
+    fi
+
+{% for id, target in targets.items() %}
+    echo -n "Connecting to {{ target["array_name"] }} via {{ target["address"] }}..."
+    nvme connect --transport=rdma --traddr={{ target["address"] }} --nqn={{ target["nqn"] }} --queue-size={{ target["queue_depth"] }} --ctrl-loss-tmo={{ target["controller_loss_timeout"] }}
+    rc=$? || $rc
+    echo "Done"
+
+{% else %}
+    echo "There were no storage targets to connect."
+{% endfor %}
+}
+
+stop() {
+    for device in `ls -1 /sys/class/nvme`; do
+        nvme disconnect --device /dev/$device
+        rc=$? || $rc
+    done
+    systemctl kill nvme.service
+    rc=$? || $rc
+}
+
+case $1 in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart | reload)
+        stop
+        sleep 5
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|reload}"
+        rc=1
+esac
+
+exit $rc

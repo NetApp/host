@@ -1,0 +1,44 @@
+- name: Include operating specific variables.
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
+
+- name: Ensure NVMe service for E-Series is stopped and disabled.
+  systemd:
+    name: nvme.service
+    state: stopped
+    enabled: false
+    daemon_reload: true
+  when: "'nvme.service' in (ansible_facts['services'].keys() | list)"
+  become: true
+
+- name: Determine variable values required for ipoib and ib_opensm roles.
+  set_fact:
+    eseries_ib_base_nvme_enabled: true
+    eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_nvme_ib_interfaces | default(omit)) }}"
+    eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_nvme_ib_mtu | default(omit)) }}"
+    eseries_ib_opensm_interfaces: "{{ eseries_nvme_ib_interfaces }}"
+
+- name: Ensure InfiniBand IPoIB is installed and configured.
+  import_role:
+    name: ib_opensm
+    tasks_from: uninstall.yml
+
+- name: Ensure InfiniBand IPoIB is uninstalled.
+  import_role:
+    name: ipoib
+    tasks_from: uninstall.yml
+
+- name: Remove NVMe over InfiniBand systemd service file.
+  file:
+    state: absent
+    path: "{{ eseries_nvme_ib_service }}"
+  become: true
+
+- name: Remove NVMe over InfiniBand daemon.
+  file:
+    state: absent
+    path: "{{ eseries_nvme_ib_daemon }}"
+  become: true

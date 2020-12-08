@@ -1,0 +1,12 @@
+[Unit]
+Description=Connect to all NVMe targets
+Requires=network-online.target
+After=systemd-modules-load.service network-online.target
+
+[Service]
+ExecStart={{ eseries_nvme_ib_daemon }} start
+ExecStop={{ eseries_nvme_ib_daemon }} stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

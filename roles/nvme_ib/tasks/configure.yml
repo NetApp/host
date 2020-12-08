@@ -1,0 +1,72 @@
+- name: Ensure the host NVMe Qualified Name (NQN) is correctly set.
+  copy:
+    content: "{{ eseries_nvme_nqn }}"
+    dest: "{{ eseries_nvme_ib_hostnqn }}"
+  become: true
+  when: eseries_nvme_nqn is defined and eseries_nvme_nqn
+
+- name: Get the host NVMe Qualified Name (NQN).
+  command:
+    cmd: "{{ eseries_nvme_ib_nqn_command }}"
+  changed_when: false
+  register: hostnqn_output
+  become: true
+
+- name: Determine NVMe storage target information.
+  set_fact:
+    targets: |-
+      {%- set targets = {} -%}
+      {%- for volume in initiator_volume_facts -%}
+        {%- for host_port_information in volume["host_port_information"]["nvme_ib"] -%}
+          {%- if host_port_information["link_status"] == "active" and host_port_information["ipv4"] -%}
+            {%- for interface_info in eseries_nvme_ib_interfaces -%}
+              {%- if host_port_information["ipv4"]["address"] | ipaddr(interface_info["address"]) -%}
+                {%- if targets.update({host_port_information["interface_reference"]: {
+                        "array_name": volume["ansible_array_name"],
+                        "address": host_port_information["ipv4"]["address"],
+                        "port": eseries_nvme_ib_port,
+                        "queue_depth": interface_info["queue_depth"] | default(eseries_nvme_ib_queue_depth),
+                        "controller_loss_timeout": eseries_nvme_ib_controller_loss_timeout,
+                        "hostnqn": hostnqn_output["stdout"],
+                        "nqn": host_port_information["nqn"] }}) -%}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ targets }}
+
+- name: Ensure there is at least one usable target before continuing.
+  fail:
+    msg: "Error: Unable to establish communication with the storage system. Check physical connections and interface configuration."
+  when: targets.keys() | list | length == 0
+
+- name: Configure NVMe discovery.conf with expected storage target information.
+  template:
+    src: discovery_conf.j2
+    dest: "{{ eseries_nvme_ib_discovery_conf }}"
+  register: discover_conf
+  become: true
+
+- name: Create NVMe service daemon.
+  template:
+    src: nvme_daemon.j2
+    dest: "{{ eseries_nvme_ib_daemon }}"
+    mode: "0744"
+  register: nvme_daemon
+  become: true
+
+- name: Create NVMe systemd service file.
+  template:
+    src: nvme_service.j2
+    dest: "{{ eseries_nvme_ib_service }}"
+  register: nvme_service
+  become: true
+
+- name: Ensure NVMe service is running.
+  systemd:
+    name: nvme.service
+    state: started
+    enabled: true
+    daemon_reload: true
+  become: true

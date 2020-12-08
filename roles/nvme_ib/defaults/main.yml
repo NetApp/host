@@ -1,2 +1,12 @@
----
-# defaults file for netapp_eseries.iscsi
+eseries_nvme_ib_configure_network: true
+
+eseries_nvme_ib_discovery_conf: /etc/nvme/discovery.conf
+eseries_nvme_ib_hostnqn: /etc/nvme/hostnqn
+eseries_nvme_ib_daemon: /etc/nvme/nvme_daemon
+eseries_nvme_ib_service: /etc/systemd/system/nvme.service
+
+eseries_nvme_ib_port: 4420
+eseries_nvme_ib_mtu: 65520
+eseries_nvme_ib_queue_depth: 1024
+eseries_nvme_ib_controller_loss_timeout: 3600
+eseries_nvme_ib_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
