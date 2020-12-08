@@ -2,6 +2,7 @@ eseries_common_group: eseries_storage_systems
 eseries_common_allow_host_reboot: false
 eseries_common_docker_host: unix://var/run/docker.sock
 
+eseries_common_ignore_volumes: []
 eseries_common_target_scan_paths:
   scsi:
     sas: "for fp in /sys/class/sas_host/*/device/scsi_host/host*/scan; do echo '- - -' > $fp; done"

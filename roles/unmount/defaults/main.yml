@@ -1,5 +1,4 @@
 eseries_unmount_volumes: []
-eseries_unmount_skip_volumes: []
 eseries_unmount_temporary_unmount: false
 eseries_unmount_purge: false
 eseries_unmount_unmap: false

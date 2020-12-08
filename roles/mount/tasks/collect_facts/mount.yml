@@ -2,7 +2,7 @@
   set_fact:
     volume_mount_info: |-
       {%- set info = [] -%}
-      {%- for volume in eseries_volumes if volume["name"] not in eseries_mount_skip_volumes -%}
+      {%- for volume in eseries_volumes if volume["ignore_volume"] == False -%}
 
         {#- Determine hosts that should which volumes mounted -#}
         {%- set is_mount_to_hosts_defined = "volume_metadata" in (volume.keys() | list) and "mount_to_hosts" in (volume["volume_metadata"].keys() | list) -%}
@@ -49,7 +49,7 @@
 
           {#- Append volume information to host entry if its the first time the volume is encountered -#}
           {%- if info.update({host: []}) -%}{%- endif -%}
-          {%- for volume in hostvars[host]["eseries_volumes"] if volume["name"] not in eseries_mount_skip_volumes -%}
+          {%- for volume in hostvars[host]["eseries_volumes"] if volume["ignore_volume"] == False -%}
             {%- if volume["wwn"] ~ volume["eui"] not in volume_accounted_for -%}
               {%- if volume_accounted_for.append(volume["wwn"] ~ volume["eui"]) -%}{%- endif -%}
 
