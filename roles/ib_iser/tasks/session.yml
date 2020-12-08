@@ -27,7 +27,7 @@
       {%- endfor -%}
       {{ targets }}
 
-- name: Determine whether
+- name: Ensure there is at least one usable target before continuing.
   fail:
     msg: "Error: Unable to establish communication with the storage system. Check physical connections and interface configuration."
   when: targets.keys() | list | length == 0
