@@ -5,7 +5,7 @@
   service_facts:
   become: true
 
-- name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
+- name: Ensure InfiniBand OpenSM service loader for E-Series is stopped and disabled.
   systemd:
     name: opensm.service
     state: stopped

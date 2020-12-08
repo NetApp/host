@@ -107,6 +107,12 @@
       {%- endfor -%}
       {{- unavailable_interfaces -}}
 
+- name: Ensure OpenSM directory exists.
+  file:
+    state: directory
+    path: "{{ eseries_ib_opensm_config_path }}"
+  become: true
+
 - name: Create OpenSM configuration temporary files.
   command:
     cmd: "opensm --create-config {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~
