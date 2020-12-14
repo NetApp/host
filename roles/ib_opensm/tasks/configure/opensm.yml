@@ -67,7 +67,7 @@
 
         {#- Add expected interface -#}
         {%- for interface in eseries_ib_opensm_interfaces if interface["name"] in device_info["aliases"] -%}
-          {%- if device_info.update({"configure": interface["configure"] | default(True),
+          {%- if device_info.update({"configure": interface["configure"] | default(False),
                                      "subnet_prefix": interface["subnet_prefix"] | default("%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"])),
                                      "priority": interface["priority"] | default(eseries_ib_opensm_subnet_priority)}) -%}{%- endif -%}
           {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
