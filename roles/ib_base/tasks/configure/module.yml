@@ -16,6 +16,18 @@
       {%- endif -%}
       {{- modules | unique | sort -}}
 
+- name: "Ensure {{ eseries_ib_base_rdma }} directory exists."
+  file:
+    state: directory
+    path: "{{ eseries_ib_base_rdma }}"
+  become: true
+
+- name: "Ensure {{ eseries_ib_base_rdma }}modules directory exists."
+  file:
+    state: directory
+    path: "{{ eseries_ib_base_rdma }}modules/"
+  become: true
+
 - name: "Ensure {{ eseries_ib_base_rdma }}rdma.conf is correct (RHEL)."
   template:
     src: configure/redhat/rdma_conf.j2
