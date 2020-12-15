@@ -9,8 +9,6 @@
   until: multipath_device_flush['rc'] == 0
   become: true
 
-
-# THIS ONLY WORKS FOR SCSI DEVICES NOT NVMe...Well maybe not
 - name: Delete block devices for removed volume.
   shell: "echo 1 > /sys/block/{{ item }}/device/delete"
   loop: "{{ block_to_delete }}"

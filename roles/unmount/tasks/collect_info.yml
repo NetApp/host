@@ -108,7 +108,7 @@
                                                           "active_paths": map_info[2],
                                                           "dev_mapper_path": dev_mapper_path,
                                                           "mount_path": unmount_volume_info[dev_mapper_path] | default(""),
-                                                          "is_nvme": map_info[3] | regex_search("NVME", ignorecase=True) != ""}}) -%}{%- endif -%}
+                                                          "is_nvme": True if (map_info[3] | regex_search("NVME", ignorecase=True)) else False }}) -%}{%- endif -%}
 
             {#- Collect storage volume information -#}
             {%- for volume_info in initiator_volume_facts if (volume_info["wwn"] and map_info[0] | regex_search(volume_info["wwn"], ignorecase=True)) or
