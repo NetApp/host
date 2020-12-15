@@ -7,3 +7,4 @@
   include_role:
     name: multipath
     tasks_from: uninstall.yml
+  when: eseries_storage_setup_uninstall_multipath == True
