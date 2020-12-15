@@ -1,4 +1,4 @@
-- name: Ensure multipath has been added to /etc/initramfs/modules file.
+- name: Ensure multipath has been removed to /etc/initramfs/modules file.
   lineinfile:
     state: absent
     path: "{{ eseries_multipath_initramfs_modules_path }}"

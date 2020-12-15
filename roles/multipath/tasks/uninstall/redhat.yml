@@ -1,4 +1,4 @@
-- name: Ensure multipath has been added to /etc/initramfs/modules file.
+- name: Ensure dracut configuration file for multipath has been removed.
   file:
     state: absent
     path: "{{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf"
@@ -6,7 +6,7 @@
   register: dracut_modules
 
 - name: Update initramfs image.
-  command: dracut --force
+  command: dracut --force --omit multipath
   become: true
   when: dracut_modules['changed'] == True
 

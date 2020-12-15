@@ -4,7 +4,7 @@ The role will install and configure multipath on a host.
 
 Role Variables
 --------------
-eseries_multipath_configure_user_friendly_names: true   # Whether to configure multipath to use the volume's name instead of the host WWID.
+eseries_multipath_configure_user_friendly_names:    # Whether to configure multipath to use the volume's name instead of the host WWID (Default: true).
 
 License
 -------
