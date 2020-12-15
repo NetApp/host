@@ -19,4 +19,5 @@
     state: started
     name: multipathd.service
     enabled: true
+    daemon_reload: true
   become: true
