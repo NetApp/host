@@ -2,8 +2,6 @@ netapp_eseries.host.ipoib
 =========
     Configures OpenSM subnet manager.
 
-
-
 Example Playbook
 ----------------
 - hosts: eseries_host_group
@@ -13,7 +11,6 @@ Example Playbook
     - name: Ensure Expected InfiniBand subnet managers are configured.
       import_role:
         name: ib_opensm
-
 
 Example Inventory File
 ----------------------
@@ -52,11 +49,9 @@ To uninstall InfiniBand IPoIB, add '--tags ib_opensm_uninstall' to the ansible-p
 
     ansible-playbook -i inventory.yml playbook --tags ib_opensm_uninstall
 
-
 License
 -------
     BSD-3-Clause
-
 
 Author Information
 ------------------
