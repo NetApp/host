@@ -5,17 +5,17 @@
   set_fact:
     eseries_ib_base_nvme_enabled: true
     eseries_ipoib_configure_network: "{{ eseries_nvme_ib_configure_network }}"
-    eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_nvme_ib_interfaces | default(omit)) }}"
-    eseries_ipoib_mtu: "{{ eseries_nvme_ib_mtu | default(eseries_ipoib_mtu | default(omit)) }}"
+    eseries_ipoib_interfaces: "{{ eseries_nvme_ib_interfaces | default(omit) }}"
+    eseries_ipoib_mtu: "{{ eseries_nvme_ib_mtu | default(omit) }}"
     eseries_ib_opensm_interfaces: "{{ eseries_nvme_ib_interfaces | default(omit) }}"
-
-#- name: Ensure OpenSM subnet managers are installed and configured.
-#  import_role:
-#    name: ib_opensm
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   import_role:
     name: ipoib
+
+- name: Ensure OpenSM subnet managers are installed and configured.
+  import_role:
+    name: ib_opensm
 
 - name: Discover mapped-volume information from associated storage systems.
   import_role:
@@ -24,9 +24,6 @@
 
 - name: Ensure NVMe over InfiniBand is configured.
   import_tasks: configure.yml
-
-#- name: Ensure InfiniBand iSER iSCSI sessions are configured.
-#  import_tasks: session.yml
 
 - name: Uninstall InfiniBand IPoIB.
   import_tasks: uninstall.yml
