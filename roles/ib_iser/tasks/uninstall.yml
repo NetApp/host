@@ -1,6 +1,18 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
+- name: Determine variable values required for ipoib and ib_opensm roles.
+  set_fact:
+    eseries_ib_base_iser_enabled: true
+    eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_ib_iser_interfaces | default(omit)) }}"
+    eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_ib_iser_mtu | default(omit)) }}"
+    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
+
+- name: Ensure InfiniBand IPoIB is installed and configured.
+  import_role:
+    name: ib_opensm
+    tasks_from: uninstall.yml
+
 - name: Ensure InfiniBand IPoIB is uninstalled.
   import_role:
     name: ipoib
@@ -8,5 +20,5 @@
 
 - name: Ensure iSCSI packages are uninstalled.
   import_role:
-    name: netapp_eseries.host.iscsi
-    tasks_from: uninstall_packages.yml
+    name: iscsi
+    tasks_from: uninstall/package.yml

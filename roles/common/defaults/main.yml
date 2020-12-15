@@ -2,6 +2,19 @@ eseries_common_group: eseries_storage_systems
 eseries_common_allow_host_reboot: false
 eseries_common_docker_host: unix://var/run/docker.sock
 
+eseries_common_ignore_volumes: []
+eseries_common_target_scan_paths:
+  scsi:
+    sas: "for fp in /sys/class/sas_host/*/device/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+    fc: "for fp in /sys/class/fc_host/*/device/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+    ib_srp: "for fp in /sys/class/infiniband_srp/*/device/host*/scsi_host/host*/scan; do echo -n '- - -' > $fp; done"
+    iscsi: "for fp in /sys/class/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+    ib_iser: "for fp in /sys/class/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+  nvme:
+    nvme_ib: ""
+    nvme_fc: ""
+    nvme_roce: ""
+
 # Volume Discovery Protocol Action Lists (Do not modify)
 eseries_common_discovery_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser", "nvme_ib", "nvme_fc", "nvme_roce"]
 eseries_common_discovery_rescan_iscsi_session_protocol_list: ["iscsi", "ib_iser"]

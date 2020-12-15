@@ -1,8 +1,12 @@
+- name: Ensure multipath is configured.
+  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
+
 - name: Check whether /etc/multipath.conf exists
   stat:
     path: "/etc/multipath.conf"
   register: multipath_conf
   become: true
+
 - name: Ensure that multipath.conf exists.
   file:
     state: touch
@@ -10,17 +14,10 @@
   when: not multipath_conf["stat"]["exists"]
   become: true
 
-- name: Check whether multipath kernel module has been loaded.
-  modprobe:
-    state: present
-    name: "{{ item }}"
-  register: multipath_module
-  loop: "{{ eseries_multipath_kernel_modules }}"
-  become: true
-
 - name: Ensure multipathd daemon has been started and is enabled.
   systemd:
     state: started
     name: multipathd.service
     enabled: true
+    daemon_reload: true
   become: true

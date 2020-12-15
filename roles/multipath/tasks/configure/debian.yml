@@ -1,0 +1,13 @@
+- name: "Ensure multipath has been added to {{ eseries_multipath_initramfs_modules_path }} file."
+  lineinfile:
+    state: present
+    path: "{{ eseries_multipath_initramfs_modules_path }}"
+    line: "{{ item }}"
+  loop: "{{ eseries_multipath_initramfs_modules }}"
+  become: true
+  register: initramfs_modules
+
+- name: Update initramfs image.
+  command: update-initramfs -u
+  become: true
+  when: initramfs_modules['changed'] == True

@@ -7,7 +7,7 @@
   failed_when: false
   become: true
 
-- name: Uninstall all multipath packages.
+- name: Unconfigure and uninstall multipath.
   include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure multipath.conf has been removed.
@@ -20,4 +20,10 @@
   file:
     state: absent
     path: "{{ eseries_multipath_conf_d_path }}eseries_multipath.conf"
+  become: true
+
+- name: Remove multipath modules from boot.
+  file:
+    state: absent
+    path: "{{ eseries_multipath_modules_d }}eseries_multipath.conf"
   become: true

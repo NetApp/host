@@ -1,0 +1,34 @@
+- name: Include operating specific variables.
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
+
+- name: Ensure InfiniBand OpenSM service loader for E-Series is stopped and disabled.
+  systemd:
+    name: opensm.service
+    state: stopped
+    enabled: false
+    daemon_reload: true
+  when: "'opensm.service' in (ansible_facts['services'].keys() | list)"
+  become: true
+
+- name: Ensure InfiniBand packages are uninstalled.
+  include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
+
+- name: Determine existing OpenSM configuration files.
+  find:
+    path: "{{ eseries_ib_opensm_config_path }}"
+    pattern: "opensm.conf(.[0-9]+)?$"
+    use_regex: true
+  register: existing_opensm_configs
+  become: true
+
+- name: Remove no longer needed OpenSM configuration files.
+  file:
+    state: absent
+    path: "{{ item }}"
+  register: delete_opensm_config
+  loop: "{{ existing_opensm_configs['files'] }}"
+  become: true

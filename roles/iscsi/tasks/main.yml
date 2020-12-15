@@ -1,4 +1,7 @@
-- name: Ensure iSCSI packages are installed and configured.
+- name: Ensure iSCSI packages are installed.
+  import_tasks: package.yml
+
+- name: Ensure iSCSI is configured.
   import_tasks: configure.yml
 
 - name: Ensure iSCSI interfaces are configured.
@@ -11,3 +14,9 @@
 
 - name: Ensure iSCSI sessions are configured and established.
   import_tasks: session.yml
+
+- name: Uninstall iSCSI.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - iscsi_uninstall

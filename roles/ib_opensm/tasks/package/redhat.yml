@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand packages are installed (Ubuntu).
+  yum:
+    state: present
+    name: "{{ eseries_ib_opensm_rhel_packages }}"
+  become: true

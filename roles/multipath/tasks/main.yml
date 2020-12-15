@@ -6,6 +6,8 @@
       include_tasks: configure.yml
   when: not eseries_multipath_remove_installation
 
-- name: Ensure multipath is removed.
-  include_tasks: uninstall.yml
-  when: eseries_multipath_remove_installation
+- name: Uninstall multipath.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - multipath_uninstall

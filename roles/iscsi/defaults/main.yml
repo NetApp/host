@@ -7,3 +7,12 @@ eseries_iscsi_nr_session: 1
 eseries_iscsi_mtu: 1500
 eseries_iscsi_queue_depth: 32
 eseries_iscsi_session_replacement_timeout: 20
+
+eseries_iscsi_ubuntu_packages:
+  - open-iscsi
+
+eseries_iscsi_suse_packages:
+  - open-iscsi
+
+eseries_iscsi_rhel_packages:
+  - iscsi-initiator-utils

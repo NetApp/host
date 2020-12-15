@@ -1,0 +1,14 @@
+- name: Load operating system specific variables.
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure InfiniBand OpenSM packages are installed.
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure InfiniBand OpenSM subnet managers are configured.
+  include_tasks: configure.yml
+
+- name: Uninstall InfiniBand OpenSM subnet managers.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - ib_opensm_uninstall

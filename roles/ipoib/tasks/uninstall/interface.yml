@@ -1,0 +1,7 @@
+- name: Remove InfiniBand iSER network interfaces using ifupdown configuration.
+  include_tasks: interface/ifupdown.yml
+  when: eseries_ipoib_network_tool | default(eseries_ipoib_default_network_tool) == 'ifupdown'
+
+- name: Remove InfiniBand iSER network interfaces using netplan configuration.
+  include_tasks: interface/netplan.yml
+  when: eseries_ipoib_network_tool | default(eseries_ipoib_default_network_tool) == 'netplan'

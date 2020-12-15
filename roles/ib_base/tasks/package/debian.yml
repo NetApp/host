@@ -1,0 +1,23 @@
+- name: Determine packages to install (Ubuntu).
+  set_fact:
+    ubuntu_packages: |-
+      {%- set packages = [] -%}
+      {%- if eseries_ib_base_ipoib_enabled == True -%}
+        {%- if packages.extend(eseries_ib_base_ubuntu_packages["ipoib"]) -%}{%- endif -%}
+      {%- endif -%}
+      {%- if eseries_ib_base_iser_enabled == True -%}
+        {%- if packages.extend(eseries_ib_base_ubuntu_packages["iser"]) -%}{%- endif -%}
+      {%- endif -%}
+      {%- if eseries_ib_base_srp_enabled == True -%}
+        {%- if packages.extend(eseries_ib_base_ubuntu_packages["srp"]) -%}{%- endif -%}
+      {%- endif -%}
+      {%- if eseries_ib_base_nvme_enabled == True -%}
+        {%- if packages.extend(eseries_ib_base_ubuntu_packages["nvme"]) -%}{%- endif -%}
+      {%- endif -%}
+      {{- packages | unique | sort -}}
+
+- name: Ensure expected InfiniBand packages are installed (Ubuntu).
+  apt:
+    state: present
+    name: "{{ ubuntu_packages }}"
+  become: true

@@ -15,9 +15,6 @@
                                 "interface": interface["name"],
                                 "iqn": eseries_iscsi_iqn | default(iqn_command["stdout"]),
                                 "address": interface["address"],
-                                "opensm_configure": interface["opensm_configure"] | default(eseries_ib_iser_opensm_configure),
-                                "opensm_subnet_prefix": interface["opensm_subnet_prefix"] | default(eseries_ib_iser_opensm_subnet_prefix),
-                                "opensm_priority": interface["opensm_priority"] | default(eseries_ib_iser_opensm_subnet_priority),
                                 "username": interface["username"] | default(eseries_ib_iser_username),
                                 "password": interface["password"] | default(eseries_ib_iser_password),
                                 "queue_depth": interface["queue_depth"] | default(eseries_ib_iser_queue_depth),
@@ -29,7 +26,10 @@
       {%- endfor -%}
       {{ bindings }}
 
-# TODO: Ensure that they're is at least one IB iSER-iSCSI interface to configure.
+- name: Ensure that they're is at least one InfiniBand iSER interface to configure.
+  fail:
+    msg: "There are no usable InfiniBand iSER interfaces found! Check host inventory. Host: [ {{ inventory_hostname }} ]."
+  when: ib_iser_interfaces_info | length == 0
 
 - name: Ensure iSCSI ifaces path exists.
   file:

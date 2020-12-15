@@ -4,29 +4,9 @@
   become: true
   when: "'rescan_iscsi_sessions' in rescan_actions"
 
-# Note: Using a one-liner to rescan all SCSI targets cause root-permission issues. (i.e. for x in $(ls /sys/class/scsi_host); do echo '- - -' > /sys/class/scsi_host/$x/scan; done &> /dev/null && for x in $(ls /sys/block); do echo 1 > /sys/block/$x/device/rescan; done &> /dev/null)
-- name: Determine all SCSI host targets.
-  command:
-    cmd: ls -1 /sys/class/scsi_host
-  register: scsi_hosts
-  changed_when: false
-  become: true
-
-- name: Rescan for all SCSI host target devices.
-  shell: "echo -n '- - -' > /sys/class/scsi_host/{{ item }}/scan"
-  loop: "{{ scsi_hosts['stdout_lines'] }}"
-  become: true
-
-- name: Reload multipath.
-  command:
-    cmd: multipath
-  failed_when: false
-  become: true
-
-- name: Reconfigure multipath.
-  command:
-    cmd: multipathd reconfigure
-  failed_when: false
+- name: Scan for all SCSI host target devices.
+  shell: "{{ eseries_common_target_scan_paths['scsi'][item] }}"
+  loop: "{{ rescan_protocols }}"
   become: true
 
 - name: Reset wwids file information to only include current devices.
@@ -35,8 +15,8 @@
   failed_when: false
   become: true
 
-#- name: Restart multipathd daemon.
-#  systemd:
-#    name: multipathd.service
-#    state: restarted
-#  become: true
+- name: Restart multipathd daemon.
+  systemd:
+    name: multipathd.service
+    state: restarted
+  become: true

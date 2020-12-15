@@ -1,26 +1,17 @@
+- name: Ensure dracut configuration file for multipath has been removed.
+  file:
+    state: absent
+    path: "{{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf"
+  become: true
+  register: dracut_modules
+
+- name: Update initramfs image.
+  command: dracut --force --omit multipath
+  become: true
+  when: dracut_modules['changed'] == True
+
 - name: Ensure expected multipath packages have been uninstalled (SUSE).
   zypper:
     state: absent
-    name: multipath-tools
+    name: "{{ eseries_multipath_suse_packages }}"
   become: true
-
-- name: Get list of current kernel modules.
-  command: dracut --list-modules
-  changed_when: false
-  register: kernel_modules
-
-- name: Update the ramdisk
-  command: dracut --force --omit multipath
-  register: initramfs
-  failed_when: initramfs['rc'] != 0
-  when: multipath_added_to_initramfs | bool
-  become: true
-  vars:
-    multipath_added_to_initramfs: |-
-      {%- set scratch = {"found": False} -%}
-      {%- for module in kernel_modules["stdout_lines"] -%}
-        {%- if module == "multipath" -%}
-          {%- if scratch.update({"found": True}) -%}{%- endif -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {{ scratch["found"] }}

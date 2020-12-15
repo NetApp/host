@@ -1,0 +1,5 @@
+- name: Ensure expected iSCSI packages are installed (SUSE).
+  zypper:
+    state: present
+    name: "{{ eseries_iscsi_suse_packages }}"
+  become: true

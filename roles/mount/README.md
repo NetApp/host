@@ -5,6 +5,8 @@ Discover, format, and assign persistent mount point for NetApp E-Series mapped v
 Role Variables
 --------------
 eseries_common_group:                     # Inventory group containing E-Series storage systems (Default: eseries_storage_systems).
+eseries_common_ignore_volumes:             # List of volumes to ignore (Default: []).
+
 eseries_mount_volumes:                    # List of volumes to mount (Default: ["all_volumes"].
 eseries_mount_format_type:                # Volume format type (Default: xfs)
 eseries_mount_format_options:             # Volume format type options (Default: -d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk)

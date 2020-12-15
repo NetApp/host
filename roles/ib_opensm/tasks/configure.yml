@@ -1,0 +1,5 @@
+- name: Ensure non_standard InfiniBand OpenSM subnet managers are configured.
+  include_tasks: configure/opensm.yml
+
+- name: Ensure systemd service loader is installed and configured.
+  include_tasks: "service/{{ ansible_os_family | lower }}.yml"

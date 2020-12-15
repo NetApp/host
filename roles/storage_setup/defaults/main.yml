@@ -1,1 +1,1 @@
-eseries_storage_setup_uninstall: False
+eseries_storage_setup_uninstall_multipath: false  # Uninstalling multipath can result in boot failures.

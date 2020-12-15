@@ -1,7 +1,19 @@
+- name: Ensure multipath has been removed to /etc/initramfs/modules file.
+  lineinfile:
+    state: absent
+    path: "{{ eseries_multipath_initramfs_modules_path }}"
+    line: "{{ item }}"
+  loop: "{{ eseries_multipath_initramfs_modules }}"
+  become: true
+  register: initramfs_modules
+
+- name: Update initramfs image.
+  command: update-initramfs -u
+  become: true
+  when: initramfs_modules['changed'] == True
+
 - name: Ensure expected multipath packages have been uninstalled (Ubuntu).
   apt:
     state: absent
-    name:
-      - multipath-tools
-      - multipath-tools-boot
+    name: "{{ eseries_multipath_ubuntu_packages }}"
   become: true

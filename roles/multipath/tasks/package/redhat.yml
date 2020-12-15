@@ -1,26 +1,5 @@
 - name: Ensure expected multipath packages are installed (RHEL).
   yum:
-    name: device-mapper-multipath
+    state: present
+    name: "{{ eseries_multipath_rhel_packages }}"
   become: true
-
-- name: Get list of current kernel modules.
-  command: dracut --list-modules
-  register: kernel_modules
-  changed_when: false
-  become: true
-
-- name: Update the ramdisk
-  command: dracut --force --add multipath
-  register: initramfs
-  failed_when: initramfs['rc'] != 0
-  when: not multipath_added_to_initramfs | bool
-  become: true
-  vars:
-    multipath_added_to_initramfs: |-
-      {%- set scratch = {"found": False} -%}
-      {%- for module in kernel_modules["stdout_lines"] -%}
-        {%- if module == "multipath" -%}
-          {%- if scratch.update({"found": True}) -%}{%- endif -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {{ scratch["found"] }}

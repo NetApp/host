@@ -6,3 +6,8 @@
 - name: Setup expected host protocol.
   include_tasks: protocol.yml
 
+- name: Uninstall protocols.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - protocol_uninstall

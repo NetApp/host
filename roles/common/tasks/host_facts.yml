@@ -5,8 +5,8 @@
   when: initiator_volume_facts is not defined
 
 - name: Determine whether multipath is installed.
-  command: multipathd show maps
-  register: multipathd
+  command: systemctl status multipathd.service
+  register: multipathd_status
   changed_when: false
   failed_when: false
   become: true
@@ -39,4 +39,4 @@
 
     - name: Add volume paths to volumes
       import_tasks: host_facts/add_path.yml
-  when: multipathd["rc"] == 0
+  when: multipathd_status["rc"] == 0

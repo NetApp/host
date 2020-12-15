@@ -2,7 +2,7 @@
   set_fact:
     volume_mount_info: |-
       {%- set info = [] -%}
-      {%- for volume in eseries_volumes -%}
+      {%- for volume in eseries_volumes if volume["ignore_volume"] == False -%}
 
         {#- Determine hosts that should which volumes mounted -#}
         {%- set is_mount_to_hosts_defined = "volume_metadata" in (volume.keys() | list) and "mount_to_hosts" in (volume["volume_metadata"].keys() | list) -%}
@@ -48,8 +48,8 @@
     volume_unmount_list: |-
       {%- set unmount_volumes = [] -%}
       {%- for line in multipath_maps["stdout_lines"] -%}
-        {%- for volume in volume_mount_info if volume["wwn"] and line | regex_search(volume["wwn"], ignorecase=True) or
-                                               volume["eui"] and line | regex_search(volume["eui"], ignorecase=True) -%}
+        {%- for volume in volume_mount_info if (volume["wwn"] and line | regex_search(volume["wwn"], ignorecase=True)) or
+                                               (volume["eui"] and line | regex_search(volume["eui"], ignorecase=True)) -%}
           {#- DO NOTHING -#}
         {%- else -%}
           {#- Verify the unmapped volume is eseries -#}

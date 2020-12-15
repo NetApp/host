@@ -1,0 +1,11 @@
+- name: Ensure InfiniBand base packages are installed.
+  include_tasks: "package/{{  ansible_os_family | lower }}.yml"
+
+- name: Ensure InfiniBand base is configured.
+  import_tasks: configure.yml
+
+- name: Uninstall InfiniBand base.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - ib_base_uninstall

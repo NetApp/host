@@ -1,2 +1,1 @@
----
-# defaults file for netapp_eseries.iscsi
+eseries_ib_srp_daemon_service: /etc/systemd/system/srp_daemon.service

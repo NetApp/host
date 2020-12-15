@@ -1,8 +1,5 @@
 eseries_ib_iser_configure_network: true
 eseries_ib_iser_rdma_conf: /etc/rdma/rdma.conf
-eseries_ib_iser_opensm_configure: false
-eseries_ib_iser_opensm_subnet_prefix: "0xfe80000000000000"
-eseries_ib_iser_opensm_subnet_priority: 0
 eseries_ib_iser_port: 3260
 eseries_ib_iser_username: ""
 eseries_ib_iser_password: ""

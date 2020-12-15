@@ -1,6 +1,7 @@
 - name: Get multipath map information for each mapping to be removed.
   command:
-    cmd: "multipathd show maps raw format '%w,%n,%N,%v,%p'"
+    cmd: "multipathd show maps raw format '%w,%n,%N,%s'"
+    #cmd: "multipathd show maps raw format '%w,%n,%N,%v,%p'"
   register: multipathd_map_info
   changed_when: false
   failed_when: false
@@ -27,8 +28,8 @@
   set_fact:
     unmap_volume_info: |-
       {%- set mapped_volume_info = [] -%}
-      {%- for volume_info in initiator_volume_facts if volume_info["name"] in eseries_unmount_volumes or "all_volumes" in eseries_unmount_volumes -%}
-
+      {%- for volume_info in initiator_volume_facts if volume_info["ignore_volume"] == False and
+                                                       (volume_info["name"] in eseries_unmount_volumes or "all_volumes" in eseries_unmount_volumes) -%}
         {%- set info = {"volume_name": volume_info["name"], "volume_info": volume_info, "array_credentials": {}} -%}
         {%- set array_info = hostvars[volume_info['ansible_array_name']] -%}
         {%- set array_info_keys = array_info.keys() | list -%}
@@ -80,19 +81,40 @@
         {%- if unmount_volume_info.update({info[0]: info[2]}) -%}{%- endif -%}
       {%- endfor -%}
 
+      {#- Create regex pattern of volume WWNs to ignore -#}
+      {%- set ignore_volumes_list = [] -%}
+      {%- for volume_info in initiator_volume_facts if volume_info["ignore_volume"] == True -%}
+        {%- if volume_info["wwn"] and ignore_volumes_list.append(volume_info["wwn"]) -%}{%- endif -%}
+        {%- if volume_info["eui"] and ignore_volumes_list.append(volume_info["eui"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- set ignore_volume_pattern = ignore_volumes_list | join("|") -%}
+
       {#- Create list of volume information used to unmap the volumes. -#}
       {%- set mapped_info = [] -%}
       {%- set mapped_info_dict = {} -%}
       {%- if multipathd_map_info["rc"] == 0 -%}
-        {%- for map_info_line in multipathd_map_info["stdout_lines"] if map_info_line | regex_search("NETAPP\s*,INF-01-00", ignorecase=True) -%}
-          {%- set map_info = map_info_line.split(",") -%}
+        {%- for map_info_line in multipathd_map_info["stdout_lines"] if not (map_info_line | regex_search(ignore_volume_pattern, ignorecase=True)) and
+                                                                        map_info_line | regex_search(".*NETAPP\s*,INF-01-00|NetApp E-Series", ignorecase=True) -%}
 
+          {%- set map_info = (map_info_line | regex_replace("\s*", "")).split(",") -%}
           {%- for volume_name in eseries_unmount_volumes if map_info[1] not in (mapped_info_dict.keys() | list) and (volume_name == "all_volumes" or volume_name == map_info[1]) -%}
 
             {#- Add host information -#}
             {%- set dev_mapper_path = "/dev/mapper/" ~ map_info[1] -%}
-            {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {}, "volume_name": map_info[1], "wwid": map_info[0], "dev_mapper_path": dev_mapper_path,
-                                                          "mount_path": unmount_volume_info[dev_mapper_path] | default(""), "blocks": [], "active_paths": map_info[2]}}) -%}{%- endif -%}
+            {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
+                                                          "volume_name": map_info[1],
+                                                          "wwid": map_info[0],
+                                                          "blocks": [],
+                                                          "active_paths": map_info[2],
+                                                          "dev_mapper_path": dev_mapper_path,
+                                                          "mount_path": unmount_volume_info[dev_mapper_path] | default(""),
+                                                          "is_nvme": True if (map_info[3] | regex_search("NVME", ignorecase=True)) else False }}) -%}{%- endif -%}
+
+            {#- Collect storage volume information -#}
+            {%- for volume_info in initiator_volume_facts if (volume_info["wwn"] and map_info[0] | regex_search(volume_info["wwn"], ignorecase=True)) or
+                                                             (volume_info["eui"] and map_info[0] | regex_search(volume_info["eui"], ignorecase=True)) -%}
+              {%- if mapped_info_dict[map_info[1]]["volume_info"].update(volume_info) -%}{%- endif -%}
+            {%- endfor -%}
 
             {#- Add path block devices -#}
             {%- for path_info_line in multipathd_path_info["stdout_lines"] if path_info_line | regex_search(map_info[0], ignorecase=True) -%}

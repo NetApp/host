@@ -1,0 +1,38 @@
+#!/bin/sh
+
+rc=0
+
+start() {
+{% for entry in ib_devices %}
+    echo -n "Starting opensm on port {{ entry['port_guid'] }}..."
+    opensm -F {{ eseries_ib_opensm_config_path }}opensm.conf.{{ loop["index0"] }} --daemon
+    rc=$?||$rc
+    echo "Done"
+{% else %}
+    echo "No OpenSM subnet managers to start."
+{% endfor %}
+}
+
+stop() {
+    systemctl kill opensm.service
+    rc=$? || $rc
+}
+
+case $1 in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart | reload)
+        stop
+        sleep 5
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|reload}"
+        rc=1
+esac
+
+exit $rc

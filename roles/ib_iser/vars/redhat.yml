@@ -7,8 +7,6 @@ eseries_ib_iser_netplan_path: /etc/netplan/
 eseries_ib_iser_networkd_dispatcher_routable_d_path: /etc/networkd-dispatcher/routable.d/
 eseries_ib_iser_networkd_ifup_d_path: /etc/network/if-up.d/
 
-eseries_ib_iser_opensm_config_path: /etc/rdma/
-eseries_ib_iser_opensm_log_path: /var/log/
 eseries_ib_iser_iface_path: /var/lib/iscsi/ifaces/
 
 eseries_ib_iser_rdma_memory_conf: /etc/security/limits.d/rdma.conf

@@ -13,7 +13,8 @@ MTU={{ item["mtu"] | default(eseries_iscsi_mtu) }}
 LABEL={{ item["name"] }}
 STARTMODE=auto
 BOOTPROTO=static
-IPADDR={{ item["address"] }}
+IPADDR='{{ item["address"] }}'
+GATEWAYS='{{ item["gateway"] | default("") }}'
 MTU={{ item["mtu"] | default(eseries_iscsi_mtu) }}
 
 {% elif ansible_os_family | lower == "debian" %}

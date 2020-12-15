@@ -1,0 +1,15 @@
+- name: Delete srp_daemon.service
+  file:
+    state: absent
+    path: "{{ eseries_ib_srp_daemon_service }}"
+  become: true
+
+- name: Ensure InfiniBand IPoIB is installed and configured.
+  import_role:
+    name: ib_opensm
+    tasks_from: uninstall.yml
+
+- name: Ensure InfiniBand base has been installed and configured.
+  import_role:
+    name: ib_base
+    tasks_from: uninstall.yml

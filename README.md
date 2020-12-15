@@ -88,73 +88,16 @@ Important Notes
 *Note: Some variables may be repeated in multiple roles which is done to maintain continuity between roles should the defaults be overwritten.
 Common Variables (common)
 -------------------------
-    eseries_common_group:                            # Ansible host group or list of E-Series storage systems (Default: eseries_storage_systems).
-    eseries_common_volume_workload_filter:           # Filters the volumes added to eseries_volumes.
-    eseries_common_allow_host_reboot:                # Whether reboots will allowed in an attempt to discover E-Series volumes. (Default: false)
-    eseries_common_docker_host:                      # Docker host for SANtricity Web Services Proxy. (Default: unix://var/run/docker.sock)
+    eseries_common_group:                              # Ansible host group or list of E-Series storage systems (Default: eseries_storage_systems).
+    eseries_common_volume_workload_filter:             # Filters the volumes added to eseries_volumes.
+    eseries_common_allow_host_reboot:                  # Whether reboots will allowed in an attempt to discover E-Series volumes. (Default: false)
+    eseries_common_docker_host:                        # Docker host for SANtricity Web Services Proxy. (Default: unix://var/run/docker.sock)
 
 Multipath Variables (multipath)
 -------------------------------
     eseries_multipath_configure_user_friendly_names:   # Ensures that all volumes are presented with their given name. (Default: true)
     eseries_multipath_conf_d_path:                     # The directory path for E-Series specific wwid-alias definitions (Default: /etc/multipath/conf.d/).
     eseries_multipath_kernel_modules:                  # Kernel modules that need to be loaded in order for multipath to be functioning correctly. (Default [dm_multipath])
-    eseries_multipath_remove_installation:             # This flag will for multipath to be removed. (Default: false)
-
-Storage_Setup Variables
------------------------
-    eseries_multipath_configure_user_friendly_names:   # Ensures that all volumes are presented with their given name. (Default: true)
-    eseries_multipath_conf_d_path:                     # The directory path for E-Series specific wwid-alias definitions. (Default: /etc/multipath/conf.d/)
-    eseries_multipath_kernel_modules:                  # Kernel modules that need to be loaded in order for multipath to be functioning correctly. (Default [dm_multipath])
-    eseries_multipath_remove_installation:             # This flag will for multipath to be removed. (Default: false)
-    eseries_protocol:                                  # Protocols to install which are determined by the storage systems that have mapped volumes. `auto` will
-                                                       #   determine which protocols are required.
-                                                       #   Choices: auto, fc, ib_iser, ib_srp, iscsi, nvme_fc, nvme_ib, nvme_roce, sas (Default: auto)
-    eseries_protocol_log_path:                         # Path to eseries_protocol_log which is used to maintain a record of communication protocols installed. (Default: /var/log/)
-    eseries_storage_setup_uninstall:                   # Whether to uninstall multipath and communication protocols. (Default: false)
-
-Mount Variables (mount)
---------------------
-    * Note: `VOLUME_SEGMENT_SIZE_KB` and `VOLUME_STRIPE_COUNT` will be replaced with the correct values from your E-Series storage system.
-    eseries_mount_volumes:                     # List of volume names to mount. `all_volumes` ensures all mapped volumes are mounted. (Default:["all_volumes"])
-    eseries_mount_format_type:                 # Volume format type. (Default: xfs)
-    eseries_mount_format_options:              # Volume format options. (Default: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk")
-    eseries_mount_persistent_mount_options:    # Volume mount options. (Default: "_netdev")
-    eseries_mount_root_directory:              # Volume mount directory. (Default: /mnt/)
-    eseries_mount_skip_unmount:                # Whether to skip mounting volumes. (Default: false)
-    eseries_mount_format_type_options:         # Mount options for different formats. Used when eseries_mount_format_options is not defined.
-                                               # Defaults: xfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
-                                               #           ext4: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
-                                               #           btrfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
-
-    *Tip: Add mount_to_hosts, format_type, format_options, mount_dir, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See SANtricity collection for more details.
-
-Unmount Variables (unmount)
----------------------------
-    eseries_common_group:                      # Inventory group containing E-Series storage systems (Default: eseries_storage_systems).
-    eseries_unmount_volumes:                   # (Required) E-Series volume name list to unmount (Default: []).
-    eseries_unmount_purge:                     # Purge volume completely from host (Default: false).
-    eseries_unmount_unmap:                     # Unmap E-Series volume from host (Default: false).
-    eseries_unmount_delete:                    # Delete E-Series volume from host (Default: false).
-    eseries_unmount_wipe_format_signatures:    # Clear the format signatures from the E-Series volume (Default: false)
-
-IP over InfiniBand Variables (ipoib)
-------------------------------------
-    eseries_ipoib_interfaces:                  # (Required) List of InfiniBand interfaces (Note: Not required if eseries_ib_iser_interfaces is defined).
-      - name:                                  # (Required) Name of InfiniBand interface (i.e. ib0, ib1).
-        address:                               # (Required) IPv4 address. Use the format 192.0.2.24.
-        opensm_configure:                      # Whether to configure OpenSM for port.
-        opensm_subnet_prefix:                  # OpenSM subnet manager's subnet prefix.
-        opensm_priority:                       # OpenSM subnet manager's priority.
-        mtu:                                   # Interface maximum transmission unit measured in bytes.
-    eseries_ipoib_mtu:                         # Default maximum transmission unit measured in bytes (Default: "").
-    eseries_ipoib_opensm_configure:            # Default for whether to configure OpenSM. eseries_ib_iser_opensm_configure can be used instead (Default: true).
-    eseries_ipoib_opensm_subnet_prefix:        # Default OpenSM subnet manager's subnet prefix. eseries_ib_iser_opensm_subnet_prefix can be used instead (Default: "0xfe80000000000000").
-    eseries_ipoib_opensm_subnet_priority:      # Default OpenSM subnet manager's priority. eseries_ib_iser_opensm_subnet_priority can be used instead (Default: 0).
-    eseries_ipoib_ubuntu_packages:             # Default packages for ubuntu (Default: [rdma-core, infiniband-diags]).
-    eseries_ipoib_suse_packages:               # Default packages for ubuntu (Default: [rdma-core, infiniband-diags]).
-    eseries_ipoib_rhel_packages:               # Default packages for ubuntu (Default: [rdma-core, infiniband-diags]).
-    eseries_ipoib_kernel_modules:              # Default loaded kernel modules (Default: [rdma_cm, mlx5_core, ib_ipoib]).
-    eseries_ipoib_uninstall_kernel_modules:    # Default unloaded kernel modules when uninstalled. (Default: [mlx5_ib, mlx5_core, ib_ipoib])
 
 Protocol Variables (protocol)
 -----------------------------
@@ -163,37 +106,116 @@ Protocol Variables (protocol)
                                   #   Choices: auto, fc, ib_iser, ib_srp, iscsi, nvme_fc, nvme_ib, nvme_roce, sas (Default: auto)
     eseries_protocol_log_path:    # Path to eseries_protocol_log which is used to maintain a record of communication protocols installed. (Default: /var/log/)
 
+Storage_Setup Variables
+-----------------------
+    eseries_multipath_configure_user_friendly_names:   # Ensures that all volumes are presented with their given name. (Default: true)
+    eseries_multipath_conf_d_path:                     # The directory path for E-Series specific wwid-alias definitions. (Default: /etc/multipath/conf.d/)
+    eseries_multipath_kernel_modules:                  # Kernel modules that need to be loaded in order for multipath to be functioning correctly. (Default [dm_multipath])
+    eseries_protocol:                                  # Protocols to install which are determined by the storage systems that have mapped volumes. `auto` will
+                                                       #   determine which protocols are required.
+                                                       #   Choices: auto, fc, ib_iser, ib_srp, iscsi, nvme_fc, nvme_ib, nvme_roce, sas (Default: auto)
+
+Mount Variables (mount)
+--------------------
+    * Note: `VOLUME_SEGMENT_SIZE_KB` and `VOLUME_STRIPE_COUNT` will be replaced with the correct values from your E-Series storage system.
+    eseries_mount_volumes:                        # List of volume names to mount. `all_volumes` ensures all mapped volumes are mounted. (Default:["all_volumes"])
+    eseries_mount_format_type:                    # Volume format type. (Default: xfs)
+    eseries_mount_format_options:                 # Volume format options. (Default: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk")
+    eseries_mount_persistent_mount_options:       # Volume mount options. (Default: "_netdev")
+    eseries_mount_root_directory:                 # Volume mount directory. (Default: /mnt/)
+    eseries_mount_skip_unmount:                   # Whether to skip mounting volumes. (Default: false)
+    eseries_mount_format_type_options:            # Mount options for different formats. Used when eseries_mount_format_options is not defined.
+                                                  # Defaults: xfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
+                                                  #           ext4: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
+                                                  #           btrfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
+
+    *Tip: Add mount_to_hosts, format_type, format_options, mount_dir, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See SANtricity collection for more details.
+
+Unmount Variables (unmount)
+---------------------------
+    eseries_common_group:                         # Inventory group containing E-Series storage systems (Default: eseries_storage_systems).
+    eseries_unmount_volumes:                      # (Required) E-Series volume name list to unmount (Default: []).
+    eseries_unmount_purge:                        # Purge volume completely from host (Default: false).
+    eseries_unmount_unmap:                        # Unmap E-Series volume from host (Default: false).
+    eseries_unmount_delete:                       # Delete E-Series volume from host (Default: false).
+    eseries_unmount_wipe_format_signatures:       # Clear the format signatures from the E-Series volume (Default: false)
+
+InfiniBand Base Variables (ib_base)
+-----------------------------------
+    eseries_ib_base_ipoib_enabled:                # Whether InfiniBand IPoIB should be configured (Default: false).
+    eseries_ib_base_iser_enabled:                 # Whether InfiniBand iSER should be configured (Default: false).
+    eseries_ib_base_srp_enabled:                  # Whether InfiniBand SRP should be configured (Default: false).
+    eseries_ib_base_rdma:                         # Directory for RDMA configuration files (Default: /etc/rdma/).
+    eseries_ib_base_rdma_memory_conf:             # Absolute path to the rdma.conf file for configuring rdma security limitations (Default: /etc/security/limits.d/rdma.conf).
+    eseries_ib_base_modules_d:                    # Systemd module configuration files directory (Default: file/etc/modules-load.d/).
+    eseries_ib_base_ubuntu_packages:              # Packages to install for hosts running Ubuntu (Default: [infiniband-diags, rdma-core]).
+    eseries_ib_base_suse_packages:                # Packages to install for hosts running SUSE (Default: [infiniband-diags, rdma-core]).
+    eseries_ib_base_rhel_packages:                # Packages to install for hosts running RedHat (Default: [infiniband-diags, rdma-core]).
+    eseries_ib_base_kernel_modules:               # InfiniBand base kernel modules (Default: [ib_core, ib_umad, ib_uverbs, rdma_cm, rdma_ucm, mlx5_core, mlx5_ib])
+    eseries_ib_base_ipoib_kernel_modules:         # InfiniBand base kernel modules for InfiniBand IPoIB (Default: [ib_ipoib]).
+    eseries_ib_base_srp_kernel_modules:           # InfiniBand base kernel modules for InfiniBand SRP (Default: [ib_srp]).
+    eseries_ib_base_iser_kernel_modules:          # InfiniBand base kernel modules for InfiniBand iSER (Default: [ib_ipoib, ib_iser]).
+
+InfiniBand OpenSM Variables (ib_opensm)
+---------------------------------------
+    eseries_ib_opensm_subnet_manager_configure:   # Default for whether to configure OpenSM (Default: false).
+    eseries_ib_opensm_subnet_prefix_base:         # Default OpenSM subnet manager's subnet prefix base. The last two digits will be determined by device port ordering (Default: "0xfe800000000000").
+    eseries_ib_opensm_subnet_priority:            # Default OpenSM subnet manager's priority. eseries_ib_iser_opensm_subnet_priority can be used instead (Default: 0). Choices: 0-15 (15 is highest priority).
+    eseries_ib_opensm_interfaces:                 # List of InfiniBand interfaces.
+      - name:                                     # (Required) Use the name of InfiniBand interface (i.e. ib0, ib1) when IPoIB has been configured, otherwise use <DEVICE>_<PORT> (i.e. mlx5_0_1, mlx5_0_2)
+        configure:                                # Whether to configure OpenSM for port (Default: True).
+        subnet_prefix:                            # OpenSM subnet manager's subnet prefix.
+        priority:                                 # OpenSM subnet manager's priority.
+    eseries_ib_opensm_ubuntu_packages:            # Default package list for ubuntu (Default: opensm).
+    eseries_ib_opensm_suse_packages:              # Default package list for ubuntu (Default: opensm).
+    eseries_ib_opensm_rhel_packages:              # Default package list for ubuntu (Default: opensm).
+    eseries_ib_opensm_kernel_modules:             # Default loaded kernel modules (Default: [rdma_cm, mlx5_core, ib_ipoib]).
+    eseries_ib_opensm_log_path: /var/log/         # Default log path. Individual logs will be produced for each interface defined (opensm.conf.X.log); otherwise,
+                                                  #    all logging will be issued to opensm.log.
+
+IP over InfiniBand Variables (ipoib)
+------------------------------------
+    eseries_ipoib_interfaces:                     # (Required) List of InfiniBand interfaces (Note: Not required if eseries_ib_iser_interfaces is defined).
+      - name:                                     # (Required) Name of InfiniBand interface (i.e. ib0, ib1).
+        address:                                  # (Required) IPv4 address. Use the format 192.0.2.24.
+        mtu:                                      # Interface maximum transmission unit measured in bytes.
+    eseries_ipoib_mtu:                            # Default maximum transmission unit measured in bytes (Default: "").
+    eseries_ipoib_kernel_modules:                 # Default loaded kernel modules (Default: [rdma_cm, mlx5_core, ib_ipoib]).
+
 InfiniBand iSER Variables (ib_iser)
 -----------------------------------
-    eseries_common_group:                           # Ansible host group or list of E-Series storage systems (Default: eseries_storage_systems).
-    eseries_iscsi_iqn:                              # Host IQN (iSCSI Qualified Name).
-    eseries_ib_iser_interfaces:                     # (Required) List of iSCSI interfaces.
-      - name:                                       # (Required) Name of iSCSI interface (i.e. ib0, ib1).
-        address:                                    # (Required) IPv4 address. Use the format 192.0.2.24.
-        port:                                       # Interface iSCSI TCP listening port.
-        opensm_configure:                           # Whether to configure OpenSM for port.
-        opensm_subnet_prefix:                       # OpenSM subnet manager's subnet prefix.
-        opensm_priority:                            # OpenSM subnet manager's priority.
-        username:                                   # Storage target CHAP username.
-        password:                                   # Storage target CHAP password.
-        nr_sessions:                                # Interface number of sessions a target should connect.
-        mtu:                                        # Interface maximum transmission unit measured in bytes.
-        queue_depth:                                # Session queue depth.
-        session_replacement_timeout:                # iSCSI session replacement timeout.
-    eseries_ib_iser_username:                       # Default Storage target CHAP username (Default "").
-    eseries_ib_iser_password:                       # Default Storage target CHAP password (Default "").
-    eseries_ib_iser_nr_session:                     # Default number of sessions a target should connect (Default 1).
-    eseries_ib_iser_mtu:                            # Default maximum transmission unit measured in bytes (Default 1500).
-    eseries_ib_iser_queue_depth:                    # Default queue depth (Default 32).
-    eseries_ib_iser_session_replacement_timeout:    # Default session replacement should a timeout occur (Default 20).
-    eseries_ib_iser_opensm_configure:               # Default for whether to configure OpenSM. Default: true).
-    eseries_ib_iser_opensm_subnet_prefix:           # Default OpenSM subnet manager's subnet prefix (Default: "0xfe80000000000000").
-    eseries_ib_iser_opensm_subnet_priority:         # Default OpenSM subnet manager's priority (Default: 0).
+    eseries_iscsi_iqn:                            # Host IQN (iSCSI Qualified Name).
+    eseries_ib_iser_interfaces:                   # (Required) List of iSCSI interfaces.
+      - name:                                     # (Required) Name of iSCSI interface (i.e. ib0, ib1).
+        address:                                  # (Required) IPv4 address. Use the format 192.0.2.24.
+        port:                                     # Interface iSCSI TCP listening port.
+        username:                                 # Storage target CHAP username.
+        password:                                 # Storage target CHAP password.
+        nr_sessions:                              # Interface number of sessions a target should connect.
+        mtu:                                      # Interface maximum transmission unit measured in bytes.
+        queue_depth:                              # Session queue depth.
+        session_replacement_timeout:              # iSCSI session replacement timeout.
+        configure:                                # Whether to configure OpenSM for interface.
+        subnet_prefix:                            # OpenSM subnet manager's subnet prefix.
+        priority:                                 # OpenSM subnet manager's priority.
+    eseries_ib_iser_username:                     # Default Storage target CHAP username (Default: "").
+    eseries_ib_iser_password:                     # Default Storage target CHAP password (Default: "").
+    eseries_ib_iser_nr_session:                   # Default number of sessions a target should connect (Default: 1).
+    eseries_ib_iser_mtu:                          # Default maximum transmission unit measured in bytes (Default: "").
+    eseries_ib_iser_queue_depth:                  # Default queue depth (Default: 32).
+    eseries_ib_iser_session_replacement_timeout:  # Default session replacement should a timeout occur (Default: 20).
 
+InfiniBand SRP Variables (ib_srp)
+---------------------------------
+    eseries_ib_srp_daemon_service:                # Path for the modified srp_daemon.service file (Default: /etc/systemd/system/srp_daemon.service).
+    eseries_ib_srp_ubuntu_packages:               # Required Ubuntu packages (Default: srptools).
+    eseries_ib_srp_suse_packages:                 # Required SUSE packages (Default: srptools).
+    eseries_ib_srp_rhel_packages:                 # Required RedHat packages (Default: srptools).
 
 iSCSI Variables (iscsi)
 -----------------------
     eseries_common_group:                         # Ansible host group or list of E-Series storage systems (Default: eseries_storage_systems).
+    eseries_iscsi_configure_network:              # Whether to configure iSCSI network interfaces. Choices: true, false (Default: true)
     eseries_iscsi_interfaces:                     # (Required) List of iSCSI interfaces.
       - name:                                     # (Required) Name of iSCSI interface (i.e. em1, ens160).
         address:                                  # (Required) IPv4 address. Use the format 192.0.2.24/24.
@@ -211,9 +233,10 @@ iSCSI Variables (iscsi)
     eseries_iscsi_queue_depth:                    # Default queue depth (Default 32).
     eseries_iscsi_session_replacement_timeout:    # Default session replacement should a timeout occur (Default 20).
     eseries_iscsi_node_settings:                  # Dictionary of values keyed by settings in iscsid.conf
-    eseries_iscsi_configure_network:              # Whether to configure iSCSI network interfaces. Choices: true, false (Default: true)
-    eseries_iscsi_network_tool:                   # Configuration tool to defined network interfaces. Choices: ifupdown, netplan (Default: ifupdown)
     eseries_iscsi_refresh_sessions:               # Force all iSCSI sessions to be logout and login (Default: false).
+    eseries_iscsi_ubuntu_packages:                # iSCSI packages for Ubuntu (Default: [open-iscsi]).
+    eseries_iscsi_suse_packages:                  # iSCSI packages for SUSE (Default: [open-iscsi]).
+    eseries_iscsi_rhel_packages:                  # iSCSI packages for RedHat (Default: [iscsi-initiator-utils]).
 
 Fibre Channel (fc)
 ------------------

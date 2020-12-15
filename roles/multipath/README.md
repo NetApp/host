@@ -4,8 +4,7 @@ The role will install and configure multipath on a host.
 
 Role Variables
 --------------
-eseries_multipath_conf_d_path: /etc/multipath/conf.d/    # Directory for E-Series volume alias definitions.
-eseries_multipath_remove_installation: false             # Remove multipath flag.
+eseries_multipath_configure_user_friendly_names:    # Whether to configure multipath to use the volume's name instead of the host WWID (Default: true).
 
 License
 -------

@@ -1,8 +1,5 @@
 - name: Ensure expected multipath packages are installed (Ubuntu).
   apt:
     state: present
-    name:
-      - multipath-tools
-      - multipath-tools-boot
-  register: multipath_packages
+    name: "{{ eseries_multipath_ubuntu_packages }}"
   become: true

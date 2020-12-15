@@ -1,0 +1,5 @@
+- name: Ensure InfiniBand packages are uninstalled.
+  include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure InfiniBand base kernel modules are removed.
+  include_tasks: "uninstall/configure/module.yml"
