@@ -1,0 +1,8 @@
+- name: Ensure iSCSI settings are configured.
+  lineinfile:
+    path: "{{ eseries_iscsi_conf_path }}iscsid.conf"
+    regexp: "^{{ item['key'] }} ?= ?"
+    line: "{{ item['key'] }} = {{ item['value'] }}"
+  register: iscsid_conf
+  loop: "{{ eseries_iscsi_node_settings | default({}) | dict2items }}"
+  become: true

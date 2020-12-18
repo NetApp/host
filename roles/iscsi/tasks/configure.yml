@@ -1,6 +1,5 @@
-- name: Include operating specific variables.
-  include_vars: "{{ ansible_os_family | lower }}.yml"
+- name: Ensure host iSCSI IQN exists.
+  include_tasks: "configure/open_iscsi.yml"
 
-- name: Ensure iSCSI packages are installed.
-  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
-
+- name: Ensure host iSCSI IQN exists.
+  include_tasks: "configure/iqn.yml"

@@ -1,3 +1,6 @@
+- name: Include operating specific variables.
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
 - name: Ensure iSCSI packages are installed.
   import_tasks: package.yml
 

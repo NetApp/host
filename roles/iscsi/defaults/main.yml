@@ -1,4 +1,6 @@
 eseries_iscsi_configure_network: true
+eseries_iscsi_conf_path: "/etc/iscsi/"
+
 eseries_iscsi_tcp_port: 3260
 eseries_iscsi_username: ""
 eseries_iscsi_password: ""
