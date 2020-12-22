@@ -1,29 +1,40 @@
-{%- set scratch = {"enable_foreign_nvme": False} -%}
-{%- for line in current_multipath_configuration["stdout_lines"] if scratch["enable_foreign_nvme"] == False and line | regex_search("enable_foreign", ignorecase=True) -%}
-  {%- for volume in eseries_volumes if scratch["enable_foreign_nvme"] == False %}
-    {%- for protocol in volume["host_port_protocols"] if scratch["enable_foreign_nvme"] == False and protocol in ["nvme_ib", "nvme_fc", "nvme_roce"] -%}
-      {%- if scratch.update({"enable_foreign_nvme": True}) -%}{%- endif -%}
-    {%- endfor -%}
+# Managed by NetApp E-Series Ansible
+{% set scratch = {"nvme": False, "enable_foreign_available": False} -%}
+{%- for line in current_multipath_configuration["stdout_lines"] if scratch["enable_foreign_available"] == False and line | regex_search("enable_foreign", ignorecase=True) -%}
+  {%- if scratch.update({"enable_foreign_available": True}) -%}{%- endif -%}
+{%- endfor -%}
+{%- for volume in eseries_volumes if scratch["nvme"] == False %}
+  {%- for protocol in volume["host_port_protocols"] if protocol in eseries_multipath_nvme_protocols -%}
+    {%- if scratch.update({"nvme": True}) -%}{%- endif -%}
   {%- endfor -%}
 {%- endfor -%}
 
-# Managed by NetApp E-Series Ansible
-
 defaults {
-  user_friendly_names {% if eseries_multipath_configure_user_friendly_names == True %}yes{% else %}no{% endif %}
-{% if scratch["enable_foreign_nvme"] == True %}
-
-  enable_foreign nvme
-{%- endif %}
-
+  user_friendly_names {{ "yes" if eseries_multipath_configure_user_friendly_names == True  else "no" }}
+  path_selector "{{ eseries_multipath_path_selector }}"
+{% if scratch["enable_foreign_available"] == True and scratch["nvme"] == True %}
+  enable_foreign "{{ eseries_multipath_foreign_library }}"
+{% endif %}
 }
 multipaths {
 {% if eseries_multipath_configure_user_friendly_names == True -%}
-{%- for volume in eseries_volumes %}
+{% for volume in eseries_volumes %}
   multipath {
     wwid {{ volume["host_wwid"] }}
     alias {{ volume["name"] }}
   }
-{% endfor -%}
-{%- endif %}
+{% endfor %}
+{% endif %}
+}
+
+devices {
+{% if scratch["nvme"] == True %}
+  device {
+    vendor "NVME"
+    product "NetApp E-Series*"
+    path_grouping_policy group_by_prio
+    failback immediate
+    no_path_retry 30
+  }
+{% endif %}
 }

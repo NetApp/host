@@ -1,5 +1,5 @@
 eseries_multipath_configure_user_friendly_names: true
-
+eseries_multipath_path_selector: "round-robin 0"
 eseries_multipath_conf_d_path: /etc/multipath/conf.d/
 eseries_multipath_modules_d: /etc/modules-load.d/
 eseries_multipath_initramfs_modules_path: /etc/initramfs-tools/modules
@@ -19,3 +19,6 @@ eseries_multipath_suse_packages:
 eseries_multipath_ubuntu_packages:
   - multipath-tools
   - multipath-tools-boot
+
+eseries_multipath_nvme_protocols: ["nvme_ib", "nvme_fc", "nvme_roce"]
+eseries_multipath_foreign_library: nvme  # enables foreign library when multipath enable_foreign option is available
