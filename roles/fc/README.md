@@ -1,21 +1,10 @@
-netapp_eseries.iscsi
+netapp_eseries.host.fc
 =========
+    Ensure Fibre Channel protocol is configured on host.
 
-
-Role Variables
---------------
-eseries_iscsi_node_settings:              # Dictionary of values keyed by settings in iscsid.conf
-eseries_iscsi_interfaces:                 # List of iSCSI interfaces
-  - name:                                 # Name of iSCSI interface (i.e. em1, ens160)
-    address:                              # IPv4 address
-    subnet:                               # IPv4 subnet mask
-    subnet_cidr:                          # Ipv4 subnet mask in the CIDR formation (i.e. 192.168.1.0/24)
-    gateway:                              # IPv4 gateway address
-    mtu:                                  # Maximum transmission unit in bytes
-
-
-
-eseries_iscsi_state_log_path:             # State log file path which records the actions performed by the mount role.
+General Notes
+-------------
+Currently there is nothing to do specifically for the Fibre Channel protocol. This role is a place holder for any future requirements.
 
 License
 -------

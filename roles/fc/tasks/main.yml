@@ -1,13 +1,3 @@
-- name: Update storage system facts.
-  import_role:
-    name: common
-    tasks_from: gather_storage_facts.yml
-
-- name: Discover mapped-volume information from associated storage systems.
-  import_role:
-    name: common
-    tasks_from: volume_facts.yml
-    
-- name: Host setup for FC protocol.
+- name: Ensure NVMe over Fibre Channel is configured.
   debug:
-    msg: "Sorry, the FC protocol setup has not been implemented yet."
+    msg: "Currently there is nothing to do specifically for the Fibre Channel protocol."
