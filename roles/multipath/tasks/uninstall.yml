@@ -1,10 +1,13 @@
-- name: Stop multipathd
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
+
+- name: Stop and disable multipathd
   systemd:
+    name: multipathd.service
     state: stopped
-    name: multipathd
     enabled: false
-  ignore_errors: true
-  failed_when: false
+  when: "'multipathd.service' in (ansible_facts['services'].keys() | list)"
   become: true
 
 - name: Unconfigure and uninstall multipath.
