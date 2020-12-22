@@ -1,4 +1,4 @@
-- name: Ensure expected InfiniBand packages are installed (Ubuntu).
+- name: Ensure expected InfiniBand packages are installed (RHEL).
   yum:
     state: present
     name: "{{ eseries_ib_opensm_rhel_packages }}"
