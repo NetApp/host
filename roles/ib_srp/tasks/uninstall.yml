@@ -1,3 +1,15 @@
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
+
+- name: Unconfigure NVMe over Fibre Channel systemd service.
+  systemd:
+    name: srp_daemon.service
+    state: stopped
+    enabled: false
+  when: "'srp_daemon.service' in (ansible_facts['services'].keys() | list)"
+  become: true
+
 - name: Delete srp_daemon.service
   file:
     state: absent
