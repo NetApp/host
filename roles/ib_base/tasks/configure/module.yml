@@ -56,7 +56,8 @@
 - name: Ensure required InfiniBand modules are loaded.
   modprobe:
     state: present
-    name: "{{ item }}"
+    name: "{{ item['name'] }}"
+    params: "{{ item['parameters'] }}"
   loop: "{{ expected_kernel_modules }}"
   become: true
 

@@ -55,28 +55,42 @@ eseries_ib_base_suse_packages:
     - nvme-cli
 
 eseries_ib_base_kernel_modules:
-  - mlx5_ib
-  - ib_core
-  - ib_umad     # Access to fabric management SMPs and GMPs from userspace.
-  - ib_uverbs   # User access to RDMA verbs (supports libibverbs)
-  - rdma_cm     # RDMA connection management
-  - rdma_ucm    # User access to RDMA connection management (supports librdmacm)
+  - name: mlx5_ib
+    parameters:
+  - name: ib_core
+    parameters:
+  - name: ib_umad     # Access to fabric management SMPs and GMPs from userspace.
+    parameters:
+  - name: ib_uverbs   # User access to RDMA verbs (supports libibverbs)
+    parameters:
+  - name: rdma_cm     # RDMA connection management
+    parameters:
+  - name: rdma_ucm    # User access to RDMA connection management (supports librdmacm)
+    parameters:
 
 eseries_ib_base_ipoib_kernel_modules:
-  - ib_ipoib    # InfiniBand over IP net device
+  - name: ib_ipoib    # InfiniBand over IP net device
+    parameters:
 
 eseries_ib_base_srp_kernel_modules:
-  - ib_srp      # SCSI Remote Protocol client support
+  - name: ib_srp      # SCSI Remote Protocol client support
+    parameters:
 
 eseries_ib_base_iser_kernel_modules:
-  - ib_ipoib    # InfiniBand over IP net device
-  - ib_iser     # iSCSI over RDMA client support
+  - name: ib_ipoib    # InfiniBand over IP net device
+    parameters:
+  - name: ib_iser     # iSCSI over RDMA client support
+    parameters:
 
 eseries_ib_base_nvme_kernel_modules:
-  - ib_ipoib    # InfiniBand over IP net device
-  - nvme_core
-  - nvme-rdma
-  - nvme_fabrics
+  - name: ib_ipoib    # InfiniBand over IP net device
+    parameters:
+  - name: nvme_core
+    parameters:
+  - name: nvme-rdma
+    parameters:
+  - name: nvme_fabrics
+    parameters:
 
 eseries_ib_base_uninstall_kernel_modules:
   - rdma_ucm
