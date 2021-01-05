@@ -41,17 +41,10 @@
     msg: "Error: Unable to establish communication with the storage system. Check physical connections and interface configuration."
   when: targets.keys() | list | length == 0
 
-- name: Configure NVMe discovery.conf with expected storage target information.
-  template:
-    src: discovery_conf.j2
-    dest: "{{ eseries_nvme_ib_discovery_conf }}"
-  register: discover_conf
-  become: true
-
 - name: Create NVMe service daemon.
   template:
     src: nvme_daemon.j2
-    dest: "{{ eseries_nvme_ib_daemon }}"
+    dest: "{{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }}"
     mode: "0744"
   register: nvme_daemon
   become: true
@@ -59,13 +52,13 @@
 - name: Create NVMe systemd service file.
   template:
     src: nvme_service.j2
-    dest: "{{ eseries_nvme_ib_service }}"
+    dest: "{{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}"
   register: nvme_service
   become: true
 
 - name: Ensure NVMe service is running.
   systemd:
-    name: nvme.service
+    name: "{{ eseries_nvme_ib_service_name }}"
     state: started
     enabled: true
     daemon_reload: true

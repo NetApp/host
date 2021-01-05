@@ -4,8 +4,9 @@ Requires=network-online.target
 After=systemd-modules-load.service network-online.target
 
 [Service]
-ExecStart={{ eseries_nvme_ib_daemon }} start
-ExecStop={{ eseries_nvme_ib_daemon }} stop
+Type=simple
+ExecStart={{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }} start
+ExecStop={{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }} stop
 RemainAfterExit=yes
 
 [Install]

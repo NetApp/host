@@ -3,13 +3,15 @@
 rc=0
 
 start() {
-    echo "Discover all storage targets specified in {{ eseries_nvme_ib_discovery_conf }}..."
-    nvme discover
-    rc=$?
-    if [ $rc != 0 ]; then
-        echo "Failed to complete storage target discovery!"
-        exit $rc
-    fi
+{% for id, target in targets.items() %}
+    echo -n "Discovering to {{ target["array_name"] }} via {{ target["address"] }}..."
+    nvme discover --transport=rdma --traddr={{ target["address"] }} --trsvcid={{ eseries_nvme_ib_port }} --hostnqn={{ target["hostnqn"] }}
+    rc=$? || $rc
+    echo "Done"
+
+{% else %}
+    echo "There were no storage targets to discover."
+{% endfor %}
 
 {% for id, target in targets.items() %}
     echo -n "Connecting to {{ target["array_name"] }} via {{ target["address"] }}..."
@@ -23,11 +25,17 @@ start() {
 }
 
 stop() {
-    for device in `ls -1 /sys/class/nvme`; do
-        nvme disconnect --device /dev/$device
-        rc=$? || $rc
-    done
-    systemctl kill nvme.service
+
+{% for id, target in targets.items() %}
+    echo -n "Disconnecting from {{ target["array_name"] }}..."
+    nvme disconnect --nqn={{ target["nqn"] }}
+    rc=$? || $rc
+    echo "Done"
+
+{% else %}
+    echo "There were no storage targets to connect."
+{% endfor %}
+    systemctl kill {{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}
     rc=$? || $rc
 }
 

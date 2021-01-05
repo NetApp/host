@@ -20,6 +20,11 @@ eseries_nvme_ib_password:                           # Default Storage target CHA
 eseries_nvme_ib_mtu:                                # Default maximum transmission unit measured in bytes (Default: "").
 eseries_nvme_ib_queue_depth:                        # Default queue depth (Default: 32).
 eseries_nvme_ib_session_replacement_timeout:        # Default session replacement should a timeout occur (Default: 20).
+eseries_nvme_ib_service_name:                       # Custom NVMe over InfiniBand systemd service name (Default: eseries_nvme_ib.service).
+
+General Notes
+-------------
+A customized systemd service daemon will be generated based on the required targets needed for existing storage system mappings. You can view the generated daemon at /etc/nvme/eseries_nvme_ib_daemon. The daemon is controlled with the systemd service eseries_nvme_ib.service which will ensure connectivity during boot.
 
 License
 -------

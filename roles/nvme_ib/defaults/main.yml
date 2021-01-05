@@ -1,9 +1,10 @@
 eseries_nvme_ib_configure_network: true
+eseries_nvme_ib_service_name: eseries_nvme_ib.service
 
-eseries_nvme_ib_discovery_conf: /etc/nvme/discovery.conf
+eseries_nvme_ib_daemon_name: eseries_nvme_ib_daemon
 eseries_nvme_ib_hostnqn: /etc/nvme/hostnqn
-eseries_nvme_ib_daemon: /etc/nvme/nvme_daemon
-eseries_nvme_ib_service: /etc/systemd/system/nvme.service
+eseries_nvme_ib_daemon_path: /etc/nvme/
+eseries_nvme_ib_service_path: /etc/systemd/system/
 
 eseries_nvme_ib_port: 4420
 eseries_nvme_ib_mtu: 65520

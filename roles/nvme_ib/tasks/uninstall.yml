@@ -7,11 +7,11 @@
 
 - name: Ensure NVMe service for E-Series is stopped and disabled.
   systemd:
-    name: nvme.service
+    name: "{{ eseries_nvme_ib_service_name }}"
     state: stopped
     enabled: false
     daemon_reload: true
-  when: "'nvme.service' in (ansible_facts['services'].keys() | list)"
+  when: "eseries_nvme_ib_service_name in (ansible_facts['services'].keys() | list)"
   become: true
 
 - name: Determine variable values required for ipoib and ib_opensm roles.
@@ -34,11 +34,11 @@
 - name: Remove NVMe over InfiniBand systemd service file.
   file:
     state: absent
-    path: "{{ eseries_nvme_ib_service }}"
+    path: "{{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}"
   become: true
 
 - name: Remove NVMe over InfiniBand daemon.
   file:
     state: absent
-    path: "{{ eseries_nvme_ib_daemon }}"
+    path: "{{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }}"
   become: true
