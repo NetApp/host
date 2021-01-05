@@ -1,0 +1,12 @@
+[Unit]
+Description=Connect to all NVMe-FC targets
+Requires=network-online.target
+After=systemd-modules-load.service network-online.target
+
+[Service]
+ExecStart={{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }} start
+ExecStop={{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }} stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

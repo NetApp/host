@@ -1,0 +1,5 @@
+- name: Ensure expected NVMe over Fibre Channel packages are installed (RHEL).
+  yum:
+    state: present
+    name: "{{ eseries_nvme_fc_rhel_packages }}"
+  become: true

@@ -1,11 +1,5 @@
-- import_tasks: initial_setup/package/debian.yml
-  when: ansible_facts['os_family'] | lower == 'debian'
-  become: true
+- name: Ensure all packages are installed for NVMe over Fibre Channel.
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
 
-- import_tasks: initial_setup/package/redhat.yml
-  when: ansible_facts['os_family'] | lower == 'redhat'
-  become: true
-
-- import_tasks: initial_setup/package/suse.yml
-  when: ansible_facts['os_family'] | lower == 'suse'
-  become: true
+- name: Configure NVMe over Fibre Channel.
+  include_tasks: configure.yml

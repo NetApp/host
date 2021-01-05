@@ -1,0 +1,6 @@
+- name: Ensure expected NVMe over Fibre Channel packages are installed (SUSE).
+  zypper:
+    state: present
+    name: "{{ eseries_nvme_fc_suse_packages }}"
+  register: packages
+  become: true

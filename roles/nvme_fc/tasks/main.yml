@@ -1,6 +1,14 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Host setup for NVMe over Fibre Channel protocol.
-  debug:
-    msg: "Sorry, the NVMe over Fibre Channel protocol setup has not been implemented yet."
+- name: Ensure NVMe over Fibre Channel is configured.
+  include_tasks: package.yml
+
+- name: Ensure NVMe over Fibre Channel is configured.
+  include_tasks: configure.yml
+
+- name: Uninstall NVMe over Fibre Channel.
+  import_tasks: uninstall.yml
+  tags:
+    - never
+    - nvme_fc_uninstall

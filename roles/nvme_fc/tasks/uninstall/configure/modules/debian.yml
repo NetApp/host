@@ -1,0 +1,11 @@
+- name: Ensure NVMe over Fibre Channel modules are unconfigured.
+  file:
+    state: absent
+    path: "{{ eseries_nvme_fc_modprobe_d }}99-eseries_nvme_fc.conf"
+  register: modprobe_configuration
+  become: true
+
+- name: Update initrd image.
+  command: update-initramfs -u
+  become: true
+  when: modprobe_configuration['changed'] == True

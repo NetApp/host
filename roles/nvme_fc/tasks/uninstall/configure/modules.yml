@@ -1,0 +1,10 @@
+- name: Ensure NVMe over Fibre Channel modules are added to initrd image.
+  include_tasks: "configure/modules/{{ ansible_os_family | lower }}.yml"
+
+#- name: Ensure NVMe over Fibre Channel modules loaded with the correct parameters.
+#  modprobe:
+#    state: absent
+#    name: "{{ item['name'] }}"
+#    params: "{{ item['parameters'] }}"
+#  loop: "{{ eseries_nvme_fc_modules }}"
+#  become: true

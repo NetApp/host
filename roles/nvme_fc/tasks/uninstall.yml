@@ -1,0 +1,17 @@
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
+
+- name: Unconfigure NVMe over Fibre Channel systemd service.
+  systemd:
+    name: nvmefc-boot-connections.service
+    state: stopped
+    enabled: false
+  when: "'nvmefc-boot-connections.service' in (ansible_facts['services'].keys() | list)"
+  become: true
+
+- name: Ensure all packages are removed for NVMe over Fibre Channel.
+  include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure all NVMe over Fibre Channel modules are removed from host.
+  include_tasks: uninstall/configure/modules.yml

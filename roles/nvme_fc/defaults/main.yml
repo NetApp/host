@@ -1,2 +1,21 @@
----
-# defaults file for netapp_eseries.iscsi
+eseries_nvme_fc_service_name: eseries_nvme_fc.service
+
+eseries_nvme_fc_rhel_packages:
+  - nvme-cli
+eseries_nvme_fc_suse_packages:
+  - nvme-cli
+eseries_nvme_fc_ubuntu_packages:
+  - nvme-cli
+
+eseries_nvme_fc_queue_depth: 1024
+eseries_nvme_fc_controller_loss_timeout: 3600
+eseries_nvme_fc_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
+
+eseries_nvme_fc_daemon_name: eseries_nvme_fc_daemon
+eseries_nvme_fc_daemon_path: /etc/nvme/
+eseries_nvme_fc_service_path: /etc/systemd/system/
+
+eseries_nvme_fc_modprobe_d: /etc/modprobe.d/
+eseries_nvme_fc_modules:
+  - name: lpfc
+    parameters: lpfc_enable_fc4_type=3

@@ -1,0 +1,56 @@
+- name: Get the host NVMe Qualified Name (NQN).
+  command:
+    cmd: "{{ eseries_nvme_fc_nqn_command }}"
+  changed_when: false
+  register: hostnqn_output
+  become: true
+
+- name: Get the WWNN and WWPN for the host's traddr.
+  shell: "for path in /sys/class/fc_host/*; do echo --traddr nn-`cat $path/node_name`:pn-`cat $path/port_name`; done"
+  register: host_traddr
+  become: true
+
+- name: Determine NVMe storage target information.
+  set_fact:
+    targets: |-
+      {%- set targets = {} -%}
+      {%- for volume in initiator_volume_facts -%}
+        {%- for host_port_information in volume["host_port_information"]["nvme_fc"] -%}
+          {%- if host_port_information["link_status"] == "up" -%}
+            {%- if targets.update({host_port_information["interface_reference"]: {
+              "array_name": volume["ansible_array_name"],
+              "hostnqn": hostnqn_output["stdout"],
+              "nqn": host_port_information["nqn"] }}) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ targets }}
+
+- name: Ensure there is at least one usable target before continuing.
+  fail:
+    msg: "Error: Unable to establish communication with the storage system. Check physical connections and interface configuration."
+  when: targets.keys() | list | length == 0
+
+- name: Create NVMe service daemon.
+  template:
+    src: nvme_fc_daemon.j2
+    dest: "{{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }}"
+    mode: "0744"
+  register: nvme_daemon
+  become: true
+
+- name: Create NVMe systemd service file.
+  template:
+    src: nvme_fc_service.j2
+    dest: "{{ eseries_nvme_fc_service_path }}{{ eseries_nvme_fc_service_name }}"
+  register: nvme_service
+  become: true
+
+- name: Ensure NVMe service is running.
+  systemd:
+    name: "{{ eseries_nvme_fc_service_name }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  become: true
