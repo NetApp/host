@@ -35,7 +35,7 @@
 - name: Ensure InfiniBand iSER iSCSI target nodes has been created
   command:
     cmd: "iscsiadm -m node -T {{ item['value']['iqn'] }} -p {{ item['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['value']['target_portal'] }} -I {{ item['value']['name'] }} -o new"
-    creates: "{{ eseries_iscsi_node_path }}{{ item['value']['iqn'] }}/{{ item['value']['address'] }},{{ eseries_ib_iser_port }},{{ item['value']['target_portal'] }}"
+    creates: "{{ eseries_ib_iser_node_path }}{{ item['value']['iqn'] }}/{{ item['value']['address'] }},{{ eseries_ib_iser_port }},{{ item['value']['target_portal'] }}"
   register: new_target_node
   loop: "{{ targets | dict2items }}"
   become: true
@@ -108,27 +108,17 @@
         {%- endif -%}
       {%- endfor -%}
 
-- name: Ensure iscsid is running.
-  systemd:
-    name: iscsid.service
-    state: "{%- if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] -%}restarted{%- else -%}started{%- endif %}"
-    daemon-reload: true
-    enabled: true
-  register: iscsid_service
-  become: true
-
-- name: Ensure iSCSI services are started.
+- name: Ensure iSCSI services are persistent through system reboot.
   systemd:
     name: "{{ eseries_iscsi_initiator_service }}"
-    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"    # iscsisd_conf and initiatorname_iscsi are in configure/x.yml files
-    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
+    daemon-reload: true
     enabled: true
   become: true
 
 - name: Ensure iscsid is running.
   systemd:
     name: iscsid.service
-    state: "{%- if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] %}restarted{%- else %}started{%- endif %}"
+    state: "{% if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] %}restarted{% else %}started{% endif %}"
     daemon-reload: true
     enabled: true
   register: iscsid_service
