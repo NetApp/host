@@ -33,4 +33,9 @@
         enabled: true
         daemon-reload: true  #"{%- if multipath_conf['changed'] %}true{%- else %}false{%- endif %}"
       become: true
+
+    - name: Update mapped-volume information from associated storage systems.
+      include_role:
+        name: common
+        tasks_from: host_facts.yml
   when: eseries_volumes is defined
