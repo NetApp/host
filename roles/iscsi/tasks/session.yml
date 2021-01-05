@@ -109,11 +109,11 @@
         {%- endif -%}
       {%- endfor -%}
 
+# state is not necessary since iscsi initiator services are just for starting iscsi sessions during the boot process.
 - name: Ensure iSCSI services are started.
   systemd:
     name: "{{ eseries_iscsi_initiator_service }}"
-    state: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}restarted{%- else %}started{%- endif %}"    # iscsisd_conf and initiatorname_iscsi are in configure/x.yml files
-    daemon-reload: "{%- if iscsid_conf['changed'] or initiatorname_iscsi['changed'] %}true{%- else %}false{%- endif %}"
+    daemon-reload: true
     enabled: true
   become: true
 
