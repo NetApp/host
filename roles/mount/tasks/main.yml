@@ -2,6 +2,7 @@
   include_role:
     name: common
     tasks_from: host_facts.yml
+  when: eseries_volumes is not defined
 
 - name: Ensure volumes are mounted on hosts.
   include_tasks: collect_facts/unmount.yml
@@ -25,23 +26,6 @@
   include_role:
     name: multipath
     tasks_from: configure/configure_eseries_multipath.yml
-
-# THIS SECTION IS UNNECESSARY SINCE THE STORAGE SYSTEM HAS NOT BEEN CHANGED BY THE UNMOUNT PROCEDURE. THE PROCEDURE JUST REMOVES ALREADY UNMAPPED VOLUMES.
-#   configure_eseries_multipath.yml updates multipath and the host volume facts (host_facts.yml). LEAVING FOR FUTURE REMOVAL...
-#- name: Re-discover mapped-volume information from associated storage systems.
-#  block:
-#    - name: Discover mapped-volume information from associated storage systems.
-#      include_role:
-#        name: common
-#        tasks_from: gather_storage_facts.yml
-#    - name: Discover mapped-volume information from associated storage systems.
-#      include_role:
-#        name: common
-#        tasks_from: volume_facts.yml
-#    - name: Discover mapped-volume information from associated storage systems.
-#      include_role:
-#        name: common
-#        tasks_from: host_facts.yml
 
 - name: Ensure volumes are mounted on hosts.
   include_tasks: collect_facts/mount.yml

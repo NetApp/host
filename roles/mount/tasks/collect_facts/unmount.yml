@@ -38,7 +38,7 @@
       {{- info -}}
 
 - name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%n,%v,%p"
+  command: multipathd show maps raw format "%w,%n,%N,%v,%p"
   register: multipath_maps
   changed_when: false
   become: true
@@ -53,7 +53,8 @@
           {#- DO NOTHING -#}
         {%- else -%}
           {#- Verify the unmapped volume is eseries -#}
-          {%- if line | regex_search("NETAPP\s*,INF-01-00", ignorecase=True) -%}
+          {%- set info = (line | regex_replace("\s*", "")).split(",") -%}
+          {%- if line | regex_search("NETAPP\s*,INF-01-00|NVME,NetApp E-Series", ignorecase=True) and info[2] == 0 -%}
             {%- if unmount_volumes.append(line.split(",")[1]) -%}{%- endif -%}
           {%- endif -%}
         {%- endfor -%}
