@@ -240,27 +240,76 @@ iSCSI Variables (iscsi)
 
 Fibre Channel (fc)
 ------------------
-    Not implemented
+    None
 
 InfiniBand iSER (ib_iser)
 -------------------------
-    Not implemented
+    eseries_iscsi_iqn:                              # Host IQN (iSCSI Qualified Name).
+    eseries_ib_iser_interfaces:                     # (Required) List of iSCSI interfaces.
+      - name:                                       # (Required) Name of iSCSI interface (i.e. ib0, ib1).
+        address:                                    # (Required) IPv4 address. Use the format 192.0.2.24.
+        port:                                       # Interface iSCSI TCP listening port.
+        username:                                   # Storage target CHAP username.
+        password:                                   # Storage target CHAP password.
+        nr_sessions:                                # Interface number of sessions a target should connect.
+        mtu:                                        # Interface maximum transmission unit measured in bytes.
+        queue_depth:                                # Session queue depth.
+        session_replacement_timeout:                # iSCSI session replacement timeout.
+        configure:                                  # Whether to configure OpenSM for interface.
+        subnet_prefix:                              # OpenSM subnet manager's subnet prefix.
+        priority:                                   # OpenSM subnet manager's priority.
+    eseries_ib_iser_username:                       # Default Storage target CHAP username (Default: "").
+    eseries_ib_iser_password:                       # Default Storage target CHAP password (Default: "").
+    eseries_ib_iser_nr_session:                     # Default number of sessions a target should connect (Default: 1).
+    eseries_ib_iser_mtu:                            # Default maximum transmission unit measured in bytes (Default: "").
+    eseries_ib_iser_queue_depth:                    # Default queue depth (Default: 32).
+    eseries_ib_iser_session_replacement_timeout:    # Default session replacement should a timeout occur (Default: 20).
 
 InfiniBand SRP (ib_srp)
 -----------------------
-    Not implemented
+    eseries_ib_srp_daemon_service:                  # Path for the modified srp_daemon.service file (Default: /etc/systemd/system/srp_daemon.service).
 
 NVMe over Fibre Channel (nvme_fc)
 ---------------------------------
-    Not implemented
+    eseries_nvme_fc_use_nvmefc_boot_connections:    # Whether to nvmefc-boot-connections.service when available. Note, nvmefc_boot_connections
+                                                    #   is not available with all versions of nvme-cli and sometimes will require a host reboot (Default: False)
+    eseries_nvme_fc_service_name:                   # Name of NVMe-FC connection service (Default: eseries_nvme_fc.service).
+    eseries_nvme_fc_queue_depth:                    # Overrides the default number of elements in the I/O queues created by the driver (Default: 1024).
+    eseries_nvme_fc_controller_loss_timeout:        # Overrides the default controller loss timeout period in seconds (Default: 3600).
+    eseries_nvme_fc_modules:                        # The following modules will be added to /etc/modprobe.d/eseries_nvme_fc.conf. Whatever Linux FC driver is
+                                                    #    used needs to have nvme enabled.
+      - name: lpfc                                  # Emulex/Broadcom driver (if driver not present the modprobe option will just fail)
+        parameters: lpfc_enable_fc4_type=3          #   3 enables both NVMe and SCSI
+      - name: qla2xxx                               # QLogic driver (if driver not present the modprobe option will just fail)
+        parameters: ql2xnvmeenable=1                #   1 enables both NVMe and SCSI
 
 NVMe over InfiniBand (nvme_ib)
 ------------------------------
-    Not implemented
+    eseries_nvme_nqn:                                   # Host NQN. When not specified, nqn will be derived from host.
+    eseries_nvme_ib_interfaces:                         # (Required) List of NVMe InfiniBand interfaces.
+      - name:                                           # (Required) Name of NVMe InfiniBand  interface (i.e. ib0, ib1).
+        address:                                        # (Required) IPv4 address. Use CIDR form (ex. 192.168.1.1/24).
+        port:                                           # Interface NVMe IPoIB listening port.
+        mtu:                                            # Interface maximum transmission unit measured in bytes.
+        queue_depth:                                    # Session queue depth.
+        configure:                                      # Whether to configure OpenSM for interface.
+        subnet_prefix:                                  # OpenSM subnet manager's subnet prefix.
+        priority:                                       # OpenSM subnet manager's priority.
+
+    eseries_nvme_ib_username:                           # Default Storage target CHAP username (Default: "").
+    eseries_nvme_ib_password:                           # Default Storage target CHAP password (Default: "").
+    eseries_nvme_ib_mtu:                                # Default maximum transmission unit measured in bytes (Default: "").
+    eseries_nvme_ib_queue_depth:                        # Default queue depth (Default: 32).
+    eseries_nvme_ib_session_replacement_timeout:        # Default session replacement should a timeout occur (Default: 20).
+    eseries_nvme_ib_service_name:                       # Custom NVMe over InfiniBand systemd service name (Default: eseries_nvme_ib.service).
 
 NVMe over RDMA over Converged Ethernet (nvme_roce)
 --------------------------------------------------
     Not implemented
+
+SAS (sas)
+---------
+    None
 
 License
 -------
