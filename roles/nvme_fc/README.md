@@ -1,21 +1,20 @@
-netapp_eseries.iscsi
-=========
-
+netapp_eseries.host.nvme_fc
+===========================
+    Ensure NVMe over Fibre Channel is configured on host.
 
 Role Variables
 --------------
-eseries_iscsi_node_settings:              # Dictionary of values keyed by settings in iscsid.conf
-eseries_iscsi_interfaces:                 # List of iSCSI interfaces
-  - name:                                 # Name of iSCSI interface (i.e. em1, ens160)
-    address:                              # IPv4 address
-    subnet:                               # IPv4 subnet mask
-    subnet_cidr:                          # Ipv4 subnet mask in the CIDR formation (i.e. 192.168.1.0/24)
-    gateway:                              # IPv4 gateway address
-    mtu:                                  # Maximum transmission unit in bytes
-
-
-
-eseries_iscsi_state_log_path:             # State log file path which records the actions performed by the mount role.
+    eseries_nvme_fc_use_nvmefc_boot_connections:    # Whether to nvmefc-boot-connections.service when available. Note, nvmefc_boot_connections
+                                                    #   is not available with all versions of nvme-cli and sometimes will require a host reboot (Default: False)
+    eseries_nvme_fc_service_name:                   # Name of NVMe-FC connection service (Default: eseries_nvme_fc.service).
+    eseries_nvme_fc_queue_depth:                    # Overrides the default number of elements in the I/O queues created by the driver (Default: 1024).
+    eseries_nvme_fc_controller_loss_timeout:        # Overrides the default controller loss timeout period in seconds (Default: 3600).
+    eseries_nvme_fc_modules:                        # The following modules will be added to /etc/modprobe.d/eseries_nvme_fc.conf. Whatever Linux FC driver is
+                                                    #    used needs to have nvme enabled.
+      - name: lpfc                                  # Emulex/Broadcom driver (if driver not present the modprobe option will just fail)
+        parameters: lpfc_enable_fc4_type=3          #   3 enables both NVMe and SCSI
+      - name: qla2xxx                               # QLogic driver (if driver not present the modprobe option will just fail)
+        parameters: ql2xnvmeenable=1                #   1 enables both NVMe and SCSI
 
 License
 -------

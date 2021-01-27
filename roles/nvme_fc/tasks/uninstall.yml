@@ -4,10 +4,22 @@
 
 - name: Unconfigure NVMe over Fibre Channel systemd service.
   systemd:
-    name: nvmefc-boot-connections.service
+    name: "{{ eseries_nvme_fc_service_name }}"
     state: stopped
     enabled: false
-  when: "'nvmefc-boot-connections.service' in (ansible_facts['services'].keys() | list)"
+  when: eseries_nvme_fc_service_name in (ansible_facts['services'].keys() | list)
+  become: true
+
+- name: Remove NVMe service daemon.
+  file:
+    state: absent
+    path: "{{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }}"
+  become: true
+
+- name: Remove NVMe systemd service file.
+  file:
+    state: absent
+    path: "{{ eseries_nvme_fc_service_path }}{{ eseries_nvme_fc_service_name }}"
   become: true
 
 - name: Ensure all packages are removed for NVMe over Fibre Channel.

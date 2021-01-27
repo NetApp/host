@@ -1,0 +1,6 @@
+- name: Ensure NVMe service is running.
+  systemd:
+    name: nvmefc-boot-connections.service
+    enabled: true
+    daemon_reload: true
+  become: true

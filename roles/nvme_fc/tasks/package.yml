@@ -1,5 +1,1 @@
-- name: Ensure all packages are installed for NVMe over Fibre Channel.
-  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
 
-- name: Configure NVMe over Fibre Channel.
-  include_tasks: configure.yml

@@ -1,56 +1,50 @@
+{%- set targets_by_array = {} -%}
+{%- for target in targets -%}
+  {%- if target["nqn"] not in (targets_by_array.keys() | list) -%}
+    {%- if targets_by_array.update({target["nqn"]: {"target_name": target["array_name"], "targets": [target]}}) -%}{%- endif -%}
+  {%- else -%}
+    {%- if targets_by_array[target["nqn"]]["targets"].append(target) -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
 #!/bin/sh
 
-rc=0
+rc=127
 
 start() {
-{% for id, target in targets.items() %}
-    echo -n "Discovering to {{ target["array_name"] }}..."
-    nvme discover --transport=fc --traddr={{  }} --trsvcid={{  }} --hostnqn={{ target["hostnqn"] }}
-    rc=$? || $rc
-    echo "Done"
+{% for nqn in (targets_by_array.keys() | list) %}
+    echo "Connecting to {{ targets_by_array[nqn]["target_name"] }}..."
 
+  {%- for port_info in targets_by_array[nqn]["targets"] %}
+
+    nvme discover --transport=fc --host-traddr={{ port_info["host_traddr"] }} --traddr={{ port_info["traddr"] }}
+    if [ "$?" = "0" ]; then nvme connect --transport=fc --host-traddr={{ port_info["host_traddr"] }} --traddr={{ port_info["traddr"] }} --nqn={{ port_info["nqn"] }} --queue-size={{ port_info["queue_depth"] }} --ctrl-loss-tmo={{ port_info["controller_loss_timeout"] }}; rc=0; fi
+  {%- endfor %}
 {% else %}
     echo "There were no storage targets to discover."
+    rc=0
 {% endfor %}
 
-{% for id, target in targets.items() %}
-    echo -n "Connecting to {{ target["array_name"] }} via {{ target["address"] }}..."
-    nvme connect --transport=fc --traddr={{  }} --nqn={{ target["nqn"] }} --queue-size={{ target["queue_depth"] }} --ctrl-loss-tmo={{ target["controller_loss_timeout"] }}
-    rc=$? || $rc
-    echo "Done"
-
-{% else %}
-    echo "There were no storage targets to connect."
-{% endfor %}
 }
 
 stop() {
-
-{% for id, target in targets.items() %}
-    echo -n "Disconnecting from {{ target["array_name"] }}..."
-    nvme disconnect --nqn={{ target["nqn"] }}
-    rc=$? || $rc
-    echo "Done"
-
+{% for nqn in (targets_by_array.keys() | list) %}
+    echo "Disconnecting from {{ targets_by_array[nqn]["target_name"] }}..."
+    nvme disconnect --nqn={{ nqn }}
 {% else %}
     echo "There were no storage targets to connect."
 {% endfor %}
-    systemctl kill {{ eseries_nvme_ib_service_name }}
-    rc=$? || $rc
+
+    systemctl kill {{ eseries_nvme_fc_service_name }}
+    rc=$?
 }
 
 case $1 in
     start)
-        start
-        ;;
+        start;;
     stop)
-        stop
-        ;;
+        stop;;
     restart | reload)
-        stop
-        sleep 5
-        start
-        ;;
+        stop; sleep 5; start;;
     *)
         echo "Usage: $0 {start|stop|restart|reload}"
         rc=1

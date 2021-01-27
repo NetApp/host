@@ -1,11 +1,19 @@
 - name: Include operating specific variables.
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Ensure NVMe over Fibre Channel is configured.
-  include_tasks: package.yml
+- name: Ensure all packages are installed for NVMe over Fibre Channel.
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure volumes are discovered by host.
+  import_role:
+    name: common
+    tasks_from: volume_facts.yml
 
 - name: Ensure NVMe over Fibre Channel is configured.
   include_tasks: configure.yml
+
+#- name: Ensure volumes are discovered by host.
+#  import_tasks: host_facts.yml
 
 - name: Uninstall NVMe over Fibre Channel.
   import_tasks: uninstall.yml

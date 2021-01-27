@@ -4,5 +4,10 @@
 - name: Configure NVMe over Fibre Channel module.
   include_tasks: configure/nqn.yml
 
+#- name: Discover mapped-volume information from associated storage systems.
+#  import_role:
+#    name: common
+#    tasks_from: volume_facts.yml
+
 - name: Configure NVMe over Fibre Channel module.
   include_tasks: configure/service.yml

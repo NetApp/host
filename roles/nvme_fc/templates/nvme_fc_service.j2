@@ -1,5 +1,5 @@
 [Unit]
-Description=Connect to all NVMe-FC targets
+Description=Connect to all E-Series NVMe-FC targets
 Requires=network-online.target
 After=systemd-modules-load.service network-online.target
 
@@ -9,4 +9,4 @@ ExecStop={{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }} stop
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

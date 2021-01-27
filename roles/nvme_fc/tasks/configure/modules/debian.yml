@@ -1,7 +1,7 @@
 - name: Ensure NVMe over Fibre Channel modules are configured.
   template:
     src: eseries_nvme_fc.j2
-    dest: "{{ eseries_nvme_fc_modprobe_d }}99-eseries_nvme_fc.conf"
+    dest: "{{ eseries_nvme_fc_modprobe_d }}eseries_nvme_fc.conf"
   register: modprobe_configuration
   become: true
 

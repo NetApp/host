@@ -1,3 +1,4 @@
+eseries_nvme_fc_use_nvmefc_boot_connections: false
 eseries_nvme_fc_service_name: eseries_nvme_fc.service
 
 eseries_nvme_fc_rhel_packages:
@@ -11,11 +12,14 @@ eseries_nvme_fc_queue_depth: 1024
 eseries_nvme_fc_controller_loss_timeout: 3600
 eseries_nvme_fc_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
 
+eseries_nvme_fc_hostnqn: /etc/nvme/hostnqn
 eseries_nvme_fc_daemon_name: eseries_nvme_fc_daemon
 eseries_nvme_fc_daemon_path: /etc/nvme/
 eseries_nvme_fc_service_path: /etc/systemd/system/
 
 eseries_nvme_fc_modprobe_d: /etc/modprobe.d/
 eseries_nvme_fc_modules:
-  - name: lpfc
-    parameters: lpfc_enable_fc4_type=3
+  - name: lpfc                          # Emulex/Broadcom driver (if driver not present the modprobe option will just fail)
+    parameters: lpfc_enable_fc4_type=3  #   3 enables both NVMe and SCSI
+  - name: qla2xxx                       # QLogic driver (if driver not present the modprobe option will just fail)
+    parameters: ql2xnvmeenable=1        #   1 enables both NVMe and SCSI
