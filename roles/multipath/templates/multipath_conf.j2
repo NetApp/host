@@ -1,9 +1,10 @@
 # Managed by NetApp E-Series Ansible
 {% set scratch = {"nvme": False, "enable_foreign_available": False} -%}
+{%- set multipath_eseries_volumes = eseries_volumes | default([]) -%}
 {%- for line in current_multipath_configuration["stdout_lines"] if scratch["enable_foreign_available"] == False and line | regex_search("enable_foreign", ignorecase=True) -%}
   {%- if scratch.update({"enable_foreign_available": True}) -%}{%- endif -%}
 {%- endfor -%}
-{%- for volume in eseries_volumes if scratch["nvme"] == False %}
+{%- for volume in multipath_eseries_volumes if scratch["nvme"] == False %}
   {%- for protocol in volume["host_port_protocols"] if protocol in eseries_multipath_nvme_protocols -%}
     {%- if scratch.update({"nvme": True}) -%}{%- endif -%}
   {%- endfor -%}
@@ -18,7 +19,7 @@ defaults {
 }
 multipaths {
 {% if eseries_multipath_configure_user_friendly_names == True -%}
-{% for volume in eseries_volumes %}
+{% for volume in multipath_eseries_volumes %}
   multipath {
     wwid {{ volume["host_wwid"] }}
     alias {{ volume["name"] }}

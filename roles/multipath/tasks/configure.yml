@@ -14,6 +14,35 @@
   when: not multipath_conf["stat"]["exists"]
   become: true
 
+- name: Check whether eseries_multipath.conf exists
+  stat:
+    path: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
+  register: eseries_multipath_conf
+  become: true
+
+- name: Configure eseries_multipath.conf
+  block:
+    - name: Determine current multipath configuration.
+      command:
+        cmd: multipath -t
+      register: current_multipath_configuration
+      changed_when: false
+      become: true
+
+    - name: Ensure multipath configuration directory exists.
+      file:
+        state: directory
+        path: "{{ eseries_multipath_conf_d_path }}"
+      become: true
+
+    - name: Configure eseries_multipath.conf
+      template:
+        src: multipath_conf.j2
+        dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
+      become: true
+  when: not eseries_multipath_conf["stat"]["exists"]
+
+
 - name: Ensure multipathd daemon has been started and is enabled.
   systemd:
     state: started
