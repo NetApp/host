@@ -1,0 +1,2 @@
+minor:
+  - Add Infiniband SRP support (ib_srp).

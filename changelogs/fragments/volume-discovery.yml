@@ -1,0 +1,2 @@
+minor:
+  - Remove hardcoded commands for scanning for volumes into protocol specific variables.

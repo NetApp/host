@@ -1,0 +1,2 @@
+minor:
+  - Add NVMe over Fibre Channel support (nvme_fc).

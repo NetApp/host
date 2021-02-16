@@ -1,0 +1,2 @@
+minor:
+  - Add failure exception when there are not iSCSI interfaces or targets.
