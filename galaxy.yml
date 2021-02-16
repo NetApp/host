@@ -8,11 +8,11 @@ dependencies:
   netapp_eseries.santricity: ">=1.2.0"
 license:
   - "BSD-3-Clause"
-repository: "https://www.github.com/netapp-eseries/host"
+repository: "https://www.github.com/netappeseries/host"
 tags:
   - netapp
   - eseries
   - santricity
   - storage
-homepage: "https://www.github.com/netapp-eseries/host"
+homepage: "https://www.github.com/netappeseries/host"
 issues: "https://github.com/netappeseries/host/issues"
