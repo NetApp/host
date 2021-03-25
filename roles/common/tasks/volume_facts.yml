@@ -15,9 +15,7 @@
               {%- if volume.update({"ignore_volume": volume["name"] in eseries_common_ignore_volumes}) -%}{%- endif -%}
               {%- if volume.update({"chassis_serial": chassis_serial}) -%}{%- endif -%}
               {%- if volume.update({"ansible_array_name": result["item"], "ansible_host": inventory_hostname}) -%}{%- endif -%}
-              {%- if common_volume_workload_filter is defined -%}
-                {%- if volume["workload_name"] == common_volume_workload_filter and volumes.append(volume) -%}{%- endif -%}
-              {%- elif eseries_common_volume_workload_filter is not defined or volume["workload_name"] == eseries_common_volume_workload_filter -%}
+              {%- if eseries_common_volume_workload_filter is not defined or volume["workload_name"] == eseries_common_volume_workload_filter -%}
                 {%- if volumes.append(volume) -%}{%- endif -%}
               {%- endif -%}
             {%- endfor -%}
@@ -25,3 +23,9 @@
         {%- endif -%}
       {%- endfor -%}
       {{- volumes | list -}}
+
+- name: Check whether volumes have correct host-side port information.
+  fail:
+    msg: "Missing host port information! Check storage system host definitions."
+  loop: "{{ initiator_volume_facts }}"
+  when: item['host_port_information'] | length == 0
