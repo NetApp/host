@@ -140,6 +140,18 @@ Unmount Variables (unmount)
     eseries_unmount_delete:                       # Delete E-Series volume from host (Default: false).
     eseries_unmount_wipe_format_signatures:       # Clear the format signatures from the E-Series volume (Default: false)
 
+Snapshot Variables (snapshot)
+-----------------------------
+eseries_snapshot_pit_safe:            # Whether to wait for all files to be close, sync and unmount volume before taking a point-in-time snapshot (Default: True)
+                                      #   image; otherwise, a simple filesystem suspend (dmsetup suspend) will be issued (Default: True).
+eseries_snapshot_pit_timeout_sec:     # Maximum time to wait for files to closes when I(eseries_snapshot_pits_safe==True) (Default: 600).
+eseries_snapshot_pits:                # List of consistency group point-in-time snapshot definitions.
+  - group_name:                       # Snapshot consistency group name.
+    pit_name:                         # (Optional) Name for the point-in-time snapshot.
+    pit_description:                  # (Optional) Description for the point-in-time snapshot.
+    volumes:                          # (Optional) List of volumes that are a subset of the consistency group's volume members.
+
+
 InfiniBand Base Variables (ib_base)
 -----------------------------------
     eseries_ib_base_ipoib_enabled:                # Whether InfiniBand IPoIB should be configured (Default: false).
