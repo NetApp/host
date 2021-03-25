@@ -35,7 +35,7 @@ Add mount_to_hosts, format_type, format_options, mount_dir, mount_options to the
             volume_metadata:
               <place format and mounting variables here>   # This location will only effect the volume itself)
           - name: vg2
-            host: ansible_hostsgroup
+            host: ansible_hostgroup
             size: 10
 
 License
