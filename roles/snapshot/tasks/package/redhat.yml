@@ -1,0 +1,6 @@
+- name: Ensure expected snapshot packages are installed (RHEL).
+  yum:
+    state: present
+    name: "{{ eseries_snapshot_rhel_packages }}"
+  become: true
+  when: eseries_snapshot_rhel_packages | length > 0

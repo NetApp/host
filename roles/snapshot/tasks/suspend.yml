@@ -1,0 +1,21 @@
+- name: "Wait for all files to be closed for E-Series volume [{{ volumes['key'] }}]."
+  shell:
+    cmd: "lsof /dev/mapper/{{ volumes['key'] }}; if [ $? -eq 1 ]; then sync && umount /dev/mapper/{{ volumes['key'] }} && echo success; fi"
+    warn: false
+  register: safe_unmount
+  until: safe_unmount['stdout'] == "success"
+  delay: 1
+  retries: "{{ eseries_snapshot_pit_timeout_sec }}"
+  delegate_to: "{{ item['ansible_host_name'] }}"
+  loop: "{{ volumes['value']['hosts'] }}"
+  become: true
+  when: eseries_snapshot_pit_safe == True and item['mounted'] == True
+
+- name: "Suspend E-Series volume [{{ volumes['key'] }}]."
+  command:
+    cmd: "dmsetup suspend {{ volumes['key'] }}"
+  register: file_check
+  delegate_to: "{{ item['ansible_host_name'] }}"
+  loop: "{{ volumes['value']['hosts'] }}"
+  become: true
+  when: eseries_snapshot_pit_safe == False and item['mounted'] == True

@@ -1,0 +1,33 @@
+- name: Prepare filesystem for point-in-time snapshot images.
+  include_tasks: suspend.yml
+  loop: "{{ lookup('dict', consistency_group['volumes']) }}"
+  loop_control:
+    loop_var: volumes
+
+- name: Generate point-in-time snapshot images.
+  block:
+    - name: Generate Snapshot consistency group point-in-time snapshot images.
+      netapp_eseries.santricity.na_santricity_snapshot:
+        ssid: "{{ consistency_group['credentials']['ssid'] }}"
+        api_url: "{{ consistency_group['credentials']['api_url'] }}"
+        api_username: "{{ consistency_group['credentials']['api_username'] }}"
+        api_password: "{{ consistency_group['credentials']['api_password'] }}"
+        validate_certs: "{{ consistency_group['credentials']['validate_certs'] }}"
+        state: present
+        type: pit
+        group_name: "{{ consistency_group['group_name'] }}"
+        pit_name: "{{ consistency_group['pit_name'] }}"
+        pit_description: "{{ consistency_group['pit_description'] }}"
+        volumes: |-
+          {%- set volumes = [] -%}
+          {%- for volume in ((consistency_group['volumes'] | default({})).keys() | list) -%}
+            {%- if volumes.append({"volume": volume}) -%}{%- endif -%}
+          {%- endfor -%}
+          {{- volumes -}}
+      connection: local
+  always:
+    - name: Restore filesystem
+      include_tasks: resume.yml
+      loop: "{{ lookup('dict', consistency_group['volumes']) }}"
+      loop_control:
+        loop_var: volumes

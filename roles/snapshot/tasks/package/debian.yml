@@ -1,0 +1,6 @@
+- name: Ensure expected snapshot packages are installed (Ubuntu).
+  apt:
+    state: present
+    name: "{{ eseries_snapshot_ubuntu_packages }}"
+  become: true
+  when: eseries_snapshot_ubuntu_packages | length > 0

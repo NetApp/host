@@ -1,0 +1,6 @@
+- name: Ensure expected snapshot packages are installed (SUSE).
+  zypper:
+    state: present
+    name: "{{ eseries_snapshot_suse_packages }}"
+  become: true
+  when: eseries_snapshot_suse_packages | length > 0

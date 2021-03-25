@@ -1,0 +1,167 @@
+- name: Get multipath map information for each volume mapping.
+  command:
+    cmd: "multipathd show maps raw format '%w,%n'"
+  register: multipathd_map_info
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Get current mount information.
+  command:
+    cmd: "mount"
+    warn: false
+  register: mount_info
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Determine initiator snapshot consistency group info.
+  set_fact:
+    consistency_groups: |-
+      {%- set consistency_groups = {} -%}
+      {%- for result in storage_array_facts["results"] -%}
+        {%- set ansible_array_name = result["item"] -%}
+        {%- set ansible_array_inventory = hostvars[ansible_array_name] -%}
+        {%- set credentials = {"ssid": ansible_array_inventory["current_eseries_ssid"] | default(ansible_array_inventory["eseries_ssid"] | default("1")),
+                               "api_url": ansible_array_inventory["current_eseries_api_url"] | default(ansible_array_inventory["eseries_system_api_url"]),
+                               "api_username": ansible_array_inventory["current_eseries_api_username"] | default(ansible_array_inventory["eseries_system_username"] | default("admin")),
+                               "api_password": ansible_array_inventory["current_eseries_api_password"] | default(ansible_array_inventory["eseries_system_password"]),
+                               "validate_certs": ansible_array_inventory["current_eseries_validate_certs"] | default(ansible_array_inventory["eseries_validate_certs"])} -%}
+
+        {%- set consistency_group_arry_info = {"ansible_array_name": ansible_array_name, "credentials": credentials} -%}
+
+        {%- if "storage_array_facts" in (result.keys() | list) and "netapp_snapshot_consistency_groups" in (result["storage_array_facts"].keys() | list) -%}
+          {%- for consistency_group in result["storage_array_facts"]["netapp_snapshot_consistency_groups"] -%}
+            {%- if consistency_groups.update({consistency_group["name"]: {"ansible_array_name": ansible_array_name,
+                                                                          "array_credentials": credentials,
+                                                                          "base_volumes": []}}) -%}{%- endif -%}
+              {%- for base_volume in consistency_group["base_volumes"] -%}
+                {%- if consistency_groups[consistency_group["name"]]["base_volumes"].append(base_volume["name"]) -%}{%- endif -%}
+              {%- endfor -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- consistency_groups -}}
+  run_once: true
+
+#{
+#        "consistency_groups": {
+#            "scg1": {
+#                "array_credentials": {
+#                    "api_password": "infiniti",
+#                    "api_url": "https://10.113.76.45:8443/devmgr/v2/",
+#                    "api_username": "admin",
+#                    "ssid": "1",
+#                    "validate_certs": false
+#                },
+#                "base_volumes": [
+#                    "vg1_1",
+#                    "vg1_0"
+#                ]
+#            },
+#            "scg2": {
+#                "array_credentials": {
+#                    "api_password": "infiniti",
+#                    "api_url": "https://10.113.76.45:8443/devmgr/v2/",
+#                    "api_username": "admin",
+#                    "ssid": "1",
+#                    "validate_certs": false
+#                },
+#                "base_volumes": [
+#                    "vg2_0",
+#                    "vg2_3",
+#                    "vg2_1",
+#                    "vg2_2"
+#                ]
+#            }
+#        }
+#    }
+
+
+- name: Determine storage systems info and volumes mapped to host with mounting info.
+  set_fact:
+    mapped_volume_info: |-
+      {%- set mapped_volume_info = {} -%}
+
+      {%- for volume_info in initiator_volume_facts -%}
+        {%- set volume_name = volume_info["name"] -%}
+        {%- set info = {"volume_info": volume_info,
+                        "mounted": False,
+                        "device_name": "",
+                        "ansible_array_name": volume_info['ansible_array_name']} -%}
+
+        {#- Determine whether volume is mapped to host -#}
+        {%- for map in multipathd_map_info["stdout_lines"] | default([]) -%}
+          {%- set map_info = map.split(",") -%}
+          {%- if (volume_info["wwn"] and map_info[0] | regex_search(volume_info["wwn"], ignorecase=True)) or
+                 (volume_info["eui"] and map_info[0] | regex_search(volume_info["eui"], ignorecase=True)) -%}
+            {%- if info.update({"device_name": map_info[1]}) -%}{%- endif -%}
+
+            {#- Determine whether volume is mounted -#}
+            {%- for mount in mount_info["stdout_lines"] | default([]) -%}
+              {%- set mount_details = mount.split(" ") -%}
+              {%- if "/dev/mapper/" ~ map_info[1] == mount_details[0] -%}
+                {%- if info.update({"mounted": True}) -%}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- if mapped_volume_info.update({volume_name: info}) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- mapped_volume_info -}}
+
+- name: Determine all hosts mapped to each volume.
+  set_fact:
+    volume_information: |-
+      {%- set volumes = {} -%}
+      {%- for host in ansible_play_hosts_all -%}
+        {%- for volume_name in (hostvars[host]["mapped_volume_info"].keys() | list) -%}
+          {%- set volume_info = hostvars[host]["mapped_volume_info"][volume_name] -%}
+          {%- set ansible_array_name = volume_info["ansible_array_name"] -%}
+          {%- if volume_name in (volumes.keys() | list) -%}
+            {%- if volumes[volume_name]["hosts"].append({"ansible_host_name": host,
+                                                         "mounted": volume_info["mounted"],
+                                                         "device_name": volume_info["device_name"]}) -%}{%- endif -%}
+          {%- else -%}
+            {%- if volumes.update({volume_name: {"volume_name": volume_name,
+                                                 "ansible_array_name": ansible_array_name,
+                                                 "hosts": [{"ansible_host_name": host,
+                                                            "mounted": volume_info["mounted"],
+                                                            "device_name": volume_info["device_name"]}] }}) -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- volumes -}}
+  run_once: true
+
+- name: Determine point-in-time snapshots images to generate.
+  set_fact:
+    pit_information: |-
+      {%- set pit_information = [] -%}
+      {%- for host in ansible_play_hosts_all if "eseries_snapshot_pits" in hostvars[host] -%}
+        {%- for pit_info in hostvars[host]["eseries_snapshot_pits"] -%}
+          {%- set consistency_group = consistency_groups[pit_info["group_name"]] -%}
+          {%- set info = {"group_name": pit_info["group_name"],
+                          "pit_name": pit_info["pit_name"] | default(""),
+                          "pit_description": pit_info["pit_description"] | default(""),
+                          "ansible_array_name": consistency_group["ansible_array_name"],
+                          "credentials": consistency_group["array_credentials"],
+                          "volumes": {} } -%}
+
+          {%- if "volumes" in (pit_info.keys() | list) -%}
+            {%- for volume in pit_info["volumes"] if volume in (volume_information.keys() | list) -%}
+              {%- if info["volumes"].update({volume: volume_information[volume]}) -%}{%- endif -%}
+            {%- endfor -%}
+
+          {%- else -%}
+            {%- for volume in consistency_group["base_volumes"] if volume in (volume_information.keys() | list) -%}
+              {%- if info["volumes"].update({volume: volume_information[volume]}) -%}{%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+
+          {%- if pit_information.append(info) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- pit_information -}}
+  run_once: true
