@@ -20,7 +20,7 @@
         {%- for host_port_information in volume["host_port_information"]["nvme_ib"] -%}
           {%- if host_port_information["link_status"] == "active" and host_port_information["ipv4"] -%}
             {%- for interface_info in eseries_nvme_ib_interfaces -%}
-              {%- if host_port_information["ipv4"]["address"] | ipaddr(interface_info["address"]) -%}
+              {%- if host_port_information["ipv4"]["address"] | ansible.netcommon.ipaddr(interface_info["address"]) -%}
                 {%- if targets.update({host_port_information["interface_reference"]: {
                         "array_name": volume["ansible_array_name"],
                         "address": host_port_information["ipv4"]["address"],

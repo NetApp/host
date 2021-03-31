@@ -1,5 +1,5 @@
 - name: Ensure expected iSCSI packages are removed (SUSE).
-  zypper:
+  community.general.zypper:
     state: absent
     name: "{{ eseries_iscsi_suse_packages }}"
   become: true

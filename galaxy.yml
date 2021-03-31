@@ -5,7 +5,10 @@ readme: "README.md"
 authors:
   - Nathan Swartz (@ndswartz)
 dependencies:
-  netapp_eseries.santricity: ">=1.2.0"
+  "ansible.posix": "*"
+  "ansible.netcommon": "*"
+  "community.general": "*"
+  "netapp_eseries.santricity": ">=1.2.0"
 license:
   - "BSD-3-Clause"
 repository: "https://www.github.com/netappeseries/host"

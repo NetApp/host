@@ -1,5 +1,5 @@
 - name: Ensure Web Services Proxy is present and running.
-  docker_container:
+  community.general.docker_container:
     name: webservices
     state: started
     pull: true

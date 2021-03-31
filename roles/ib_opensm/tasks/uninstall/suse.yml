@@ -1,5 +1,5 @@
 - name: Ensure expected InfiniBand IPoIB packages are removed (SUSE).
-  zypper:
+  community.general.zypper:
     state: absent
     name: "{{ eseries_ib_opensm_suse_packages }}"
   become: true

@@ -4,8 +4,8 @@
 DEVICE={{ item["name"] }}
 BOOTPROTO=none
 ONBOOT=yes
-IPADDR={{ item["address"] | ipaddr("address") }}
-PREFIX={{ item["address"] | ipaddr("prefix") }}
+IPADDR={{ item["address"] | ansible.netcommon.ipaddr("address") }}
+PREFIX={{ item["address"] | ansible.netcommon.ipaddr("prefix") }}
 MTU={{ item["mtu"] | default(eseries_ipoib_mtu) }}
 TYPE=InfiniBand
 {% elif ansible_os_family | lower == "suse" %}

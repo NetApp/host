@@ -1,5 +1,5 @@
 - name: Unmount all unmapped volumes.
-  mount:
+  ansible.posix.mount:
     state: unmounted
     path: "{{ item['mount_path'] }}"
   loop: "{{ unmount_volume_info }}"
@@ -9,7 +9,7 @@
 - name: Remove all persistent mount information.
   block:
     - name: Remove mount points for all unmapped volumes.
-      mount:
+      ansible.posix.mount:
         state: absent
         path: "{{ item['mount_path'] }}"
       loop: "{{ unmount_volume_info }}"

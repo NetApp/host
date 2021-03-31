@@ -7,7 +7,7 @@
   become: true
 
 - name: Ensure volumes are mounted with persistent mount points.
-  mount:
+  ansible.posix.mount:
     state: mounted
     backup: true
     path: "{{ item['mount_directory'] }}"

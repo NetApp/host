@@ -1,5 +1,5 @@
 - name: Ensure expected NVMe over Fibre Channel packages are removed (SUSE).
-  zypper:
+  community.general.zypper:
     state: absent
     name: "{{ eseries_nvme_fc_suse_packages }}"
   register: packages

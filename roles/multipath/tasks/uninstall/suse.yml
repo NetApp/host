@@ -11,7 +11,7 @@
   when: dracut_modules['changed'] == True
 
 - name: Ensure expected multipath packages have been uninstalled (SUSE).
-  zypper:
+  community.general.zypper:
     state: absent
     name: "{{ eseries_multipath_suse_packages }}"
   become: true

@@ -1,5 +1,5 @@
 - name: Ensure expected multipath packages are installed (SUSE).
-  zypper:
+  community.general.zypper:
     state: present
     name: "{{ eseries_multipath_suse_packages }}"
   become: true

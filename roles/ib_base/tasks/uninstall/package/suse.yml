@@ -17,7 +17,7 @@
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand base packages are removed (SUSE).
-  zypper:
+  community.general.zypper:
     state: absent
     name: "{{ suse_packages }}"
   become: true

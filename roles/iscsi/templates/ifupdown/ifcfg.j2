@@ -4,8 +4,8 @@
 DEVICE={{ item["name"] }}
 ONBOOT=yes
 BOOTPROTO=none
-PREFIX={{ item["address"] | ipaddr("prefix") }}
-IPADDR={{ item["address"] | ipaddr("address") }}
+PREFIX={{ item["address"] | ansible.netcommon.ipaddr("prefix") }}
+IPADDR={{ item["address"] | ansible.netcommon.ipaddr("address") }}
 GATEWAY={{ item["gateway"] | default("") }}
 MTU={{ item["mtu"] | default(eseries_iscsi_mtu) }}
 {% elif ansible_os_family | lower == "suse" %}

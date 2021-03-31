@@ -17,7 +17,7 @@
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand packages are installed (SUSE).
-  zypper:
+  community.general.zypper:
     state: present
     name: "{{ suse_packages }}"
   register: packages
