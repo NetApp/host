@@ -1,2 +1,2 @@
-minor:
-  - Add failure exception when there are not iSCSI interfaces or targets.
+minor_changes:
+ - Add failure exception when there are not iSCSI interfaces or targets.

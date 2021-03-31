@@ -1,4 +1,4 @@
-minor:
+minor_changes:
   - Remove dependency on logging to know NetApp E-Series volumes mapped/configured (eseries_mount_log).
   - Select single host to do volume related modifications (formatting) in case of hostgroup mapping.
   - Set the default format to ext4.

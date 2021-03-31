@@ -1,4 +1,4 @@
-minor:
+minor_changes:
   - Separate all common InfiniBand tasks into ib_base role.
   - Separate IP over InfiniBand tasks into ipoib role.
   - Separate OpenSM configuration tasks into opensm role.

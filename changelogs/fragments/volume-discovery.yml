@@ -1,2 +1,2 @@
-minor:
+minor_changes:
   - Remove hardcoded commands for scanning for volumes into protocol specific variables.
