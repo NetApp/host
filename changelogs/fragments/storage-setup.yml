@@ -1,2 +1,0 @@
-minor_changes:
-  - Add eseries_storage_setup_uninstall_multipath variable to skip uninstalling multipath.

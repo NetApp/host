@@ -1,2 +1,0 @@
-minor_changes:
-  - Add namespace.name to modules for Ansible 2.10+ compliance.

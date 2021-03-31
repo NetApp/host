@@ -1,0 +1,25 @@
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  httpapi: {}
+  inventory: {}
+  lookup:
+    eseries_template_path:
+      description: Searches playbook's directory for expected templates file before
+        using the E-Series role's.
+      name: eseries_template_path
+      version_added: null
+  module:
+    file_list:
+      description: Update log file containing comma separated list.
+      name: file_list
+      namespace: ''
+      version_added: null
+  netconf: {}
+  shell: {}
+  strategy: {}
+  vars: {}
+version: 1.0.0

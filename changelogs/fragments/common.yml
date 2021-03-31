@@ -1,2 +1,0 @@
-minor_changes:
-  - Add eseries_common_ignore_volumes list which forces volumes to be ignored.
