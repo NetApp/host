@@ -5,25 +5,29 @@ NetApp E-Series Host Collection
     The roles in this collection can be used to configure your host storage connection for iSCSI, InfiniBand, and NVMe; Discover mapped E-Series volumes, format them to your specifications, and assign persistent mount points to them.
 
     Roles:
-        - mount: Format and assign persistent mount points to your mapped E-Series volumes.
-        - multipath: Install and configure multipath.
-        - protocol: Automatically installs the required protocols on the host. This will call the required protocol roles (iscsi, ib_iser, etc).
-        - sanitize_volume: Delete, unmapped, and wipe format metadata from volumes on host.
+        - storage_setup: Configures multipath and any required protocols for volumes mapped to host.
+        - mount: Mounts all volumes mapped to host.
+        - unmount: Unmounts E-Series volumes.
+        - snapshot: Takes filesystem safe snapshots.
+        - multipath: Configures multipath on host.
         - common: Collect storage system information, discover volumes on storage system, and spin up local docker web services proxy instance.
-        - iscsi: Configures the iSCSI protocol which configures network interfaces (ifupdown or netplan), installs and configures required packages, and establishes sessions.
-        - ipoib: Configures IP over InfiniBand which installs and configure packages, kernel modules, configures network interfaces (ifupdown or netplan), and configures InfiniBand subnet manager if needed.
-        - ib_iser: Configures the InfiniBand iSER protocol which configures network interfaces (ifupdown or netplan), installs and configures required packages, and establishes sessions.
-        - fc: Not implemented.
-        - ib_srp: Not implemented yet.
-        - nvme_fc: Not implemented yet.
-        - nvme_ib: Not implemented yet.
-        - nvme_roce: Not implemented yet.
-        - sas: Not implemented yet.
+        - protocol: Determines and configures host-storage system protocol communications.
+        - fc: Configures fibre channel protocol communications (nothing to do)
+        - ib_base: Configures common InfiniBand configurations.
+        - ib_iser: Configures host-storage system communications for the InfiniBand iSER protocol.
+        - ib_opensm: Configures OpenSM on host.
+        - ib_srp: Configures host-storage system communications for the InfiniBand SRP protocol.
+        - ipoib: Configures IP over InfiniBand on host.
+        - iscsi: Configures host-storage system communications for the iSCSI protoc0l.
+        - nvme_fc: Configures host-storage system communications for the NVMe over fibre channel protocol.
+        - nvme_ib: Configures host-storage system communications for the NVMe over Infiniband protocol.
+        - nvme_roce: Not implemented yet
+        - sas: Configures SAS communications (nothing to do)
 
     Tested Platforms:
         - RHEL 7.7
         - SLES 12sp4
-        - Ubuntu 16.04 LTS (iSCSI only)
+        - Ubuntu 16.04 LTS
         - Ubuntu 18.04 LTS
 
 Requirements
