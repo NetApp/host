@@ -2,7 +2,7 @@
 setupBlackduckBuildParameters()
 
 def hubProjectName = "ansible-santricity-host-collection"
-def hubProjectVersion = "0.2"
+def hubProjectVersion = "1.1"
 // def hubProjectName = "esg"
 // def hubProjectVersion = "ansible-santricity-host-collection-0.1"
 
