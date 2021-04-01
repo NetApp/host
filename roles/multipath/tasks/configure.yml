@@ -37,7 +37,7 @@
 
     - name: Configure eseries_multipath.conf
       template:
-        src: multipath_conf.j2
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'multipath_conf.j2') }}"
         dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
       become: true
   when: not eseries_multipath_conf["stat"]["exists"]

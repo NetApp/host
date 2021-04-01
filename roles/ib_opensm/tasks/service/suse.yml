@@ -12,7 +12,7 @@
 
 - name: Create InfiniBand OpenSM service loader daemon for E-Series.
   template:
-    src: service/eseries_opensm.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm.j2') }}"
     dest: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
     mode: "0744"
   register: loader_daemon
@@ -20,7 +20,7 @@
 
 - name: Create InfiniBand OpenSM service loader for E-Series.
   template:
-    src: service/eseries_opensm_service.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm_service.j2') }}"
     dest: "{{ eseries_ib_opensm_service_path }}opensm.service"
   register: loader_service
   become: true

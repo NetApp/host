@@ -42,7 +42,7 @@
 
 - name: Create NVMe service daemon.
   template:
-    src: nvme_fc_daemon.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_fc_daemon.j2') }}"
     dest: "{{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }}"
     mode: "0744"
   register: nvme_daemon
@@ -50,7 +50,7 @@
 
 - name: Create NVMe systemd service file.
   template:
-    src: nvme_fc_service.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_fc_service.j2') }}"
     dest: "{{ eseries_nvme_fc_service_path }}{{ eseries_nvme_fc_service_name }}"
   register: nvme_service
   become: true

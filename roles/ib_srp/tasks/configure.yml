@@ -1,6 +1,6 @@
 - name: Ensure srp_daemon.service is correct.
   template:
-    src: "{{ ansible_os_family | lower }}/srp_daemon_service.j2"
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', (ansible_os_family | lower) ~ 'srp_daemon_service.j2') }}"
     dest: "{{ eseries_ib_srp_daemon_service }}"
   register: srp_daemon_service
   become: true

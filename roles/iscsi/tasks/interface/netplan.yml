@@ -1,6 +1,6 @@
 - name: Ensure iSCSI interfaces have netplan configuration files.
   template:
-    src: netplan/netplan.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan.j2') }}"
     dest: "{{ eseries_iscsi_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
   register: netplan
   loop: "{{ eseries_iscsi_interfaces }}"

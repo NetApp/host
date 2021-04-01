@@ -30,26 +30,26 @@
 
 - name: "Ensure {{ eseries_ib_base_rdma }}rdma.conf is correct (RHEL)."
   template:
-    src: configure/redhat/rdma_conf.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/redhat/rdma_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}rdma.conf"
   when: "(ansible_os_family | lower) == 'redhat'"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/infiniband.conf is correct."
   template:
-    src: configure/infiniband_conf.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/infiniband_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/infiniband.conf"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/srp_daemon.conf is correct."
   template:
-    src: configure/srp_daemon_conf.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/srp_daemon_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/srp_daemon.conf"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/rdma.conf is correct."
   template:
-    src: configure/rdma_conf.j2
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/rdma_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/rdma.conf"
   become: true
 
