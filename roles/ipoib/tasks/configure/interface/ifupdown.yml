@@ -57,4 +57,5 @@
   delay: 5
   until: "'state UP' in link_info['stdout']"
   changed_when: false
+  failed_when: false
   become: true
