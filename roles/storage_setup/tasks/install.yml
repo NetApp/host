@@ -4,6 +4,12 @@
     tasks_from: volume_facts.yml
   when: netapp_volumes_by_initiators is not defined
 
+# Protocols that require ipoib will define eseries_ipoib_interfaces and call the role directly.
+- name: Ensure host is setup for IP over InfiniBand.
+  include_role:
+    name: ipoib
+  when: eseries_ipoib_interfaces is defined
+
 - name: Ensure multipath packages are installed.
   include_role:
     name: multipath
@@ -14,7 +20,7 @@
     name: multipath
     tasks_from: configure.yml
 
-- name: Ensure host is setup for expected protocol
+- name: Ensure host is setup for expected protocol.
   include_role:
     name: protocol
 
