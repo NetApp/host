@@ -1,0 +1,6 @@
+# Managed by NetApp E-Series Ansible
+
+# The following module options for netapp_eseries.host.ib_base role.
+{% for module in expected_kernel_modules if module["parameters"] %}
+option {{ module["name"] }} {{ module["parameters"] }}
+{% endfor %}

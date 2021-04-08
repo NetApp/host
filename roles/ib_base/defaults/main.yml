@@ -1,6 +1,7 @@
 eseries_ib_base_rdma: /etc/rdma/
 eseries_ib_base_rdma_memory_conf: /etc/security/limits.d/rdma.conf
-eseries_ib_base_modules_d: /etc/modules-load.d/
+eseries_ib_base_modules_load_d: /etc/modules-load.d/
+eseries_ib_base_modules_d: /etc/modprobe.d/
 eseries_ib_base_ipoib_enabled: false
 eseries_ib_base_iser_enabled: false
 eseries_ib_base_srp_enabled: false

@@ -1,20 +1,42 @@
 - name: Determine required InfiniBand modules.
   set_fact:
     expected_kernel_modules: |-
-      {%- set modules = eseries_ib_base_kernel_modules -%}
+      {%- set modules = [] -%}
+      {%- set module_list = [] -%}
+
+      {%- for module in eseries_ib_base_kernel_modules if module not in module_list -%}
+        {%- if modules.append(module) -%}{%- endif -%}
+        {%- if module_list.append(module["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+
       {%- if eseries_ib_base_ipoib_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_ipoib_kernel_modules) -%}{%- endif -%}
+        {%- for module in eseries_ib_base_ipoib_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
       {%- endif -%}
+
       {%- if eseries_ib_base_iser_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_iser_kernel_modules) -%}{%- endif -%}
+        {%- for module in eseries_ib_base_iser_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
       {%- endif -%}
+
       {%- if eseries_ib_base_srp_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_srp_kernel_modules) -%}{%- endif -%}
+        {%- for module in eseries_ib_base_srp_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
       {%- endif -%}
+
       {%- if eseries_ib_base_nvme_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_nvme_kernel_modules) -%}{%- endif -%}
+        {%- for module in eseries_ib_base_nvme_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
       {%- endif -%}
-      {{- modules | unique | sort -}}
+      {{- modules -}}
 
 - name: "Ensure {{ eseries_ib_base_rdma }} directory exists."
   file:
@@ -64,5 +86,11 @@
 - name: Ensure InfiniBand kernel modules have been added to boot.
   template:
     src: configure/eseries_ib_base_conf.j2
-    dest: "{{ eseries_ib_base_modules_d }}eseries_ib_base.conf"
+    dest: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+  become: true
+
+- name: Ensure InfiniBand kernel modules have been added to boot.
+  template:
+    src: configure/eseries_ib_base_options_conf.j2
+    dest: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
   become: true
