@@ -1,0 +1,2 @@
+bugfixes:
+  - Fix persistence issue with ib_base kernel modules.
