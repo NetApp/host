@@ -1,4 +1,4 @@
-- name: Determine packages to install (Ubuntu).
+- name: Determine packages to uninstall (Ubuntu).
   set_fact:
     ubuntu_packages: |-
       {%- set packages = [] -%}

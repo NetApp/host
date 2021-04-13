@@ -1,4 +1,4 @@
-- name: Determine packages to install (RHEL).
+- name: Determine packages to uninstall (RHEL).
   set_fact:
     rhel_packages: |-
       {%- set packages = [] -%}
