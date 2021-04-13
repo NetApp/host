@@ -31,7 +31,10 @@
   import_tasks: configure.yml
 
 - name: Uninstall InfiniBand IPoIB.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall InfiniBand IPoIB.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - nvme_ib_uninstall

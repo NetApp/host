@@ -17,7 +17,10 @@
 #  import_tasks: host_facts.yml
 
 - name: Uninstall NVMe over Fibre Channel.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall NVMe over Fibre Channel.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - nvme_fc_uninstall

@@ -87,7 +87,8 @@ Example Playbook (Ensure mapped-volumes are mounted)
 
 Important Notes
 ---------------
-    When taking advantage of the volume_metadata in the SANtricity collection's nar_santricity_host role, be sure that the host inventory does not conflict with volume_metadata entries. The volume's volume_metadata will take precedence over the host inventory!
+    - When taking advantage of the volume_metadata in the SANtricity collection's nar_santricity_host role, be sure that the host inventory does not conflict with volume_metadata entries. The volume's volume_metadata will take precedence over the host inventory!
+    - Set `eseries_common_force_skip_uninstall==True` when importing this collection's role(s) into your playbook/role that use tags to avoid inadvertently applying tags to uninstall tasks.
 
 *Note: Some variables may be repeated in multiple roles which is done to maintain continuity between roles should the defaults be overwritten.
 Common Variables (common)
@@ -96,7 +97,8 @@ Common Variables (common)
     eseries_common_volume_workload_filter:             # Filters the volumes added to eseries_volumes.
     eseries_common_allow_host_reboot:                  # Whether reboots will allowed in an attempt to discover E-Series volumes. (Default: false)
     eseries_common_docker_host:                        # Docker host for SANtricity Web Services Proxy. (Default: unix://var/run/docker.sock)
-
+    eseries_common_force_skip_uninstall:               # Forces to skip uninstallation when roles has been called dynamically with applied tags; otherwise the
+                                                       #   applied tags are also applied to uninstallation (Default: False).
 Multipath Variables (multipath)
 -------------------------------
     eseries_multipath_configure_user_friendly_names:   # Ensures that all volumes are presented with their given name. (Default: true)

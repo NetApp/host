@@ -8,7 +8,10 @@
   include_tasks: protocol.yml
 
 - name: Uninstall protocols.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall protocols.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - protocol_uninstall

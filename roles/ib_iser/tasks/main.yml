@@ -38,8 +38,11 @@
 - name: Ensure InfiniBand iSER iSCSI sessions are configured.
   import_tasks: session.yml
 
-- name: Uninstall InfiniBand IPoIB.
-  import_tasks: uninstall.yml
+- name: Uninstall InfiniBand iSER.
+  block:
+    - name: Uninstall InfiniBand iSER.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - ib_iser_uninstall

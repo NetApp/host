@@ -5,7 +5,10 @@
   import_tasks: configure.yml
 
 - name: Uninstall InfiniBand base.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall InfiniBand base.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - ib_base_uninstall

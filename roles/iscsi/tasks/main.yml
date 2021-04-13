@@ -19,7 +19,10 @@
   import_tasks: session.yml
 
 - name: Uninstall iSCSI.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall iSCSI.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - iscsi_uninstall

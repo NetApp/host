@@ -2,7 +2,10 @@
   include_tasks: install.yml
 
 - name: Uninstall multipath and any installed protocols.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall multipath and any installed protocols.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - storage_setup_uninstall

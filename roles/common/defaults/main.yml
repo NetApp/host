@@ -2,6 +2,8 @@ eseries_common_group: eseries_storage_systems
 eseries_common_allow_host_reboot: false
 eseries_common_docker_host: unix://var/run/docker.sock
 
+eseries_common_force_skip_uninstall: false   # Forces to skip uninstallation when roles has been called dynamically with applied tags; otherwise the applied
+                                             #    tags are also applied to uninstallation.
 eseries_common_ignore_volumes: []
 eseries_common_target_scan_paths:
   scsi:
