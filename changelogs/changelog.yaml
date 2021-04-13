@@ -41,3 +41,16 @@ releases:
     - storage-setup.yml
     - volume-discovery.yml
     release_date: '2021-03-31'
+  1.0.1:
+    changes:
+      bugfixes:
+      - Fix persistence issue with ib_base kernel modules.
+      minor_changes:
+      - Add eseries_common_force_skip_uninstall flag to avoid uninstall tasks when
+        tags are inherited from the calling task.
+      - Allows all templates to be overwritten if additions need to be made locally.
+    fragments:
+    - add_template_override.yml
+    - eseries_common_force_skip_uninstall.yml
+    - fix_ib_base_kernel_module_persistence.yml
+    release_date: '2021-04-13'

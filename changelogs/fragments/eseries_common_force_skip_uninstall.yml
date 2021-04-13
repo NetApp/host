@@ -1,2 +1,0 @@
-minor_changes:
-  - Add eseries_common_force_skip_uninstall flag to avoid uninstall tasks when tags are inherited from the calling task.

@@ -5,6 +5,20 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v1.0.1
+======
+
+Minor Changes
+-------------
+
+- Add eseries_common_force_skip_uninstall flag to avoid uninstall tasks when tags are inherited from the calling task.
+- Allows all templates to be overwritten if additions need to be made locally.
+
+Bugfixes
+--------
+
+- Fix persistence issue with ib_base kernel modules.
+
 v1.0.0
 ======
 
