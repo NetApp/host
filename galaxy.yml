@@ -1,6 +1,6 @@
 namespace: "netapp_eseries"
 name: "host"
-version: "1.0.1"
+version: "1.0.2"
 readme: "README.md"
 authors:
   - Nathan Swartz (@ndswartz)
