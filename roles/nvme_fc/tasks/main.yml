@@ -8,6 +8,7 @@
   import_role:
     name: common
     tasks_from: volume_facts.yml
+  when: netapp_volumes_by_initiators is not defined
 
 - name: Ensure NVMe over Fibre Channel is configured.
   include_tasks: configure.yml
