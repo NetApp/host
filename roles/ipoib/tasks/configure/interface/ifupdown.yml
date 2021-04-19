@@ -49,6 +49,7 @@
   ignore_errors: true
   become: true
 
+# Note: NVMe-IB does not report 'state UP' until service is in use. So only until the service is active will it report as active.
 - name: Wait for interfaces to be up.
   shell: ip -4 address show {{ item }}
   register: link_info
