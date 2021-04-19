@@ -1,43 +1,3 @@
-- name: Determine required InfiniBand modules.
-  set_fact:
-    expected_kernel_modules: |-
-      {%- set modules = [] -%}
-      {%- set module_list = [] -%}
-
-      {%- for module in eseries_ib_base_kernel_modules if module not in module_list -%}
-        {%- if modules.append(module) -%}{%- endif -%}
-        {%- if module_list.append(module["name"]) -%}{%- endif -%}
-      {%- endfor -%}
-
-      {%- if eseries_ib_base_ipoib_enabled == True -%}
-        {%- for module in eseries_ib_base_ipoib_kernel_modules if module not in module_list -%}
-          {%- if modules.append(module) -%}{%- endif -%}
-          {%- if module_list.append(module["name"]) -%}{%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-
-      {%- if eseries_ib_base_iser_enabled == True -%}
-        {%- for module in eseries_ib_base_iser_kernel_modules if module not in module_list -%}
-          {%- if modules.append(module) -%}{%- endif -%}
-          {%- if module_list.append(module["name"]) -%}{%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-
-      {%- if eseries_ib_base_srp_enabled == True -%}
-        {%- for module in eseries_ib_base_srp_kernel_modules if module not in module_list -%}
-          {%- if modules.append(module) -%}{%- endif -%}
-          {%- if module_list.append(module["name"]) -%}{%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-
-      {%- if eseries_ib_base_nvme_enabled == True -%}
-        {%- for module in eseries_ib_base_nvme_kernel_modules if module not in module_list -%}
-          {%- if modules.append(module) -%}{%- endif -%}
-          {%- if module_list.append(module["name"]) -%}{%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-      {{- modules -}}
-
 - name: "Ensure {{ eseries_ib_base_rdma }} directory exists."
   file:
     state: directory
@@ -82,15 +42,155 @@
     params: "{{ item['parameters'] }}"
   loop: "{{ expected_kernel_modules }}"
   become: true
+  vars:
+    expected_kernel_modules: |-
+      {%- set modules = [] -%}
+      {%- set module_list = [] -%}
 
-- name: Ensure InfiniBand kernel modules have been added to boot.
-  template:
-    src: configure/eseries_ib_base_conf.j2
-    dest: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+      {%- for module in eseries_ib_base_kernel_modules if module not in module_list -%}
+        {%- if modules.append(module) -%}{%- endif -%}
+        {%- if module_list.append(module["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+
+      {%- if eseries_ib_base_ipoib_enabled == True -%}
+        {%- for module in eseries_ib_base_ipoib_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if eseries_ib_base_iser_enabled == True -%}
+        {%- for module in eseries_ib_base_iser_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if eseries_ib_base_srp_enabled == True -%}
+        {%- for module in eseries_ib_base_srp_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if eseries_ib_base_nvme_enabled == True -%}
+        {%- for module in eseries_ib_base_nvme_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{- modules -}}
+
+- name: Ensure InfiniBand base kernel modules have been added to boot process.
+  blockinfile:
+    create: true
+    path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+    marker: "# {mark} IB BASE KERNEL MODULES"
+    block: |
+      {% for module in eseries_ib_base_kernel_modules %}
+      {{ module["name"] }}
+      {% endfor %}
   become: true
 
-- name: Ensure InfiniBand kernel modules have been added to boot.
-  template:
-    src: configure/eseries_ib_base_options_conf.j2
-    dest: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+- name: Ensure InfiniBand base kernel module parameters have been added to boot process.
+  blockinfile:
+    create: true
+    path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+    marker: "# {mark} IB BASE KERNEL MODULE PARAMETERS"
+    block: |
+      {% for module in eseries_ib_base_kernel_modules if module["parameters"] is not none %}
+      option {{ module["name"] }} {{ module["parameters"] }}
+      {% endfor %}
   become: true
+
+- name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} IPoIB KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_ipoib_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+      become: true
+
+    - name: Ensure required kernel module parameters for IP over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} IPoIB KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_ipoib_kernel_modules if module["parameters"] is not none %}
+          option {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+      become: true
+  when: eseries_ib_base_ipoib_enabled == True
+
+- name: Ensure required kernel modules for InfiniBand iSER are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for InfiniBand iSER are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} IB iSER KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_iser_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+      become: true
+
+    - name: Ensure required kernel module parameters for InfiniBand iSER are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} IB iSER KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_iser_kernel_modules if module["parameters"] is not none %}
+          option {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+      become: true
+  when: eseries_ib_base_iser_enabled == True
+
+- name: Ensure required kernel modules for InfiniBand SRP are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for InfiniBand SRP are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} IB SRP KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_srp_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+      become: true
+
+    - name: Ensure required kernel module parameters for InfiniBand SRP are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} IB SRP KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_srp_kernel_modules if module["parameters"] is not none %}
+          option {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+      become: true
+  when: eseries_ib_base_srp_enabled == True
+
+- name: Ensure required kernel modules for NVMe over InfiniBand are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for NVMe over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} NVMe IB KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_nvme_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+      become: true
+
+    - name: Ensure required kernel module parameters for NVMe over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} NVMe IB KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_nvme_kernel_modules if module["parameters"] is not none %}
+          option {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+      become: true
+  when: eseries_ib_base_nvme_enabled == True
