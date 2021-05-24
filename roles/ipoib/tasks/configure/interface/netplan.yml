@@ -6,7 +6,7 @@
   register: networkd_dispatcher_hook
   become: true
 
-- name: Ensure InfiniBand iSER interfaces have netplan configuration files.
+- name: Ensure IP over InfiniBand interfaces have netplan configuration files.
   template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan.j2') }}"
     dest: "{{ eseries_ipoib_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
@@ -14,7 +14,7 @@
   loop: "{{ eseries_ipoib_interfaces }}"
   become: true
 
-- name: Ensure InfiniBand iSER interfaces have netplan configuration hooks.
+- name: Ensure IP over InfiniBand interfaces have netplan configuration hooks.
   template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan_hook.j2') }}"
     dest: "{{ eseries_ipoib_networkd_ifup_d_path }}99-eseries-ansible-{{ item['name'] }}-hook"
@@ -49,15 +49,15 @@
       {%- endfor -%}
       {{ interfaces | list }}
 
-- name: Flush InfiniBand iSER interface.
+- name: Flush IP over InfiniBand interface.
   command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
-- name: Bring InfiniBand iSER interface down.
+- name: Bring IP over InfiniBand interface down.
   command: ip link set {{ item }} down
   loop: "{{ changed_interfaces }}"
   become: true
-- name: Bring InfiniBand iSER interface up.
+- name: Bring IP over InfiniBand interface up.
   command: ip link set {{ item }} up
   loop: "{{ changed_interfaces }}"
   become: true
