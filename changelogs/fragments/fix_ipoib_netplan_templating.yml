@@ -1,0 +1,2 @@
+bugfixes:
+  - Fix netplan configuration template with embedded ib_iser variable.
