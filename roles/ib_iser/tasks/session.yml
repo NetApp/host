@@ -7,7 +7,7 @@
           {%- if host_port_information["link_status"] == "active" and host_port_information["ipv4"] -%}
             {%- for interface_info in ib_iser_interfaces_info -%}
               {%- if host_port_information["ipv4"]["address"] | ansible.netcommon.ipaddr(interface_info["address"]) -%}
-                {%- if targets.update({host_port_information["interface_reference"]: {
+                {%- if targets.update({volume["ansible_array_name"] ~ ":" ~ host_port_information["interface_reference"]: {
                         "address": host_port_information["ipv4"]["address"],
                         "port": eseries_ib_iser_port,
                         "iqn": host_port_information["iqn"],
