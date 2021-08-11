@@ -39,10 +39,14 @@
   command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
+  ignore_errors: true
+
 - name: Bring InfiniBand iSER interface down.
   command: ifdown {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
+  ignore_errors: true
+
 - name: Bring InfiniBand iSER interface up.
   command: ifup {{ item }}
   loop: "{{ changed_interfaces }}"
