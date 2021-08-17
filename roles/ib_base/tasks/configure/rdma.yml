@@ -1,5 +1,5 @@
 - name: Ensure hard and soft limit for memlock is unlimited
-  pam_limits:
+  community.general.pam_limits:
     dest: "{{ eseries_ib_base_rdma_memory_conf }}"
     domain: "*"
     limit_type: "-"

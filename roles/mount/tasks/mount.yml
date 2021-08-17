@@ -1,5 +1,5 @@
 - name: Ensure volumes are formatted.
-  filesystem:
+  community.general.filesystem:
     fstype: "{{ item['fs_type'] }}"
     opts: "{{ item['fs_options'] }}"
     dev: "{{ item['path'] }}"

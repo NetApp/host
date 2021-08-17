@@ -11,7 +11,7 @@
   become: true
 
 - name: Remove InfiniBand kernel modules.
-  modprobe:
+  community.general.modprobe:
     state: absent
     name: "{{ item }}"
   loop: "{{ eseries_ib_base_uninstall_kernel_modules }}"
