@@ -87,7 +87,7 @@ eseries_ib_base_nvme_kernel_modules:
   - name: ib_ipoib    # InfiniBand over IP net device
     parameters:
   - name: nvme_core
-    parameters:
+    parameters: multipath=Y
   - name: nvme-rdma
     parameters:
   - name: nvme_fabrics
