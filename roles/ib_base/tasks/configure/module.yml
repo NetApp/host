@@ -99,7 +99,7 @@
     marker: "# {mark} IB BASE KERNEL MODULE PARAMETERS"
     block: |
       {% for module in eseries_ib_base_kernel_modules if module["parameters"] is not none %}
-      option {{ module["name"] }} {{ module["parameters"] }}
+      options {{ module["name"] }} {{ module["parameters"] }}
       {% endfor %}
   become: true
 
@@ -121,7 +121,7 @@
         marker: "# {mark} IPoIB KERNEL MODULE PARAMETERS"
         block: |
           {% for module in eseries_ib_base_ipoib_kernel_modules if module["parameters"] is not none %}
-          option {{ module["name"] }} {{ module["parameters"] }}
+          options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
       become: true
   when: eseries_ib_base_ipoib_enabled == True
@@ -144,7 +144,7 @@
         marker: "# {mark} IB iSER KERNEL MODULE PARAMETERS"
         block: |
           {% for module in eseries_ib_base_iser_kernel_modules if module["parameters"] is not none %}
-          option {{ module["name"] }} {{ module["parameters"] }}
+          options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
       become: true
   when: eseries_ib_base_iser_enabled == True
@@ -167,7 +167,7 @@
         marker: "# {mark} IB SRP KERNEL MODULE PARAMETERS"
         block: |
           {% for module in eseries_ib_base_srp_kernel_modules if module["parameters"] is not none %}
-          option {{ module["name"] }} {{ module["parameters"] }}
+          options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
       become: true
   when: eseries_ib_base_srp_enabled == True
@@ -190,7 +190,7 @@
         marker: "# {mark} NVMe IB KERNEL MODULE PARAMETERS"
         block: |
           {% for module in eseries_ib_base_nvme_kernel_modules if module["parameters"] is not none %}
-          option {{ module["name"] }} {{ module["parameters"] }}
+          options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
       become: true
   when: eseries_ib_base_nvme_enabled == True
