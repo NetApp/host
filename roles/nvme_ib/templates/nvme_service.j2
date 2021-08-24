@@ -1,6 +1,6 @@
 [Unit]
 Description=Connect to all NVMe targets
-Requires=network-online.target
+Requires=systemd-modules-load.service network-online.target
 After=systemd-modules-load.service network-online.target
 
 [Service]

@@ -1,6 +1,6 @@
 - name: Get multipath map information for each volume mapping.
   command:
-    cmd: "multipathd show maps raw format '%w,%n'"
+    cmd: "multipathd show maps raw format '%w,%n,%s'"
   register: multipathd_map_info
   changed_when: false
   failed_when: false

@@ -99,15 +99,25 @@
           {%- for volume_name in eseries_unmount_volumes if map_info[1] not in (mapped_info_dict.keys() | list) and (volume_name == "all_volumes" or volume_name == map_info[1]) -%}
 
             {#- Add host information -#}
-            {%- set dev_mapper_path = "/dev/mapper/" ~ map_info[1] -%}
-            {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
-                                                          "volume_name": map_info[1],
-                                                          "wwid": map_info[0],
-                                                          "blocks": [],
-                                                          "active_paths": map_info[2],
-                                                          "dev_mapper_path": dev_mapper_path,
-                                                          "mount_path": unmount_volume_info[dev_mapper_path] | default(""),
-                                                          "is_nvme": True if (map_info[3] | regex_search("NVME", ignorecase=True)) else False }}) -%}{%- endif -%}
+            {%- if map_info[2] | regex_search("NVMe", ignorecase=True) -%}
+              {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
+                                                            "volume_name": map_info[1],
+                                                            "wwid": map_info[0],
+                                                            "blocks": [],
+                                                            "active_paths": map_info[2],
+                                                            "dev_mapper_path": "/dev/disk/by-id/nvme-" ~ map_info[0],
+                                                            "mount_path": unmount_volume_info["/dev/disk/by-id/nvme-" ~ map_info[0]] | default(""),
+                                                            "is_nvme": True }}) -%}{%- endif -%}
+            {%- else -%}
+              {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
+                                                            "volume_name": map_info[1],
+                                                            "wwid": map_info[0],
+                                                            "blocks": [],
+                                                            "active_paths": map_info[2],
+                                                            "dev_mapper_path": "/dev/mapper/" ~ map_info[1],
+                                                            "mount_path": unmount_volume_info["/dev/mapper/" ~ map_info[1]] | default(""),
+                                                            "is_nvme": False }}) -%}{%- endif -%}
+            {%- endif -%}
 
             {#- Collect storage volume information -#}
             {%- for volume_info in initiator_volume_facts if (volume_info["wwn"] and map_info[0] | regex_search(volume_info["wwn"], ignorecase=True)) or
