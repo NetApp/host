@@ -1,59 +1,120 @@
 #!/bin/sh
 
-rc=0
+is_storage_port_connected() {
+  storage_name=$1
+  storage_nqn=$2
+
+  for controller_path in /sys/class/nvme-fabrics/ctl/nvme*; do
+    if grep "$storage_nqn" $controller_path/subsysnqn > /dev/null 2>&1 && grep "$storage_address" $controller_path/address > /dev/null 2>&1; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+
+# Connected port to already discover storage.
+connect_storage() {
+  rc=1
+  host_nqn=$1
+  storage_name=$2
+  storage_nqn=$3
+  storage_address=$4
+
+  # Check whether storage has been connected through port.
+  if ! (is_storage_port_connected $storage_name $storage_nqn); then
+    echo -n "Connecting to $storage_name via $storage_address..."
+
+    # Check that storage is reachable.
+    if ! (ping -c 1 $storage_address > /dev/null 2>&1); then
+      echo "Failed! $storage_address not reachable."
+
+    # Discover and connect to storage via port address.
+    elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=4420 --hostnqn=$host_nqn > /dev/null 2>&1; then
+      if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=1024 --ctrl-loss-tmo=3600 > /dev/null 2>&1; then
+        echo "Connected."
+        rc=0
+      else
+        echo "Failed! Unable to connect to storage port."
+      fi
+
+    else
+      echo "Failed! Unable to discover storage port."
+    fi
+  fi
+
+  return $rc
+}
+
+# Disconnects storage system from host.
+disconnect_storage() {
+  storage_name=$1
+  storage_nqn=$2
+
+  # Disconnect from storage device
+  echo -n "Disconnecting from $storage_name..."
+  for ctl in /sys/class/nvme-fabrics/ctl/nvme*; do
+    if grep "$storage_nqn" $ctl/subsysnqn > /dev/null 2>&1; then
+      nvme disconnect --nqn=$storage_nqn
+      return
+    fi
+  done
+
+  echo "Not connected!"
+}
+
 
 start() {
-{% for id, target in targets.items() %}
-    echo -n "Discovering to {{ target["array_name"] }} via {{ target["address"] }}..."
-    nvme discover --transport=rdma --traddr={{ target["address"] }} --trsvcid={{ eseries_nvme_ib_port }} --hostnqn={{ target["hostnqn"] }}
-    rc=$? || $rc
-    echo "Done"
+{%- set array_info = {} -%}
+{%- for id, target in targets.items() -%}
+  {%- if target["nqn"] not in (array_info.keys() | list) -%}
+    {%- if array_info.update({target["nqn"]: {"addresses": [],
+                                        "array_name": target["array_name"],
+                                        "hostnqn": target["hostnqn"],
+                                        "queue_depth": target["queue_depth"],
+                                        "controller_loss_timeout": target["controller_loss_timeout"]} }) -%}{%- endif -%}
+  {%- endif -%}
+  {%- if array_info[target["nqn"]]["addresses"].append(target["address"]) -%}{%- endif -%}
+{%- endfor %}
+  rc=0
+  host_nqn=$(cat /etc/nvme/hostnqn)
 
-{% else %}
-    echo "There were no storage targets to discover."
+  while true; do
+{% for storage_nqn, storage_info in array_info.items() -%}
+{% for storage_address in storage_info["addresses"] %}
+    connect_storage $host_nqn {{ storage_info["array_name"] }} {{ storage_nqn }} {{ storage_address }}
 {% endfor %}
-
-{% for id, target in targets.items() %}
-    echo -n "Connecting to {{ target["array_name"] }} via {{ target["address"] }}..."
-    nvme connect --transport=rdma --traddr={{ target["address"] }} --nqn={{ target["nqn"] }} --queue-size={{ target["queue_depth"] }} --ctrl-loss-tmo={{ target["controller_loss_timeout"] }}
-    rc=$? || $rc
-    echo "Done"
-
-{% else %}
-    echo "There were no storage targets to connect."
 {% endfor %}
+    sleep 30
+  done
 }
 
 stop() {
-
-{% for id, target in targets.items() %}
-    echo -n "Disconnecting from {{ target["array_name"] }}..."
-    nvme disconnect --nqn={{ target["nqn"] }}
-    rc=$? || $rc
-    echo "Done"
-
+{% set nqns = [] -%}
+{%- for id, target in targets.items() if target["nqn"] not in nqns -%}
+  {%- if nqns.append(target["nqn"]) -%}{%- endif %}
+  disconnect_storage {{ target["array_name"] }} {{ target["nqn"] }}
 {% else %}
-    echo "There were no storage targets to connect."
+  echo "There were no storage targets to disconnect."
 {% endfor %}
-    systemctl kill {{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}
-    rc=$? || $rc
 }
 
 case $1 in
-    start)
-        start
-        ;;
-    stop)
-        stop
-        ;;
-    restart | reload)
-        stop
-        sleep 5
-        start
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|restart|reload}"
-        rc=1
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart | reload)
+    stop
+    sleep 5
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|reload}"
+    rc=1
 esac
 
 exit $rc

@@ -34,7 +34,7 @@
           {%- endif -%}
         {%- endfor -%}
       {%- endfor -%}
-      {{ targets }}
+      {{- targets -}}
 
 - name: Ensure there is at least one usable target before continuing.
   fail:
@@ -59,7 +59,7 @@
 - name: Ensure NVMe service is running.
   systemd:
     name: "{{ eseries_nvme_ib_service_name }}"
-    state: started
+    state: "{% if nvme_daemon['changed'] or nvme_service['changed'] %}restarted{% else %}started{% endif %}"
     enabled: true
     daemon_reload: true
   become: true
