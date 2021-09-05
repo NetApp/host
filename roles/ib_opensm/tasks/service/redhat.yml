@@ -1,4 +1,31 @@
-- name: Ensure subnet manager service is running and enabled.
+- name: Determine InfiniBand devices.
+  command: ibstat -p
+  changed_when: false
+  register: ibsport_guids
+  become: true
+
+- name: Create opensm daemon directory.
+  file:
+    state: directory
+    path: "{{ eseries_ib_opensm_daemon_path }}"
+  become: true
+
+- name: Create InfiniBand OpenSM service loader daemon for E-Series.
+  template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm.j2') }}"
+    dest: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
+    mode: "0744"
+  register: loader_daemon
+  become: true
+
+- name: Create InfiniBand OpenSM service loader for E-Series.
+  template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm_service.j2') }}"
+    dest: "{{ eseries_ib_opensm_service_path }}opensm.service"
+  register: loader_service
+  become: true
+
+- name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
   systemd:
     name: opensm.service
     state: "{% if opensm_update == True %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
