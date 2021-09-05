@@ -42,7 +42,6 @@
       become: true
   when: not eseries_multipath_conf["stat"]["exists"]
 
-
 - name: Ensure multipathd daemon has been started and is enabled.
   systemd:
     state: started
@@ -50,4 +49,3 @@
     enabled: true
     daemon_reload: true
   become: true
-  ignore_errors: true
