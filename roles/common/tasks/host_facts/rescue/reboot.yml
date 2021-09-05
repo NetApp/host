@@ -1,6 +1,7 @@
 - name: Reboot nodes with missing volumes.
   reboot:
     test_command: "systemctl is-active multi-user.target"
+    reboot_timeout: 3600
   become: true
 
 - name: Wait for test command to succeed on rebooted hosts.
