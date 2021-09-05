@@ -48,6 +48,7 @@
   set_fact:
     expected_interfaces: |-
       {%- set expected_interfaces = [] -%}
+      {%- set scratch = {"subnet_prefix": eseries_ib_opensm_subnet_prefix_base | int } -%}
       {%- for result in ibstat_device_port_information_output["results"] -%}
         {%- set device_name = result["item"]["device"] ~ "_" ~ result["item"]["port"] -%}
         {%- set device_info = {"name": device_name, "aliases": [device_name]} -%}
@@ -68,17 +69,18 @@
         {#- Add expected interface -#}
         {%- for interface in eseries_ib_opensm_interfaces if interface["name"] in device_info["aliases"] -%}
           {%- if device_info.update({"configure": interface["configure"] | default(False),
-                                     "subnet_prefix": interface["subnet_prefix"] | default("%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"])),
+                                     "subnet_prefix": interface["subnet_prefix"] | default("%#x" % scratch["subnet_prefix"]),
                                      "priority": interface["priority"] | default(eseries_ib_opensm_subnet_priority)}) -%}{%- endif -%}
           {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
         {%- else -%}
           {%- if eseries_ib_opensm_subnet_manager_configure == True -%}
             {%- if device_info.update({"configure": True,
-                                       "subnet_prefix": "%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"]),
+                                       "subnet_prefix": "%#x" % scratch["subnet_prefix"],
                                        "priority": eseries_ib_opensm_subnet_priority}) -%}{%- endif -%}
             {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
           {%- endif -%}
         {%- endfor -%}
+        {%- if scratch.update({"subnet_prefix": scratch["subnet_prefix"] + 1}) -%}{%- endif -%}
       {%- endfor -%}
       {{- expected_interfaces -}}
 
@@ -126,12 +128,12 @@
     index_var: index
   become: true
 
-# Note: --subnet-prefix is not available on Ubuntu versions of OpenSM. So to simplify automation, just modify the single line in the temporary conf files.
+# Note: --subnet-prefix is not available on certain versions of OpenSM. So to simplify automation, just modify the single line in the temporary conf files.
 - name: Update the subnet_prefix in temporary files.
   lineinfile:
     path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~"
     regexp: '^subnet_prefix'
-    line: "subnet_prefix {{ item['subnet_prefix'] | default(eseries_ib_opensm_subnet_prefix_base) }}"
+    line: "subnet_prefix {{ item['subnet_prefix'] }}"
   changed_when: false
   loop: "{{ ib_devices }}"
   loop_control:
