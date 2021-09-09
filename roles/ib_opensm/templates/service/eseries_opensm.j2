@@ -18,7 +18,7 @@ start() {
           if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
             start_opensm_daemons=true
             break
-          elif journalctl -o short --since "$start_time" _PID=$opensm_pid | grep "Entering MASTER state"; then
+          elif journalctl -o short --since "$start_time" _PID=$opensm_pid | grep "Entering.*state"; then
             break
           fi
           sleep 1
