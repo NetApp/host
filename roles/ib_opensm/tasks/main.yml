@@ -2,7 +2,7 @@
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure InfiniBand OpenSM packages are installed.
-  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
+  include_tasks: "package.yml"
 
 - name: Ensure InfiniBand OpenSM subnet managers are configured.
   include_tasks: configure.yml

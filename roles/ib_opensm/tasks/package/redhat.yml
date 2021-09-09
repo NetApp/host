@@ -1,5 +1,6 @@
 - name: Ensure expected InfiniBand packages are installed (RHEL).
-  yum:
-    state: present
+  ansible.builtin.yum:
+    state: "{% if eseries_ib_opensm_allow_upgrades == True %}latest{% else %}present{% endif %}"
     name: "{{ eseries_ib_opensm_rhel_packages }}"
+    disable_gpg_check: "{{ eseries_ib_opensm_skip_package_validation }}"
   become: true

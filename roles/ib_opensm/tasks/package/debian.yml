@@ -1,5 +1,6 @@
 - name: Ensure expected InfiniBand packages are installed (Ubuntu).
-  apt:
-    state: present
+  ansible.builtin.apt:
+    state: "{% if eseries_ib_opensm_allow_upgrades == True %}latest{% else %}present{% endif %}"
     name: "{{ eseries_ib_opensm_ubuntu_packages }}"
+    allow_unauthenticated: "{{ eseries_ib_opensm_skip_package_validation }}"
   become: true

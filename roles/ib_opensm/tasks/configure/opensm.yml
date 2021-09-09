@@ -68,17 +68,10 @@
 
         {#- Add expected interface -#}
         {%- for interface in eseries_ib_opensm_interfaces if interface["name"] in device_info["aliases"] -%}
-          {%- if device_info.update({"configure": interface["configure"] | default(False),
+          {%- if device_info.update({"configure": interface["configure"] | default(eseries_ib_opensm_subnet_manager_configure),
                                      "subnet_prefix": interface["subnet_prefix"] | default("%#x" % scratch["subnet_prefix"]),
                                      "priority": interface["priority"] | default(eseries_ib_opensm_subnet_priority)}) -%}{%- endif -%}
           {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
-        {%- else -%}
-          {%- if eseries_ib_opensm_subnet_manager_configure == True -%}
-            {%- if device_info.update({"configure": True,
-                                       "subnet_prefix": "%#x" % scratch["subnet_prefix"],
-                                       "priority": eseries_ib_opensm_subnet_priority}) -%}{%- endif -%}
-            {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
-          {%- endif -%}
         {%- endfor -%}
         {%- if scratch.update({"subnet_prefix": scratch["subnet_prefix"] + 1}) -%}{%- endif -%}
       {%- endfor -%}
@@ -139,6 +132,34 @@
   loop_control:
     index_var: index
   become: true
+
+- name: Update other opensm configuration in temporary files.
+  lineinfile:
+    path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ item[0] }}.tmp~"
+    regexp: '^{{ item[1] }}'
+    line: "{{ item[1] }} {{ item[2] }}"
+  changed_when: false
+  loop: "{{ option_changes }}"
+  become: true
+  vars:
+    option_changes: |-
+      {%- set changes = [] -%}
+      {%- for device in ib_devices -%}
+        {%- set index = loop["index0"] -%}
+        {%- if eseries_ib_opensm_options is defined -%}
+          {%- for key, value in eseries_ib_opensm_options.items() -%}
+            {%- if changes.append([index, key, value]) -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+
+        {%- if "options" in (device.keys() | list) and device["options"] | length > 0 -%}
+          {%- for key, value in device["options"].items() -%}
+            {%- if changes.append([index, key, value]) -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+
+      {%- endfor -%}
+      {{- changes -}}
 
 - name: Check whether changes have been to the the OpenSM configuration files.
   ansible.builtin.command:
