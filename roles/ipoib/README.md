@@ -32,6 +32,8 @@ eseries_ipoib_interfaces:                  # (Required) List of InfiniBand inter
   - name:                                  # (Required) Name of InfiniBand interface (i.e. ib0, ib1).
     address:                               # (Required) IPv4 address. Use the format 192.0.2.24.
     mtu:                                   # Interface maximum transmission unit measured in bytes.
+eseries_connected_mode:                    # Enables connected mode on all interfaces. Note that this is not supported after ConnectX-4 devices
+                                           #    and some newer Linux distributions do not support it (Default: false).
 
 Uninstall
 ---------
