@@ -8,6 +8,6 @@
   register: initramfs_modules
 
 - name: Update initramfs image.
-  command: update-initramfs -u
+  ansible.builtin.command: update-initramfs -u
   become: true
   when: initramfs_modules['changed'] == True

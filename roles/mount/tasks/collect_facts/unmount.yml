@@ -38,7 +38,7 @@
       {{- info -}}
 
 - name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%n,%N,%v,%p"
+  ansible.builtin.command: multipathd show maps raw format "%w,%n,%N,%v,%p"
   register: multipath_maps
   changed_when: false
   become: true

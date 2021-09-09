@@ -2,7 +2,7 @@
   import_tasks: uninstall/package.yml
 
 - name: Delete iSCSI session configuration directories.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ item }}"
   loop:

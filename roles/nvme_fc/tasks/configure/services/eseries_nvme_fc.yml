@@ -1,5 +1,5 @@
 - name: Get the host NVMe Qualified Name (NQN).
-  command:
+  ansible.builtin.command:
     cmd: "{{ eseries_nvme_fc_nqn_command }}"
   changed_when: false
   register: hostnqn_output
@@ -56,7 +56,7 @@
   become: true
 
 - name: Ensure NVMe service is running.
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ eseries_nvme_fc_service_name }}"
     state: started
     enabled: "{{'True' if eseries_nvme_fc_use_nvmefc_boot_connections == False else 'False' }}"

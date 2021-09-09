@@ -1,5 +1,5 @@
 - name: Ensure expected InfiniBand IPoIB packages are removed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: absent
     name: "{{ eseries_ib_opensm_rhel_packages }}"
   become: true

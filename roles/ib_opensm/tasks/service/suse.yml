@@ -1,11 +1,11 @@
 - name: Determine InfiniBand devices.
-  command: ibstat -p
+  ansible.builtin.command: ibstat -p
   changed_when: false
   register: ibsport_guids
   become: true
 
 - name: Create opensm daemon directory.
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_opensm_daemon_path }}"
   become: true
@@ -26,7 +26,7 @@
   become: true
 
 - name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
-  systemd:
+  ansible.builtin.systemd:
     name: opensm.service
     state: "{% if opensm_update == True %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
     enabled: "{{ opensm_update == True or opensm_running == True }}"

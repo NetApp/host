@@ -6,7 +6,7 @@
   become: true
 
 - name: Ensure srp_daemon.service is updated, running and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: srp_daemon.service
     state: "{{ 'restarted' if srp_daemon_service['changed'] else 'started'}}"
     enabled: true

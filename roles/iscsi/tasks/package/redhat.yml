@@ -1,5 +1,5 @@
 - name: Ensure expected iSCSI packages are installed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: present
     name: "{{ eseries_iscsi_rhel_packages }}"
   become: true

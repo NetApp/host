@@ -6,6 +6,6 @@
   register: dracut_modules
 
 - name: Update initramfs image.
-  command: dracut --force
+  ansible.builtin.command: dracut --force
   become: true
   when: dracut_modules['changed'] == True

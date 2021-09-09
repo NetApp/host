@@ -24,13 +24,13 @@
   become: true
 
 - name: Apply changes to NetApp
-  command:
+  ansible.builtin.command:
     cmd: netplan apply
   when: networkd_dispatcher_hook['changed'] or netplan['changed'] or netplan_hook['changed']
   become: true
 
 - name: Get the link status for interface
-  command:
+  ansible.builtin.command:
     cmd: ip -4 address show {{ item['name'] }}
   changed_when: false
   register: link_info
@@ -50,14 +50,14 @@
       {{ interfaces | list }}
 
 - name: Flush IP over InfiniBand interface.
-  command: ip address flush {{ item }}
+  ansible.builtin.command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
 - name: Bring IP over InfiniBand interface down.
-  command: ip link set {{ item }} down
+  ansible.builtin.command: ip link set {{ item }} down
   loop: "{{ changed_interfaces }}"
   become: true
 - name: Bring IP over InfiniBand interface up.
-  command: ip link set {{ item }} up
+  ansible.builtin.command: ip link set {{ item }} up
   loop: "{{ changed_interfaces }}"
   become: true

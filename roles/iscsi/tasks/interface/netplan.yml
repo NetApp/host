@@ -7,7 +7,7 @@
   become: true
 
 - name: Apply changes to Netplan
-  command:
+  ansible.builtin.command:
     cmd: netplan apply
   become: true
   when: netplan['changed']
@@ -33,11 +33,11 @@
       {{ interfaces | list }}
 
 - name: Flush iSCSI interface.
-  command: ip address flush {{ item }}
+  ansible.builtin.command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
 
 - name: Bring iSCSI interface up.
-  command: ip link set {{ item }} up
+  ansible.builtin.command: ip link set {{ item }} up
   loop: "{{ changed_interfaces }}"
   become: true

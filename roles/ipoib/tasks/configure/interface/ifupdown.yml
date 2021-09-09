@@ -16,7 +16,7 @@
   when: "(ansible_os_family | lower) == 'suse' and 'gateway' in (item.keys() | list)"
 
 - name: Get the link status for interface
-  command:
+  ansible.builtin.command:
     cmd: ip -4 address show {{ item['name'] }}
   changed_when: false
   register: link_info
@@ -36,19 +36,19 @@
       {{ interfaces | list }}
 
 - name: Flush InfiniBand iSER interface.
-  command: ip address flush {{ item }}
+  ansible.builtin.command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
   ignore_errors: true
 
 - name: Bring InfiniBand iSER interface down.
-  command: ifdown {{ item }}
+  ansible.builtin.command: ifdown {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
   ignore_errors: true
 
 - name: Bring InfiniBand iSER interface up.
-  command: ifup {{ item }}
+  ansible.builtin.command: ifup {{ item }}
   loop: "{{ changed_interfaces }}"
   ignore_errors: true
   become: true

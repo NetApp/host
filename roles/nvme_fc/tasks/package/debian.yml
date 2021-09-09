@@ -1,5 +1,5 @@
 - name: Ensure expected NVMe over Fibre Channel packages are installed (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: present
     name: "{{ eseries_nvme_fc_ubuntu_packages }}"
   become: true

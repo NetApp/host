@@ -1,5 +1,5 @@
 - name: Flush underlining multipath device devices.
-  command:
+  ansible.builtin.command:
     cmd: "multipath -f {{ item['dev_mapper_path'] }}"
   loop: "{{ unmount_volume_info }}"
   when: item['is_nvme'] == False
@@ -25,7 +25,7 @@
       {{ blocks }}
 
 - name: Force multipath to update devmap.
-  command:
+  ansible.builtin.command:
     cmd: "multipath"
   loop: "{{ unmount_volume_info }}"
   when: item['is_nvme'] == False

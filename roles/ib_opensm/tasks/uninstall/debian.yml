@@ -1,17 +1,17 @@
 - name: Ensure expected InfiniBand IPoIB packages are removed (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: absent
     name: "{{ eseries_ib_opensm_ubuntu_packages }}"
   become: true
 
 - name: Create InfiniBand OpenSM service loader daemon for E-Series.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
   become: true
 
 - name: Create InfiniBand OpenSM service loader for E-Series.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_opensm_service_path }}opensm.service"
   become: true

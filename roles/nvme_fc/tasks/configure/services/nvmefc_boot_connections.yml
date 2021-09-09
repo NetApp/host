@@ -1,5 +1,5 @@
 - name: Ensure NVMe service is running.
-  systemd:
+  ansible.builtin.systemd:
     name: nvmefc-boot-connections.service
     enabled: true
     daemon_reload: true

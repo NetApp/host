@@ -24,7 +24,7 @@
   when: iscsi_interfaces_info | length == 0
 
 - name: Ensure iSCSI binding exist for each interface.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m iface -I {{ item['name'] }} -o new"
     creates: "{{ eseries_iscsi_iface_path }}{{ item['name'] }}"
   register: new_iscsi_bindings
@@ -32,7 +32,7 @@
   become: true
 
 - name: Get current iSCSI iface values.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m iface -I {{ item['interface'] }}"
   register: iface_values
   changed_when: false
@@ -40,7 +40,7 @@
   become: true
 
 - name: Update iface.net_ifacename value.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m iface -I {{ item['item']['interface'] }} -o update -n iface.net_ifacename -v {{ item['item']['interface'] }}"
   register: iface_net_ifacename
   loop: "{{ iface_values['results'] }}"
@@ -55,7 +55,7 @@
       {%- endfor -%}
 
 - name: Update iface.mtu value.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m iface -I {{ item['item']['interface'] }} -o update -n iface.mtu -v {{ item['item']['mtu'] }}"
   register: iface_mtu
   loop: "{{ iface_values['results'] }}"

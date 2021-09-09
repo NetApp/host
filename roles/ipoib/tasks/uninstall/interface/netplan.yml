@@ -1,5 +1,5 @@
 - name: Ensure InfiniBand iSER interfaces configuration files have been removed.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ipoib_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
   register: netplan
@@ -7,13 +7,13 @@
   become: true
 
 - name: Apply changes to Netplan
-  command:
+  ansible.builtin.command:
     cmd: netplan apply
   when: netplan['changed']
   become: true
 
 - name: Bring InfiniBand iSER interface down.
-  command: ip link set {{ item["name"] }} down
+  ansible.builtin.command: ip link set {{ item["name"] }} down
   register: ip_down
   changed_when: ip_down['rc'] != 0 and ip_down['stderr'] is not defined
   failed_when: false
@@ -21,7 +21,7 @@
   become: true
 
 - name: Flush InfiniBand iSER interface.
-  command: ip address flush dev {{ item["name"] }}
+  ansible.builtin.command: ip address flush dev {{ item["name"] }}
   register: ip_flush
   changed_when: ip_flush['rc'] != 0 and ip_flush['stderr'] is not defined
   failed_when: false

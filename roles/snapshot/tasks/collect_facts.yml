@@ -1,5 +1,5 @@
 - name: Get multipath map information for each volume mapping.
-  command:
+  ansible.builtin.command:
     cmd: "multipathd show maps raw format '%w,%n,%s'"
   register: multipathd_map_info
   changed_when: false
@@ -7,7 +7,7 @@
   become: true
 
 - name: Get current mount information.
-  command:
+  ansible.builtin.command:
     cmd: "mount"
     warn: false
   register: mount_info

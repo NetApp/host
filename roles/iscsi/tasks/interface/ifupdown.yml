@@ -36,12 +36,12 @@
       {{ interfaces | list }}
 
 - name: Flush iSCSI interface.
-  command: ip address flush dev {{ item }}
+  ansible.builtin.command: ip address flush dev {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
 
 - name: Bring iSCSI interface up.
-  command: ifup {{ item }}
+  ansible.builtin.command: ifup {{ item }}
   loop: "{{ changed_interfaces }}"
   register: ifup
   failed_when: ifup['rc'] != 0 and not (ifup['stdout'] | regex_search('file exists', ignorecase=True))

@@ -17,7 +17,7 @@
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand base packages are removed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: absent
     name: "{{ rhel_packages }}"
   become: true

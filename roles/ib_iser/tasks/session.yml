@@ -33,7 +33,7 @@
   when: targets.keys() | list | length == 0
 
 - name: Ensure InfiniBand iSER iSCSI target nodes has been created
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m node -T {{ item['value']['iqn'] }} -p {{ item['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['value']['target_portal'] }} -I {{ item['value']['name'] }} -o new"
     creates: "{{ eseries_ib_iser_node_path }}{{ item['value']['iqn'] }}/{{ item['value']['address'] }},{{ eseries_ib_iser_port }},{{ item['value']['target_portal'] }}"
   register: new_target_node
@@ -41,7 +41,7 @@
   become: true
 
 - name: Get current InfiniBand iSER iSCSI node values.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m node -T {{ item['value']['iqn'] }} -p {{ item['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['value']['target_portal'] }}"
   register: target_node_values
   changed_when: false
@@ -49,7 +49,7 @@
   become: true
 
 - name: Set node.startup to automatic
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m node -T {{ item['item']['value']['iqn'] }} -p {{ item['item']['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['item']['value']['target_portal'] }} -o update -n node.startup -v automatic"
   register: node_startup
   loop: "{{ target_node_values['results'] }}"
@@ -64,7 +64,7 @@
       {%- endfor -%}
 
 - name: Update node.session.nr_sessions value.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m node -T {{ item['item']['value']['iqn'] }} -p {{ item['item']['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['item']['value']['target_portal'] }} -o update -n node.session.nr_sessions -v {{ item['item']['value']['nr_sessions'] }}"
   register: node_nr_sessions
   loop: "{{ target_node_values['results'] }}"
@@ -79,7 +79,7 @@
       {%- endfor -%}
 
 - name: Update node.session.timeo.replacement_timeout value.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m node -T {{ item['item']['value']['iqn'] }} -p {{ item['item']['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['item']['value']['target_portal'] }} -o update -n node.session.timeo.replacement_timeout -v {{ item['item']['value']['session_replacement_timeout'] }}"
   register: node_session_replacement_timeout
   loop: "{{ target_node_values['results'] }}"
@@ -94,7 +94,7 @@
       {%- endfor -%}
 
 - name: Update node.session.queue_depth value.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m node -T {{ item['item']['value']['iqn'] }} -p {{ item['item']['value']['address'] }}:{{ eseries_ib_iser_port }},{{ item['item']['value']['target_portal'] }} -o update -n node.session.queue_depth -v {{ item['item']['value']['queue_depth'] }}"
   register: node_queue_depth
   loop: "{{ target_node_values['results'] }}"
@@ -109,14 +109,14 @@
       {%- endfor -%}
 
 - name: Ensure iSCSI services are persistent through system reboot.
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ eseries_iscsi_initiator_service }}"
     daemon-reload: true
     enabled: true
   become: true
 
 - name: Ensure iscsid is running.
-  systemd:
+  ansible.builtin.systemd:
     name: iscsid.service
     state: "{% if new_target_node['changed'] or node_startup['changed'] or node_nr_sessions['changed'] or node_session_replacement_timeout['changed'] or node_queue_depth['changed'] %}restarted{% else %}started{% endif %}"
     daemon-reload: true
@@ -125,7 +125,7 @@
   become: true
 
 - name: Determine the status of iscsid.service and wait for it to be stated.
-  command:
+  ansible.builtin.command:
     cmd: systemctl status iscsid.service
   register: iscsid_status
   become: true
@@ -136,7 +136,7 @@
   when: iscsid_service['changed']
 
 - name: Get the current session list.
-  command:
+  ansible.builtin.command:
     cmd: "iscsiadm -m session"
   register: target_sessions
   changed_when: false
@@ -158,7 +158,7 @@
       {{ login }}
 
 - name: Login of sessions.
-  command:
+  ansible.builtin.command:
     cmd: "{{ item }}"
   register: target_login
   become: true

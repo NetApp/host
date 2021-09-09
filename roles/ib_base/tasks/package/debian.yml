@@ -17,7 +17,7 @@
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand packages are installed (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: present
     name: "{{ ubuntu_packages }}"
   become: true

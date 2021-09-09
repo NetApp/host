@@ -1,22 +1,22 @@
 - name: Rescan iSCSI sessions
-  command: "iscsiadm -m session --rescan"
+  ansible.builtin.command: "iscsiadm -m session --rescan"
   failed_when: false
   become: true
   when: "'rescan_iscsi_sessions' in rescan_actions"
 
 - name: Scan for all SCSI host target devices.
-  shell: "{{ eseries_common_target_scan_paths['scsi'][item] }}"
+  ansible.builtin.shell: "{{ eseries_common_target_scan_paths['scsi'][item] }}"
   loop: "{{ rescan_protocols }}"
   become: true
 
 - name: Reset wwids file information to only include current devices.
-  command:
+  ansible.builtin.command:
     cmd: multipath -W
   failed_when: false
   become: true
 
 - name: Restart multipathd daemon.
-  systemd:
+  ansible.builtin.systemd:
     name: multipathd.service
     state: restarted
   become: true

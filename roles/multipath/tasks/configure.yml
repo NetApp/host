@@ -8,7 +8,7 @@
   become: true
 
 - name: Ensure that multipath.conf exists.
-  file:
+  ansible.builtin.file:
     state: touch
     path: "/etc/multipath.conf"
   when: not multipath_conf["stat"]["exists"]
@@ -23,14 +23,14 @@
 - name: Configure eseries_multipath.conf
   block:
     - name: Determine current multipath configuration.
-      command:
+      ansible.builtin.command:
         cmd: multipath -t
       register: current_multipath_configuration
       changed_when: false
       become: true
 
     - name: Ensure multipath configuration directory exists.
-      file:
+      ansible.builtin.file:
         state: directory
         path: "{{ eseries_multipath_conf_d_path }}"
       become: true
@@ -43,7 +43,7 @@
   when: not eseries_multipath_conf["stat"]["exists"]
 
 - name: Ensure multipathd daemon has been started and is enabled.
-  systemd:
+  ansible.builtin.systemd:
     state: started
     name: multipathd.service
     enabled: true

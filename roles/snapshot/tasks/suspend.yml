@@ -12,7 +12,7 @@
   when: eseries_snapshot_pit_safe == True and item['mounted'] == True
 
 - name: "Suspend E-Series volume [{{ volumes['key'] }}]."
-  command:
+  ansible.builtin.command:
     cmd: "dmsetup suspend {{ volumes['key'] }}"
   register: file_check
   delegate_to: "{{ item['ansible_host_name'] }}"

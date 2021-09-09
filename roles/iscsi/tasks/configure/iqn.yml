@@ -1,5 +1,5 @@
 - name: Ensure path for initiatorname.iscsi exists.
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_iscsi_conf_path }}"
   become: true

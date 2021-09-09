@@ -1,17 +1,17 @@
 - name: Get all InfiniBand link interface names.
-  command: ip -oneline link
+  ansible.builtin.command: ip -oneline link
   changed_when: false
   register: ip_link_output
   become: true
 
 - name: Determine InfiniBand devices.
-  command: ibstat -l
+  ansible.builtin.command: ibstat -l
   changed_when: false
   register: ibstat_device_list_output
   become: true
 
 - name: Determine InfiniBand device information.
-  command: "ibstat -s {{ item }}"
+  ansible.builtin.command: "ibstat -s {{ item }}"
   loop: "{{ ibstat_device_list_output['stdout_lines'] }}"
   changed_when: false
   register: ibstat_device_information_output
@@ -29,7 +29,7 @@
       {{- devices -}}
 
 - name: Compile information for each device's ports.
-  command: "ibstat {{ item['device'] }} {{ item['port'] }}"
+  ansible.builtin.command: "ibstat {{ item['device'] }} {{ item['port'] }}"
   loop: "{{ device_ports }}"
   changed_when: false
   register: ibstat_device_port_information_output
@@ -110,13 +110,13 @@
       {{- unavailable_interfaces -}}
 
 - name: Ensure OpenSM directory exists.
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_opensm_config_path }}"
   become: true
 
 - name: Create OpenSM configuration temporary files.
-  command:
+  ansible.builtin.command:
     cmd: "opensm --create-config {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~
                  --guid {{ item['port_guid'] }}
                  --priority {{ item['priority'] | default(eseries_ib_opensm_subnet_priority) }}
@@ -141,7 +141,7 @@
   become: true
 
 - name: Check whether changes have been to the the OpenSM configuration files.
-  command:
+  ansible.builtin.command:
     cmd: "diff {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~ {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}"
   register: diff_opensm_config
   changed_when: false
@@ -152,7 +152,7 @@
   become: true
 
 - name: Update missing or changed OpenSM configuration files.
-  command:
+  ansible.builtin.command:
     cmd: "mv -f {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~ {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}"
   register: update_opensm_config
   loop: "{{ diff_opensm_config['results'] }}"
@@ -162,7 +162,7 @@
   when: item['rc'] != 0
 
 - name: Remove OpenSM configuration temporary files.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~"
   changed_when: false
@@ -194,7 +194,7 @@
       {{ files }}
 
 - name: Remove no longer needed OpenSM configuration files.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ item }}"
   register: delete_opensm_config

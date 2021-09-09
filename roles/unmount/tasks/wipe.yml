@@ -1,5 +1,5 @@
 - name: Wipe volume format signatures.
-  command:
+  ansible.builtin.command:
     cmd: "wipefs --all {{ item['dev_mapper_path'] }}"
 #  no_log: true
   loop: "{{ unmount_volume_info }}"

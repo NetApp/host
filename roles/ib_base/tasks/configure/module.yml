@@ -1,11 +1,11 @@
 - name: "Ensure {{ eseries_ib_base_rdma }} directory exists."
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_base_rdma }}"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules directory exists."
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_base_rdma }}modules/"
   become: true

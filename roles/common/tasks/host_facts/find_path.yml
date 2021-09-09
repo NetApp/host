@@ -1,5 +1,5 @@
 - name: Get the multipathd maps
-  command: multipathd show maps raw format "%w,%n,%s"
+  ansible.builtin.command: multipathd show maps raw format "%w,%n,%s"
   register: multipath_maps
   changed_when: false
   failed_when: false

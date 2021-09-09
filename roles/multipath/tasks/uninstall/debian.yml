@@ -8,12 +8,12 @@
   register: initramfs_modules
 
 - name: Update initramfs image.
-  command: update-initramfs -u
+  ansible.builtin.command: update-initramfs -u
   become: true
   when: initramfs_modules['changed'] == True
 
 - name: Ensure expected multipath packages have been uninstalled (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: absent
     name: "{{ eseries_multipath_ubuntu_packages }}"
   become: true

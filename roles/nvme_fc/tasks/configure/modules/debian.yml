@@ -6,6 +6,6 @@
   become: true
 
 - name: Update initrd image.
-  command: update-initramfs -u
+  ansible.builtin.command: update-initramfs -u
   become: true
   when: modprobe_configuration['changed'] == True

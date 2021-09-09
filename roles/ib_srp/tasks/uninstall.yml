@@ -3,7 +3,7 @@
   become: true
 
 - name: Unconfigure NVMe over Fibre Channel systemd service.
-  systemd:
+  ansible.builtin.systemd:
     name: srp_daemon.service
     state: stopped
     enabled: false
@@ -11,7 +11,7 @@
   become: true
 
 - name: Delete srp_daemon.service
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_srp_daemon_service }}"
   become: true

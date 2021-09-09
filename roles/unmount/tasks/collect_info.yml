@@ -1,5 +1,5 @@
 - name: Get multipath map information for each mapping to be removed.
-  command:
+  ansible.builtin.command:
     cmd: "multipathd show maps raw format '%w,%n,%N,%s'"
     #cmd: "multipathd show maps raw format '%w,%n,%N,%v,%p'"
   register: multipathd_map_info
@@ -8,7 +8,7 @@
   become: true
 
 - name: Get multipath path information for each mapping to be removed.
-  command:
+  ansible.builtin.command:
     cmd: "multipathd show paths raw format '%w,%d'"
   register: multipathd_path_info
   changed_when: false
@@ -16,7 +16,7 @@
   become: true
 
 - name: Get current mount information.
-  command:
+  ansible.builtin.command:
     cmd: "mount"
     warn: false
   register: mount_info

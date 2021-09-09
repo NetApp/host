@@ -6,7 +6,7 @@
   become: true
 
 - name: Ensure InfiniBand OpenSM service loader for E-Series is stopped and disabled.
-  systemd:
+  ansible.builtin.systemd:
     name: opensm.service
     state: stopped
     enabled: false
@@ -26,7 +26,7 @@
   become: true
 
 - name: Remove no longer needed OpenSM configuration files.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ item }}"
   register: delete_opensm_config

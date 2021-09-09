@@ -1,5 +1,5 @@
 - name: Ensure expected snapshot packages are installed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: present
     name: "{{ eseries_snapshot_rhel_packages }}"
   become: true

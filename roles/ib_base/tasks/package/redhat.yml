@@ -17,7 +17,7 @@
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand packages are installed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: present
     name: "{{ rhel_packages }}"
   register: packages
