@@ -51,7 +51,7 @@
       {%- set scratch = {"subnet_prefix": eseries_ib_opensm_subnet_prefix_base | int } -%}
       {%- for result in ibstat_device_port_information_output["results"] -%}
         {%- set device_name = result["item"]["device"] ~ "_" ~ result["item"]["port"] -%}
-        {%- set device_info = {"name": device_name, "aliases": [device_name]} -%}
+        {%- set device_info = {"name": device_name, "aliases": [result["item"]["device"], device_name]} -%}
 
         {#- Append InfiniBand port information -#}
         {%- for line in result["stdout_lines"] -%}

@@ -1,0 +1,9 @@
+- name: Copy local version of OpenSM
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ eseries_ib_opensm_copy_path }}{{ item | basename }}"
+    mode: 0644
+  loop: "{{ eseries_ib_opensm_copy_packages }}"
+
+- name: Ensure InfiniBand OpenSM packages are installed.
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"

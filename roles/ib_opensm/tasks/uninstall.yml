@@ -17,6 +17,18 @@
 - name: Ensure InfiniBand packages are uninstalled.
   include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
 
+- name: Create InfiniBand OpenSM service loader daemon for E-Series.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
+  become: true
+
+- name: Create InfiniBand OpenSM service loader for E-Series.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ib_opensm_service_path }}opensm.service"
+  become: true
+
 - name: Determine existing OpenSM configuration files.
   find:
     path: "{{ eseries_ib_opensm_config_path }}"
