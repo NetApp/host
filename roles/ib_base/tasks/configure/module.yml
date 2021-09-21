@@ -105,6 +105,13 @@
 
 - name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
   block:
+    - name: Ensure udev rules exist for InfiniBand device exist.
+      template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/common/ib_udev_rules.j2') }}"
+        dest: "{{ eseries_ib_base_udev_rules_d }}{{ eseries_ib_base_udev_name }}"
+      register: ib_udev_rules
+      when: eseries_ib_base_udev_name is defined and eseries_ib_base_udev_rules is defined and eseries_ib_base_udev_rules | length > 0
+
     - name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
       blockinfile:
         path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
@@ -113,7 +120,6 @@
           {% for module in eseries_ib_base_ipoib_kernel_modules %}
           {{ module["name"] }}
           {% endfor %}
-      become: true
 
     - name: Ensure required kernel module parameters for IP over InfiniBand are added to the boot process.
       blockinfile:
@@ -123,8 +129,8 @@
           {% for module in eseries_ib_base_ipoib_kernel_modules if module["parameters"] is not none %}
           options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
-      become: true
   when: eseries_ib_base_ipoib_enabled == True
+  become: true
 
 - name: Ensure required kernel modules for InfiniBand iSER are added to the boot process.
   block:
@@ -136,7 +142,6 @@
           {% for module in eseries_ib_base_iser_kernel_modules %}
           {{ module["name"] }}
           {% endfor %}
-      become: true
 
     - name: Ensure required kernel module parameters for InfiniBand iSER are added to the boot process.
       blockinfile:
@@ -146,8 +151,8 @@
           {% for module in eseries_ib_base_iser_kernel_modules if module["parameters"] is not none %}
           options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
-      become: true
   when: eseries_ib_base_iser_enabled == True
+  become: true
 
 - name: Ensure required kernel modules for InfiniBand SRP are added to the boot process.
   block:
@@ -159,7 +164,6 @@
           {% for module in eseries_ib_base_srp_kernel_modules %}
           {{ module["name"] }}
           {% endfor %}
-      become: true
 
     - name: Ensure required kernel module parameters for InfiniBand SRP are added to the boot process.
       blockinfile:
@@ -169,8 +173,8 @@
           {% for module in eseries_ib_base_srp_kernel_modules if module["parameters"] is not none %}
           options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
-      become: true
   when: eseries_ib_base_srp_enabled == True
+  become: true
 
 - name: Ensure required kernel modules for NVMe over InfiniBand are added to the boot process.
   block:
@@ -182,7 +186,6 @@
           {% for module in eseries_ib_base_nvme_kernel_modules %}
           {{ module["name"] }}
           {% endfor %}
-      become: true
 
     - name: Ensure required kernel module parameters for NVMe over InfiniBand are added to the boot process.
       blockinfile:
@@ -192,5 +195,11 @@
           {% for module in eseries_ib_base_nvme_kernel_modules if module["parameters"] is not none %}
           options {{ module["name"] }} {{ module["parameters"] }}
           {% endfor %}
-      become: true
   when: eseries_ib_base_nvme_enabled == True
+  become: true
+
+- name: Reboot any hosts with new udev rules.
+  include_role:
+    name: common
+    tasks_from: host_facts/rescue/reboot.yml
+  when: ib_udev_rules['changed'] == True

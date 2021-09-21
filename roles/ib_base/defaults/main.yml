@@ -2,6 +2,11 @@ eseries_ib_base_rdma: /etc/rdma/
 eseries_ib_base_rdma_memory_conf: /etc/security/limits.d/rdma.conf
 eseries_ib_base_modules_load_d: /etc/modules-load.d/
 eseries_ib_base_modules_d: /etc/modprobe.d/
+
+eseries_ib_base_udev_rules_d: /etc/udev/rules.d/
+eseries_ib_base_udev_name: 10-eseries_ib_base_udev.rules
+eseries_ib_base_udev_rules: {}  # Dictionary of PCI device-name key-value pairs (example: { "0000:41:00.0": "ib0", "0000:41:00.1": "ib1" })
+
 eseries_ib_base_ipoib_enabled: false
 eseries_ib_base_iser_enabled: false
 eseries_ib_base_srp_enabled: false
