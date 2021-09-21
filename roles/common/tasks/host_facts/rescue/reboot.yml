@@ -1,4 +1,4 @@
-- name: Reboot nodes with missing volumes.
+- name: Reboot nodes.
   ansible.builtin.reboot:
     test_command: "systemctl is-active default.target"
     reboot_timeout: 3600
