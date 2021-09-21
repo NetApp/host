@@ -5,7 +5,7 @@
   become: true
 
 - name: Ensure iSCSI initiator name (i.e. IQN) has been set.
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'initiatorname_iscsi.j2') }}"
     dest: "{{ eseries_iscsi_conf_path }}initiatorname.iscsi"
   register: initiatorname_iscsi

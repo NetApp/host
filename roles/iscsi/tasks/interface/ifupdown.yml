@@ -1,5 +1,5 @@
 - name: Ensure ifcfg-* files exist for each iSCSI network interface (RHEL, SUSE).
-  template:
+  ansible.builtin.template:
     backup: true
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'ifupdown/ifcfg.j2') }}"
     dest: "{{ eseries_iscsi_ifcfg_path }}ifcfg-{{ item['name'] }}"

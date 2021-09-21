@@ -1,5 +1,5 @@
 - name: Ensure networkd-dispatcher is configured for ifup hooks.
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path','netplan/networkd_dispatcher_hook.j2') }}"
     dest: "{{ eseries_ipoib_networkd_dispatcher_routable_d_path }}50-ifup-hooks"
     mode: "0755"
@@ -7,7 +7,7 @@
   become: true
 
 - name: Ensure IP over InfiniBand interfaces have netplan configuration files.
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan.j2') }}"
     dest: "{{ eseries_ipoib_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
   register: netplan
@@ -15,7 +15,7 @@
   become: true
 
 - name: Ensure IP over InfiniBand interfaces have netplan configuration hooks.
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan_hook.j2') }}"
     dest: "{{ eseries_ipoib_networkd_ifup_d_path }}99-eseries-ansible-{{ item['name'] }}-hook"
     mode: "0755"

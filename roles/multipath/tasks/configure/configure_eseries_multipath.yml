@@ -20,7 +20,7 @@
       become: true
 
     - name: Configure multipath.conf.
-      template:
+      ansible.builtin.template:
         src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'multipath_conf.j2') }}"
         dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
       register: multipath_conf

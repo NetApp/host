@@ -11,26 +11,26 @@
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}rdma.conf is correct (RHEL)."
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/redhat/rdma_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}rdma.conf"
   when: "(ansible_os_family | lower) == 'redhat'"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/infiniband.conf is correct."
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/infiniband_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/infiniband.conf"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/srp_daemon.conf is correct."
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/srp_daemon_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/srp_daemon.conf"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/rdma.conf is correct."
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/rdma_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/rdma.conf"
   become: true
@@ -106,7 +106,7 @@
 - name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
   block:
     - name: Ensure udev rules exist for InfiniBand device exist.
-      template:
+      ansible.builtin.template:
         src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/common/ib_udev_rules.j2') }}"
         dest: "{{ eseries_ib_base_udev_rules_d }}{{ eseries_ib_base_udev_name }}"
       register: ib_udev_rules

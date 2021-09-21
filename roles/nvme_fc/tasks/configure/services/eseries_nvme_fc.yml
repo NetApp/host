@@ -41,7 +41,7 @@
   when: targets | length == 0
 
 - name: Create NVMe service daemon.
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_fc_daemon.j2') }}"
     dest: "{{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }}"
     mode: "0744"
@@ -49,7 +49,7 @@
   become: true
 
 - name: Create NVMe systemd service file.
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_fc_service.j2') }}"
     dest: "{{ eseries_nvme_fc_service_path }}{{ eseries_nvme_fc_service_name }}"
   register: nvme_service
