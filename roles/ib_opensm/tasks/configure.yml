@@ -1,5 +1,37 @@
 - name: Ensure non_standard InfiniBand OpenSM subnet managers are configured.
   include_tasks: configure/opensm.yml
 
-- name: Ensure systemd service loader is installed and configured.
-  include_tasks: "service/{{ ansible_os_family | lower }}.yml"
+- name: Determine InfiniBand devices.
+  ansible.builtin.command: ibstat -p
+  changed_when: false
+  register: ibsport_guids
+  become: true
+
+- name: Create opensm daemon directory.
+  ansible.builtin.file:
+    state: directory
+    path: "{{ eseries_ib_opensm_daemon_path }}"
+  become: true
+
+- name: Create InfiniBand OpenSM service loader daemon for E-Series.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm.j2') }}"
+    dest: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
+    mode: "0744"
+  register: loader_daemon
+  become: true
+
+- name: Create InfiniBand OpenSM service loader for E-Series.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm_service.j2') }}"
+    dest: "{{ eseries_ib_opensm_service_path }}opensm.service"
+  register: loader_service
+  become: true
+
+- name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
+  ansible.builtin.systemd:
+    name: opensm.service
+    state: "{% if opensm_update == True %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
+    enabled: "{% if opensm_update == True or opensm_running == True %}true{% else %}false{% endif %}"
+    daemon_reload: true
+  become: true
