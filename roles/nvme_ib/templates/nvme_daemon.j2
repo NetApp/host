@@ -1,8 +1,8 @@
 #!/bin/sh
 
 is_storage_port_connected() {
-  storage_name=$1
-  storage_nqn=$2
+  storage_nqn=$1
+  storage_address=$2
 
   for controller_path in /sys/class/nvme-fabrics/ctl/nvme*; do
     if grep "$storage_nqn" $controller_path/subsysnqn > /dev/null 2>&1 && grep "$storage_address" $controller_path/address > /dev/null 2>&1; then
@@ -13,6 +13,21 @@ is_storage_port_connected() {
   return 1
 }
 
+# Trigger udev rules for all devices discovered.
+trigger_udev_device_rules() {
+  storage_nqn=$1
+  storage_address=$2
+
+  for controller_path in /sys/class/nvme-fabrics/ctl/nvme*; do
+    if grep "$storage_nqn" $controller_path/subsysnqn > /dev/null 2>&1 && grep "$storage_address" $controller_path/address > /dev/null 2>&1; then
+      for path in $controller_path/nvme*c*; do
+        if [ -w $path/uevent ]; then echo add > $path/uevent; fi
+      done
+    fi
+  done
+
+  return 1
+}
 
 # Connected port to already discover storage.
 connect_storage() {
@@ -23,7 +38,7 @@ connect_storage() {
   storage_address=$4
 
   # Check whether storage has been connected through port.
-  if ! (is_storage_port_connected $storage_name $storage_nqn); then
+  if ! (is_storage_port_connected $storage_nqn $storage_address); then
     echo -n "Connecting to $storage_name via $storage_address..."
 
     # Check that storage is reachable.
@@ -33,6 +48,8 @@ connect_storage() {
     # Discover and connect to storage via port address.
     elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=4420 --hostnqn=$host_nqn > /dev/null 2>&1; then
       if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=1024 --ctrl-loss-tmo=3600 > /dev/null 2>&1; then
+        sleep 1
+        trigger_udev_device_rules $storage_nqn $storage_address
         echo "Connected."
         rc=0
       else
@@ -64,41 +81,45 @@ disconnect_storage() {
   echo "Not connected!"
 }
 
-
 start() {
-{%- set array_info = {} -%}
-{%- for id, target in targets.items() -%}
-  {%- if target["nqn"] not in (array_info.keys() | list) -%}
-    {%- if array_info.update({target["nqn"]: {"addresses": [],
-                                        "array_name": target["array_name"],
-                                        "hostnqn": target["hostnqn"],
-                                        "queue_depth": target["queue_depth"],
-                                        "controller_loss_timeout": target["controller_loss_timeout"]} }) -%}{%- endif -%}
-  {%- endif -%}
-  {%- if array_info[target["nqn"]]["addresses"].append(target["address"]) -%}{%- endif -%}
-{%- endfor %}
-  rc=0
   host_nqn=$(cat /etc/nvme/hostnqn)
 
-  while true; do
-{% for storage_nqn, storage_info in array_info.items() -%}
-{% for storage_address in storage_info["addresses"] %}
-    connect_storage $host_nqn {{ storage_info["array_name"] }} {{ storage_nqn }} {{ storage_address }}
-{% endfor %}
-{% endfor %}
+  # Spin every 30 seconds and validate NVMe connections.
+  while [ -f /etc/nvme/eseries_nvme_ib_connections.conf ]; do
+
+    # Connect to all known E-Series storage system(s).
+    while read -r line; do
+      connect_storage $host_nqn $line &
+    done < /etc/nvme/eseries_nvme_ib_connections.conf
+
+    # Wait for all tasks to complete.
+    wait
     sleep 30
   done
+
+  echo "There were no storage targets to connect!"
 }
 
 stop() {
-{% set nqns = [] -%}
-{%- for id, target in targets.items() if target["nqn"] not in nqns -%}
-  {%- if nqns.append(target["nqn"]) -%}{%- endif %}
-  disconnect_storage {{ target["array_name"] }} {{ target["nqn"] }}
-{% else %}
-  echo "There were no storage targets to disconnect."
-{% endfor %}
+
+  if [ -f /etc/nvme/eseries_nvme_ib_connections.conf ]; then
+
+    # Create a temporary file with only the entries that are required for disconnecting from storage system(s).
+    cat /etc/nvme/eseries_nvme_ib_connections.conf | awk '{print $1" "$2}' | uniq > /tmp/~eseries_nvme_ib_disconnections.conf
+
+    # Disconnect from all E-Series storage system(s).
+    while read -r line; do
+      disconnect_storage $line &
+    done < /tmp/~eseries_nvme_ib_disconnections.conf
+
+    # Wait for all tasks to complete.
+    rm -f /tmp/~eseries_nvme_ib_disconnections.conf
+    wait
+  else
+    echo "There were no storage targets to disconnect!"
+  fi
 }
+
 
 case $1 in
   start)

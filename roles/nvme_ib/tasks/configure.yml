@@ -41,6 +41,14 @@
     msg: "Error: Unable to establish communication with the storage system. Check physical connections and interface configuration."
   when: targets.keys() | list | length == 0
 
+- name: Create NVMe service daemon connections file.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'eseries_nvme_ib_connections.j2') }}"
+    dest: "{{ eseries_nvme_ib_daemon_path }}eseries_nvme_ib_connections.conf"
+    mode: "0744"
+  register: nvme_daemon
+  become: true
+
 - name: Create NVMe service daemon.
   ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_daemon.j2') }}"
