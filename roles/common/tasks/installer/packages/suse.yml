@@ -1,0 +1,41 @@
+- name: Uninstall {{ eseries_common_package_group }} packages (SUSE).
+  community.general.zypper:
+    state: absent
+    name: "{{ uninstall_packages }}"
+  when: uninstall_packages | length > 0
+  register: execute_config_files_uninstall
+  become: true
+  vars:
+    uninstall_packages: |-
+      {%- set packages = [] -%}
+      {%- if execute_config["packages"]["remove"] | default([]) -%}
+        {%- if packages.extend(execute_config["packages"]["remove"] | unique) -%}{%- endif -%}
+      {%- endif -%}
+      {{- packages -}}
+
+- name: Install {{ eseries_common_package_group }} packages (SUSE).
+  community.general.zypper:
+    state: "{% if eseries_common_allow_upgrades == True %}latest{% else %}present{% endif %}"
+    name: "{{ install_packages }}"
+  when: install_packages | length > 0
+  register: execute_config_files_install
+  become: true
+  vars:
+    install_packages: |-
+      {%- set packages = [] -%}
+      {%- if execute_config["packages"]["add"] | default([]) -%}
+        {%- if packages.extend(execute_config["packages"]["add"] | unique) -%}{%- endif -%}
+      {%- endif -%}
+      {%- for package in execute_config["packages"]["remove"] | default([]) if package in packages -%}
+        {%- if packages.remove(package) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- packages -}}
+
+- name: Update monitor change variable.
+  set_fact:
+    execute_config_changes: |-
+      {%- set changes = execute_config_changes -%}
+      {%- if execute_config_files_uninstall["changed"] == true or execute_config_files_install["changed"] == true -%}
+        {%- if changes.append("packages") -%}{%- endif -%}
+      {%- endif -%}
+      {{- changes -}}

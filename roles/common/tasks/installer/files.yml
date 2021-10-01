@@ -1,0 +1,24 @@
+- name: "Copy local {{ eseries_common_package_group }} files to {{ inventory_hostname }}."
+  ansible.builtin.copy:
+    src: "{{ item['key'] }}"
+    dest: "{{ item['value'] }}"
+  register: execute_config_files_copy
+  loop: "{{ execute_config['files']['add'] | default({}) | dict2items }}"
+  become: true
+
+- name: "Delete {{ eseries_common_package_group }} files from {{ inventory_hostname }}."
+  ansible.builtin.file:
+    state: absent
+    path: "{{ item }}"
+  register: execute_config_files_remove
+  loop: "{{ execute_config['files']['remove'] | default([]) }}"
+  become: true
+
+- name: Update monitor change variable.
+  set_fact:
+    execute_config_changes: |-
+      {%- set changes = execute_config_changes -%}
+      {%- if execute_config_files_copy["changed"] == true or execute_config_files_remove["changed"] == true -%}
+        {%- if changes.append("files") -%}{%- endif -%}
+      {%- endif -%}
+      {{- changes -}}

@@ -1,0 +1,33 @@
+# Return Codes
+#   0 - Change required and success
+#   1 - Change not required
+#   10+ - Change require and command failed
+- name: "Execute {{ eseries_common_package_group }} package command tasks."
+  ansible.builtin.shell: |
+    apply_package_commands() {
+    if {{ execute_config["run_commands_if"] | default(true) }} ; then
+    {% for command in execute_config["commands"] | default([true]) %}
+        {% if loop["first"] %}if{% else %}elif{% endif %} ! {{ command }} ; then
+          echo "{{ eseries_common_package_group }} command failed! {{ command }}" >&2
+          return {{ loop["index0"] + 10 }}
+    {% endfor %}
+        else
+          return 0
+        fi
+      fi
+      return 1
+    }
+    apply_package_commands
+  register: execute_config_commands
+  changed_when: (execute_config_commands["rc"] | default(1)) == 0
+  failed_when: (execute_config_commands["rc"] | default(1)) >= 10
+  become: true
+
+- name: Update monitor change variable.
+  set_fact:
+    execute_config_changes: |-
+      {%- set changes = execute_config_changes -%}
+      {%- if execute_config_commands["changed"] == true -%}
+        {%- if changes.append("commands") -%}{%- endif -%}
+      {%- endif -%}
+      {{- changes -}}
