@@ -5,8 +5,8 @@
 - name: "Execute {{ eseries_common_package_group }} package command tasks."
   ansible.builtin.shell: |
     apply_package_commands() {
-    if {{ execute_config["run_commands_if"] | default(true) }} ; then
-    {% for command in execute_config["commands"] | default([true]) %}
+    if {{ execute_config["run_commands_if"] | default("true") }} ; then
+    {% for command in execute_config["commands"] | default(["true"]) %}
         {% if loop["first"] %}if{% else %}elif{% endif %} ! {{ command }} ; then
           echo "{{ eseries_common_package_group }} command failed! {{ command }}" >&2
           return {{ loop["index0"] + 10 }}
