@@ -34,6 +34,7 @@
     state: "{% if opensm_update == True %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
     enabled: "{% if opensm_update == True or opensm_running == True %}true{% else %}false{% endif %}"
     daemon_reload: true
+  register: opensm_service
   become: true
 
 - name: Wait for InfiniBand OpenSM service to start.
@@ -45,4 +46,4 @@
   retries: 60
   delay: 2
   until: command_result['rc'] == 0
-  when: eseries_common_reboot_test_command is defined
+  when: opensm_service['changed']
