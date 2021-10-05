@@ -1,11 +1,11 @@
-- name: "Ensure multipath has been added to {{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf file."
-  ansible.builtin.template:
-    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/eseries_multipath_conf.j2') }}"
-    dest: "{{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf"
-  become: true
-  register: dracut_modules
+#- name: "Ensure multipath has been added to {{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf file."
+#  ansible.builtin.template:
+#    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/eseries_multipath_conf.j2') }}"
+#    dest: "{{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf"
+#  become: true
+#  register: dracut_modules
 
 - name: Update initramfs image.
-  ansible.builtin.command: dracut --force
+  ansible.builtin.command: dracut --force --add multipath
   become: true
-  when: dracut_modules['changed'] == True
+#  when: dracut_modules['changed'] == True

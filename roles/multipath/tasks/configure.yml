@@ -1,6 +1,3 @@
-- name: Ensure multipath is configured.
-  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
-
 - name: Check whether /etc/multipath.conf exists
   stat:
     path: "/etc/multipath.conf"
@@ -13,6 +10,9 @@
     path: "/etc/multipath.conf"
   when: not multipath_conf["stat"]["exists"]
   become: true
+
+- name: Ensure multipath is configured.
+  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
 
 - name: Check whether eseries_multipath.conf exists
   stat:
