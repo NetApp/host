@@ -32,6 +32,17 @@
   ansible.builtin.systemd:
     name: opensm.service
     state: "{% if opensm_update == True %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
-    enabled: true  #"{% if opensm_update == True or opensm_running == True %}true{% else %}false{% endif %}"
+    enabled: "{% if opensm_update == True or opensm_running == True %}true{% else %}false{% endif %}"
     daemon_reload: true
   become: true
+
+- name: Wait for InfiniBand OpenSM service to start.
+  ansible.builtin.shell: "systemctl --state=active,exited | grep eseries_nvme_ib.service"
+  become: true
+  failed_when: false
+  changed_when: false
+  register: command_result
+  retries: 60
+  delay: 2
+  until: command_result['rc'] == 0
+  when: eseries_common_reboot_test_command is defined
