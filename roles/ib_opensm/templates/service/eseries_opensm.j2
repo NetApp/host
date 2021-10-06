@@ -3,36 +3,37 @@
 start() {
   start_time=$(date +"%Y-%m-%d %H:%M:%S")
 
-  start_opensm_daemons=true
-  while $start_opensm_daemons; do
-    start_opensm_daemons=false
-    for conf in /etc/rdma/opensm.conf*; do
+  if ls /etc/rdma/opensm.conf* > /dev/null 2&>1; then
+    start_opensm_daemons=true
+    while $start_opensm_daemons; do
+      start_opensm_daemons=false
+      for conf in /etc/rdma/opensm.conf*; do
 
-      # Check whether subnet manager has already started. If not, start it.
-      if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
-        opensm -F $conf --daemon
+        # Check whether subnet manager has already started. If not, start it.
+        if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
+          opensm -F $conf --daemon
 
-        # Wait for subnet manager to enter master state.
-        opensm_pid=$(ps aux | grep "[o]pensm -F $conf --daemon" | sed -E "s/[ \t]+/ /g" | cut -f 2 -d " ")
-        while true; do
-          if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
-            start_opensm_daemons=true
-            break
-          elif journalctl -o short --since "$start_time" _PID=$opensm_pid | grep "Entering.*state"; then
-            break
-          fi
-          sleep 1
-        done
+          # Wait for subnet manager to enter master state.
+          opensm_pid=$(ps aux | grep "[o]pensm -F $conf --daemon" | sed -E "s/[ \t]+/ /g" | cut -f 2 -d " ")
+          while true; do
+            if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
+              start_opensm_daemons=true
+              break
+            elif journalctl -o short --since "$start_time" _PID=$opensm_pid | grep "Entering.*state"; then
+              break
+            fi
+            sleep 1
+          done
+        fi
+      done
+
+      # Check whether any subnet managers failed to start. If so, then wait 30 seconds before trying again.
+      if $start_opensm_daemons; then
+        sleep 5
       fi
     done
+  fi
 
-    # Check whether any subnet managers failed to start. If so, then wait 30 seconds before trying again.
-    if $start_opensm_daemons; then
-      sleep 30
-    fi
-  done
-
-  sleep 30
   rc=0
 }
 
