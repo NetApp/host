@@ -37,8 +37,8 @@
   register: opensm_service
   become: true
 
-- name: Wait for InfiniBand OpenSM service to start.
-  ansible.builtin.shell: "systemctl --state=active,exited | grep eseries_nvme_ib.service"
+- name: Wait for InfiniBand OpenSM service to complete.
+  ansible.builtin.shell: "systemctl --state=active,exited | grep opensm.service"
   become: true
   failed_when: false
   changed_when: false
