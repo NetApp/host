@@ -1,2 +1,3 @@
 bugfixes:
-  ib_opensm - Re
+  - ib_opensm - Fix systemd unit file to start up at the right time.
+  - ib_opensm - Ensure all opensm.conf* files are started and entered their expected state.

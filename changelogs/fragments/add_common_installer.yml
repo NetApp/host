@@ -1,2 +1,2 @@
 minor_changes:
-  common - Add common inventory structure and tasks to facilitate installing and configuring external packages.
+  - common - Add common inventory structure and tasks to facilitate installing and configuring external packages.

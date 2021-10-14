@@ -1,2 +1,3 @@
 bugfixes:
-  nvme_ib - Fix service and daemon to spin until NVMe sessions are established.
+  - nvme_ib - Fix systemd unit file so that the nvme_ib service starts a the right time.
+  - nvme_ib - Fix service and daemon to spin until NVMe sessions are established.
