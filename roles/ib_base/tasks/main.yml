@@ -1,14 +1,36 @@
+- name: Install InfiniBand base custom packages.
+  include_role:
+    name: common
+    tasks_from: installer/install.yml
+  when: '"install" in (eseries_common_custom_packages.keys() | list)'
+  vars:
+    eseries_common_package_group: "InfiniBand base"
+    eseries_common_custom_packages: "{{ eseries_ib_base_custom_packages | default({}) }}"
+    eseries_common_allow_upgrades: "{{ eseries_ib_base_allow_upgrades | default(false) }}"
+    eseries_common_skip_package_validation: "{{ eseries_ib_base_skip_package_validation | default(false) }}"
+
 - name: Ensure InfiniBand base packages are installed.
-  include_tasks: "package/{{  ansible_os_family | lower }}.yml"
+  include_tasks: "package/{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure InfiniBand base is configured.
   import_tasks: configure.yml
 
 - name: Uninstall InfiniBand base.
   block:
+    - name: Install InfiniBand base custom packages.
+      include_role:
+        name: common
+        tasks_from: installer/uninstall.yml
+      when: '"uninstall" in (eseries_common_custom_packages.keys() | list)'
+      vars:
+        eseries_common_package_group: "InfiniBand base"
+        eseries_common_custom_packages: "{{ eseries_ib_base_custom_packages | default({}) }}"
+        eseries_common_allow_upgrades: "{{ eseries_ib_base_allow_upgrades | default(false) }}"
+        eseries_common_skip_package_validation: "{{ eseries_ib_base_skip_package_validation | default(false) }}"
+
     - name: Uninstall InfiniBand base.
       include_tasks: uninstall.yml
-      when: eseries_common_force_skip_uninstall == False
+  when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - ib_base_uninstall

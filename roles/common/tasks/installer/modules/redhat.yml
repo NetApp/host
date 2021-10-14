@@ -1,0 +1,9 @@
+
+#- name: Update monitor change variable.
+#  set_fact:
+#    execute_config_changes: |-
+#      {%- set changes = execute_config_changes -%}
+#      {%- if execute_config_modules_remove["changed"] == true or execute_config_modules_add["changed"] == true -%}
+#        {%- if changes.append("modules") -%}{%- endif -%}
+#      {%- endif -%}
+#      {{- changes -}}

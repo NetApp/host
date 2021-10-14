@@ -42,3 +42,9 @@
     state: absent
     path: "{{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }}"
   become: true
+
+- name: Remove NVMe over InfiniBand daemon.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_nvme_ib_daemon_path }}eseries_nvme_ib_connections.conf"
+  become: true

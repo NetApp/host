@@ -84,7 +84,7 @@ disconnect_storage() {
 start() {
   host_nqn=$(cat /etc/nvme/hostnqn)
 
-  # Spin every 30 seconds and validate NVMe connections.
+  # Spin every 5 seconds and validate NVMe connections.
   while [ -f /etc/nvme/eseries_nvme_ib_connections.conf ]; do
 
     # Connect to all known E-Series storage system(s).
@@ -94,7 +94,19 @@ start() {
 
     # Wait for all tasks to complete.
     wait
-    sleep 30
+
+    # Check whether all known E-Series storage system(s) are connected.
+    storage_connected=0
+    while read -r line; do
+      array_info=$(echo $line | cut -f 2,3 -d " ");
+      if ! is_storage_port_connected $array_info; then
+        storage_connected=1
+      fi
+    done < /etc/nvme/eseries_nvme_ib_connections.conf
+    if [ $storage_connected = 0 ]; then
+      return
+    fi
+    sleep 5
   done
 
   echo "There were no storage targets to connect!"

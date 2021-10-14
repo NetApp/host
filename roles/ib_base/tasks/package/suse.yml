@@ -3,16 +3,16 @@
     suse_packages: |-
       {%- set packages = [] -%}
       {%- if eseries_ib_base_ipoib_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_suse_packages["ipoib"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_suse_packages["ipoib"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {%- if eseries_ib_base_iser_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_suse_packages["iser"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_suse_packages["iser"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {%- if eseries_ib_base_srp_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_suse_packages["srp"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_suse_packages["srp"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {%- if eseries_ib_base_nvme_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_suse_packages["nvme"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_suse_packages["nvme"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {{- packages | unique | sort -}}
 

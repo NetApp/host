@@ -70,4 +70,16 @@
     state: "{% if nvme_daemon['changed'] or nvme_service['changed'] %}restarted{% else %}started{% endif %}"
     enabled: true
     daemon_reload: true
+  register: nvme_service_start
   become: true
+
+- name: Wait for NVMe IB service to complete.
+  ansible.builtin.shell: "systemctl --state=active,exited | grep {{ eseries_nvme_ib_service_name }}"
+  become: true
+  failed_when: false
+  changed_when: false
+  register: command_result
+  retries: 60
+  delay: 2
+  until: command_result['rc'] == 0
+  when: nvme_service_start['changed']

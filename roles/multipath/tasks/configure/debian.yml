@@ -1,13 +1,14 @@
-- name: "Ensure multipath has been added to {{ eseries_multipath_initramfs_modules_path }} file."
-  lineinfile:
-    state: present
-    path: "{{ eseries_multipath_initramfs_modules_path }}"
-    line: "{{ item }}"
-  loop: "{{ eseries_multipath_initramfs_modules }}"
-  become: true
-  register: initramfs_modules
+#- name: "Ensure multipath has been added to {{ eseries_multipath_initramfs_modules_path }} file."
+#  lineinfile:
+#    state: present
+#    path: "{{ eseries_multipath_initramfs_modules_path }}"
+#    line: "{{ item }}"
+#  loop: "{{ eseries_multipath_initramfs_modules }}"
+#  become: true
+#  register: initramfs_modules
 
-- name: Update initramfs image.
-  ansible.builtin.command: update-initramfs -u
-  become: true
-  when: initramfs_modules['changed'] == True
+# Note: multipath path package installed through apt will update the kernel image.
+#- name: Update initramfs image.
+#  ansible.builtin.command: update-initramfs -u
+#  become: true
+#  when: initramfs_modules['changed'] == True

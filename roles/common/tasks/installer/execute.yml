@@ -1,0 +1,50 @@
+#execute_config:        # Require data structure for the following tasks.
+#  files:
+#    add: {}            # Dictionary with <local_source>: <remote_destination> key-value pairs for adding files to remote node.
+#    remove: []         # List of directories and/or files to delete from remote node.
+#  packages:
+#    add: []            # List of packages to add to remote node.
+#    remove: []         # List of packages to remove from remote node.
+#  modules:
+#    add: {}            # Dictionary with <module>: <parameters> key-value pairs for installing persistent modules. (Executed in list-order)
+#    remove: []         # List of modules to removing persistent modules. (Executed in list-order)
+#  run_commands_if: []
+#  commands: []         # List of commands to execute after copying/deleting files and installing/removing packages. Each
+#                       #   command is a prerequisite for the next command.
+#  reboot:              # Boolean flag for whether to reboot after the success for file, packages, and command tasks are successful.
+#  reboot_triggers:     # What changes to trigger the reboot. Options: files, packages, modules, commands, any. Default: [any]
+
+- name: Setup monitor change variable.
+  set_fact:
+    execute_config_changes: []
+
+- name: "Add/remove {{ eseries_common_package_group }} files."
+  include_tasks: "installer/files.yml"
+  when: '"files" in (execute_config.keys() | list)'
+
+- name: "Install/uninstall {{ eseries_common_package_group }} packages."
+  include_tasks: "installer/packages/{{ ansible_os_family | lower }}.yml"
+  when: '"packages" in (execute_config.keys() | list)'
+
+- name: "Add/remove {{ eseries_common_package_group }} modules."
+  include_tasks: "installer/modules/{{ ansible_os_family | lower }}.yml"
+  when: '"modules" in (execute_config.keys() | list)'
+
+- name: "Execute {{ eseries_common_package_group }} commands."
+  include_tasks: "installer/commands.yml"
+  when: '"commands" in (execute_config.keys() | list)'
+
+- name: Reboot hosts.
+  include_tasks: host_facts/rescue/reboot.yml
+  when: reboot == true
+  vars:
+    reboot: |-
+      {%- set scratch = {"reboot": false} -%}
+      {%- if (execute_config["reboot"] | default(false)) == true -%}
+        {%- for trigger in (execute_config["reboot_triggers"] | default(["any"])) if scratch["reboot"] == false -%}
+          {%- if (trigger == "any" and execute_config_changes | length > 0) or trigger in execute_config_changes -%}
+            {%- if scratch.update({"reboot": true}) -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{- scratch["reboot"] -}}
