@@ -104,7 +104,7 @@ start() {
       fi
     done < /etc/nvme/eseries_nvme_ib_connections.conf
     if [ $storage_connected = 0 ]; then
-      break;
+      return
     fi
     sleep 5
   done
