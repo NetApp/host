@@ -3,7 +3,7 @@
 start() {
   start_time=$(date +"%Y-%m-%d %H:%M:%S")
 
-  if ls /etc/rdma/opensm.conf* > /dev/null 2&>1; then
+  if ls /etc/rdma/opensm.conf* > /dev/null 2>&1; then
     start_opensm_daemons=true
     while $start_opensm_daemons; do
       start_opensm_daemons=false
