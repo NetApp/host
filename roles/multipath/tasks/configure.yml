@@ -11,9 +11,6 @@
   when: not multipath_conf["stat"]["exists"]
   become: true
 
-- name: Ensure multipath is configured.
-  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
-
 - name: Check whether eseries_multipath.conf exists
   stat:
     path: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
@@ -49,3 +46,8 @@
     enabled: true
     daemon_reload: true
   become: true
+
+# Based on testing we have to rebuild initramfs after running the above tasks.
+# Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot. 
+- name: Ensure initramfs includes multipath support.
+  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
