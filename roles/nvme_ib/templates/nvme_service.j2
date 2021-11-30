@@ -8,6 +8,7 @@ Type=simple
 RemainAfterExit=yes
 ExecStart={{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }} start
 ExecStop={{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }} stop
+ExecReload={{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }} reload
 
 [Install]
 WantedBy=multi-user.target

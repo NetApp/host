@@ -45,7 +45,7 @@
   ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'eseries_nvme_ib_connections.j2') }}"
     dest: "{{ eseries_nvme_ib_daemon_path }}eseries_nvme_ib_connections.conf"
-    mode: "0744"
+    mode: "0644"
   register: nvme_daemon
   become: true
 
@@ -53,7 +53,7 @@
   ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_daemon.j2') }}"
     dest: "{{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }}"
-    mode: "0744"
+    mode: "0755"
   register: nvme_daemon
   become: true
 
@@ -61,13 +61,14 @@
   ansible.builtin.template:
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_service.j2') }}"
     dest: "{{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}"
+    mode: "0644"
   register: nvme_service
   become: true
 
 - name: Ensure NVMe service is running.
   ansible.builtin.systemd:
     name: "{{ eseries_nvme_ib_service_name }}"
-    state: "{% if nvme_daemon['changed'] or nvme_service['changed'] %}restarted{% else %}started{% endif %}"
+    state: "{% if nvme_daemon['changed'] or nvme_service['changed'] %}reloaded{% else %}started{% endif %}"
     enabled: true
     daemon_reload: true
   register: nvme_service_start

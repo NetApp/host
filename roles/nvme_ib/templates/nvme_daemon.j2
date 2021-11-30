@@ -132,15 +132,16 @@ stop() {
   fi
 }
 
-
+# Note: reload will start any NVMe IB sessions that were not started found in /etc/nvme/eseries_nvme_ib_connections.conf
+#   This functionality allows new sessions to be created and started without affecting existing sessions.
 case $1 in
-  start)
+  start|reload)
     start
     ;;
   stop)
     stop
     ;;
-  restart | reload)
+  restart)
     stop
     sleep 5
     start
