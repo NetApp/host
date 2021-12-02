@@ -46,7 +46,7 @@
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'eseries_nvme_ib_connections.j2') }}"
     dest: "{{ eseries_nvme_ib_daemon_path }}eseries_nvme_ib_connections.conf"
     mode: "0644"
-  register: nvme_daemon
+  register: nvme_connections
   become: true
 
 - name: Create NVMe service daemon.
@@ -68,7 +68,7 @@
 - name: Ensure NVMe service is running.
   ansible.builtin.systemd:
     name: "{{ eseries_nvme_ib_service_name }}"
-    state: "{% if nvme_daemon['changed'] or nvme_service['changed'] %}reloaded{% else %}started{% endif %}"
+    state: "{% if nvme_connections['changed'] or nvme_daemon['changed'] or nvme_service['changed'] %}reloaded{% else %}started{% endif %}"
     enabled: true
     daemon_reload: true
   register: nvme_service_start
