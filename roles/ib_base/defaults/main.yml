@@ -1,3 +1,4 @@
+eseries_ib_base_skip: False # Escape hatch if a user just wants to use the other roles (i.e., IPoIB, NVMe) and IB packages were installed by something else.
 eseries_ib_base_rdma: /etc/rdma/
 eseries_ib_base_rdma_memory_conf: /etc/security/limits.d/rdma.conf
 eseries_ib_base_modules_load_d: /etc/modules-load.d/

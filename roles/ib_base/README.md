@@ -4,6 +4,7 @@ netapp_eseries.host.ib_base
 
 Variables (Values specified are the defaults)
 ---------
+eseries_ib_base_skip:                    # Whether we should skip configuring InfiniBand entirely (Default: false). Useful to just use functionality provided by other roles that inherit this one when IB is already setup.
 eseries_ib_base_ipoib_enabled:           # Whether InfiniBand IPoIB should be configured (Default: false).
 eseries_ib_base_iser_enabled:            # Whether InfiniBand iSER should be configured (Default: false).
 eseries_ib_base_srp_enabled:             # Whether InfiniBand SRP should be configured (Default: false).
