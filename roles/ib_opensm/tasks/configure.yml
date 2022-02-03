@@ -37,6 +37,17 @@
   register: opensm_service
   become: true
 
+# This is a workaround for an issue where the systemd module treats enabled-runtime the same as enabled: https://github.com/ansible/ansible/issues/72451
+- name: Determine if opensm is only enabled-runtime.
+  ansible.builtin.shell: "set -o pipefail && systemctl status opensm | grep enabled-runtime"
+  register: opensm_enabled_result
+  changed_when: false
+  failed_when: false
+
+- name: If opensm is set to enabled-runtime actually enable it.
+  ansible.builtin.shell: "systemctl enable opensm.service"
+  when: opensm_enabled_result.rc == 0
+
 - name: Wait for InfiniBand OpenSM service to complete.
   ansible.builtin.shell: "systemctl --state=active,exited | grep opensm.service"
   become: true
