@@ -2,7 +2,7 @@
   set_fact:
     targets: |-
       {%- set targets = {} -%}
-      {%- for volume in initiator_volume_facts -%}
+      {%- for volume in initiator_volume_facts if volume["host_port_information"]["iscsi"] is defined -%}
         {%- for host_port_information in volume["host_port_information"]["iscsi"] -%}
           {%- if host_port_information["link_status"] == "up" and host_port_information["ipv4"]-%}
             {%- for interface_info in iscsi_interfaces_info -%}

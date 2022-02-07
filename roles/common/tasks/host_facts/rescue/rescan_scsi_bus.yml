@@ -6,6 +6,7 @@
 
 - name: Scan for all SCSI host target devices.
   ansible.builtin.shell: "{{ eseries_common_target_scan_paths['scsi'][item] }}"
+  when: item in eseries_common_discovery_rescan_scsi_bus_protocol_list
   loop: "{{ rescan_protocols }}"
   become: true
 
