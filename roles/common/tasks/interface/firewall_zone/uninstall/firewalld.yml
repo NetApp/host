@@ -1,0 +1,6 @@
+- name: Reload firewall to recognize the ifcfg-X changes.
+  ansible.builtin.systemd:
+    state: reloaded
+    name: firewalld.service
+  when: 'ansible_facts["services"]["firewalld.service"]["state"] == "running"'
+  become: true

@@ -1,3 +1,14 @@
-- name: Ensure InfiniBand network interaces and iSCSI bindings are configured.
-  include_tasks: configure/interface.yml
+- name: Ensure InfiniBand network interfaces and iSCSI bindings are configured.
+  ansible.builtin.include_tasks: configure/interface.yml
   when: eseries_ipoib_configure_network
+
+- name: Set facts for firewall configuration.
+  ansible.builtin.set_fact:
+    eseries_common_firewall_zone: "{{ eseries_ipoib_firewall_zone | default(eseries_common_firewall_zone | default(omit)) }}"
+    eseries_common_interfaces: "{{ eseries_ipoib_interfaces }}"
+
+- name: Apply any interface firewall changes.
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: interface/firewall_zone/install.yml
+  when: eseries_common_firewall_zone is defined

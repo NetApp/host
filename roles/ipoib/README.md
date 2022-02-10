@@ -28,10 +28,12 @@ Variables
 ---------
 eseries_ipoib_configure_network            # Whether to configure networking interfaces (Default: true)
 eseries_ipoib_mtu:                         # Default maximum transmission unit measured in bytes (Default: "").
+eseries_ipoib_firewall_zone:               # Default firewall zone. (Note: Only implemented for firewalld)
 eseries_ipoib_interfaces:                  # (Required) List of InfiniBand interfaces (Note: Not required if eseries_ib_iser_interfaces is defined).
   - name:                                  # (Required) Name of InfiniBand interface (i.e. ib0, ib1).
     address:                               # (Required) IPv4 address. Use the format 192.0.2.24.
     mtu:                                   # Interface maximum transmission unit measured in bytes.
+    zone:                                  # Firewall zone. If the zone does not exist then it will be created. (Note: Only implemented for firewalld)
 eseries_connected_mode:                    # Enables connected mode on all interfaces. Note that this is not supported after ConnectX-4 devices
                                            #    and some newer Linux distributions do not support it (Default: false).
 

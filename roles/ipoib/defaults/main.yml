@@ -1,3 +1,2 @@
 eseries_ipoib_configure_network: true
-eseries_ipoib_mtu: ""
 eseries_connected_mode: false   # Connected mode is not supported after Mellanox ConnectX-4 and some newer Linux distributions do not support it.
