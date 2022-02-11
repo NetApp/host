@@ -4,3 +4,41 @@
     name: firewalld.service
   when: 'ansible_facts["services"]["firewalld.service"]["state"] == "running"'
   become: true
+
+- name: Get list of all firewall zones
+  ansible.builtin.command: "firewall-cmd --get-zones"
+  changed_when: false
+  register: zones
+
+- name: Get info for each zone
+  ansible.builtin.command: "firewall-cmd --info-zone={{ item }}"
+  changed_when: false
+  register: zones_info
+  loop: '{{ zones["stdout"].split(" ") }}'
+
+- name: Determine zones without interfaces.
+  ansible.builtin.set_fact:
+    zones_without_interfaces: |-
+      {%- set zones = [] -%}
+      {%- for zone_info in zones_info["results"] -%}
+        {%- for line in zone_info["stdout_lines"] if line | regex_search(" *interfaces: *$") -%}
+          {%- if zones.append(zone_info["item"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- zones -}}
+
+- name: Ensure installed firewall zones that are no longer used are removed.
+  ansible.posix.firewalld:
+    state: absent
+    zone: "{{ item['zone'] | default(eseries_common_firewall_zone) }}"
+    permanent: true
+    offline: true
+  register: firewall_zone
+  when: (item["zone"] is defined or eseries_common_firewall_zone is defined) and item["zone"] | default(eseries_common_firewall_zone) in zones_without_interfaces
+  loop: "{{ eseries_common_interfaces }}"
+
+- name: Reload firewall to recognize the zone changes.
+  ansible.builtin.systemd:
+    state: reloaded
+    name: firewalld.service
+  when: 'firewall_zone["changed"] and ansible_facts["services"]["firewalld.service"]["state"] == "running"'

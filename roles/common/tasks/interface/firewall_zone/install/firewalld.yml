@@ -7,6 +7,7 @@
         permanent: true
         offline: true
       register: firewall_zone
+      when: item['zone'] is defined or eseries_common_firewall_zone is defined
       loop: "{{ eseries_common_interfaces }}"
 
     - name: Reload firewall to recognize the newly created zones.
@@ -22,6 +23,6 @@
         interface: "{{ item['name'] }}"
         immediate: true
         offline: true
+      when: item['zone'] is defined or eseries_common_firewall_zone is defined
       loop: "{{ eseries_common_interfaces }}"
-  when: item["zone"] is defined or eseries_common_firewall_zone is defined
   become: true
