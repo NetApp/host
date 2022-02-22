@@ -7,4 +7,6 @@ network:
     {{ item["name"] }}:
       addresses:
         - {{ item["address"] }}
+{% if item["mtu"] is defined or eseries_ipoib_mtu is defined %}
       mtu: {{ item["mtu"] | default(eseries_ipoib_mtu) }}
+{% endif %}

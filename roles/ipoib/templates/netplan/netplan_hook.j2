@@ -4,6 +4,6 @@
 if [ "$IFACE" = {{ item["name"] }} ]; then
 
   {%- if eseries_connected_mode == True %}  echo "connected" > /sys/class/net/{{ item["name"] }}/mode{% endif %}
-  ip link set ib0 mtu {{ interface["mtu"] | default(eseries_ipoib_mtu) }}
+  ip link set ib0 {% if interface["mtu"] is defined or eseries_ipoib_mtu is defined %}mtu {{ interface["mtu"] | default(eseries_ipoib_mtu) }}{% endif %}
 fi
 exit 0
