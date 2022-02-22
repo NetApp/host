@@ -14,15 +14,17 @@
       ansible.builtin.systemd:
         state: reloaded
         name: firewalld.service
-      when: 'firewall_zone["changed"] and ansible_facts["services"]["firewalld.service"]["state"] == "running"'
+      when: firewall_zone["changed"]
 
     - name: Ensure expected firewall zones have the expected interfaces.
       ansible.posix.firewalld:
         state: enabled
         zone: "{{ item['zone'] | default(eseries_common_firewall_zone) }}"
         interface: "{{ item['name'] }}"
+        permanent: true
         immediate: true
         offline: true
       when: item['zone'] is defined or eseries_common_firewall_zone is defined
       loop: "{{ eseries_common_interfaces }}"
+  when: 'ansible_facts["services"]["firewalld.service"]["state"] == "running"'
   become: true
