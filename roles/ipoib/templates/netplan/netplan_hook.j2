@@ -1,9 +1,11 @@
 #!/bin/bash
 # Managed by NetApp E-Series Ansible
 
+{% if eseries_connected_mode == True or interface["mtu"] is defined or eseries_ipoib_mtu is defined %}
 if [ "$IFACE" = {{ item["name"] }} ]; then
 
-  {%- if eseries_connected_mode == True %}  echo "connected" > /sys/class/net/{{ item["name"] }}/mode{% endif %}
-  ip link set ib0 {% if interface["mtu"] is defined or eseries_ipoib_mtu is defined %}mtu {{ interface["mtu"] | default(eseries_ipoib_mtu) }}{% endif %}
+  {% if eseries_connected_mode == True %} echo "connected" > /sys/class/net/{{ item["name"] }}/mode{% endif %}
+  {% if interface["mtu"] is defined or eseries_ipoib_mtu is defined %}ip link set {{ item["name"] }} mtu {{ interface["mtu"] | default(eseries_ipoib_mtu) }}{% endif %}
 fi
+{% endif %}
 exit 0
