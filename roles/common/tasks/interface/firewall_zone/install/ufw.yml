@@ -1,0 +1,3 @@
+- name: Warning!
+  debug:
+    msg: "Sorry, setting the interface to a firewall zone for has not been implemented yet for ufw."

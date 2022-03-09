@@ -8,15 +8,19 @@ Role Variables
     eseries_iscsi_interfaces:                     # (Required) List of iSCSI interfaces.
       - name:                                     # (Required) Name of iSCSI interface (i.e. em1, ens160).
         address:                                  # (Required) IPv4 address. Use the format 192.0.2.24/24.
+        gateway:                                  # IPv4 gateway address.
         port:                                     # Interface TCP port.
         nr_sessions:                              # Interface number of sessions a target should connect.
         mtu:                                      # Interface maximum transmission unit measured in bytes.
+        zone:                                     # Firewall zone. If the zone does not exist then it will be created. (Note: Only implemented for firewalld)
         username:                                 # Storage target CHAP username.
         password:                                 # Storage target CHAP password.
+    eseries_iscsi_gateway:                        # Default IPv4 gateway address.
     eseries_iscsi_iqn:                            # Host IQN (iSCSI Qualified Name).
     eseries_iscsi_tcp_port:                       # iSCSI TCP port (Default: 3260).
     eseries_iscsi_nr_session:                     # Default number of sessions a target should connect (Default 1).
     eseries_iscsi_mtu:                            # Default maximum transmission unit measured in bytes (Default 1500).
+    eseries_iscsi_firewall_zone:                  # Default firewall zone. (Note: Only implemented for firewalld)
     eseries_iscsi_username:                       # Default Storage target CHAP username (Default "").
     eseries_iscsi_password:                       # Default Storage target CHAP password (Default "").
     eseries_iscsi_queue_depth:                    # Default queue depth (Default 32).

@@ -1,7 +1,18 @@
 - name: Remove InfiniBand iSER network interfaces using ifupdown configuration.
-  include_tasks: interface/ifupdown.yml
+  ansible.builtin.include_tasks: interface/ifupdown.yml
   when: eseries_ipoib_network_tool | default(eseries_ipoib_default_network_tool) == 'ifupdown'
 
 - name: Remove InfiniBand iSER network interfaces using netplan configuration.
-  include_tasks: interface/netplan.yml
+  ansible.builtin.include_tasks: interface/netplan.yml
   when: eseries_ipoib_network_tool | default(eseries_ipoib_default_network_tool) == 'netplan'
+
+- name: Set facts for firewall configuration.
+  ansible.builtin.set_fact:
+    eseries_common_firewall_zone: "{{ eseries_ipoib_firewall_zone | default(eseries_common_firewall_zone | default(omit)) }}"
+    eseries_common_interfaces: "{{ eseries_ipoib_interfaces }}"
+
+- name: Apply any interface firewall changes.
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: interface/firewall_zone/uninstall.yml
+  when: eseries_common_firewall_zone is defined
