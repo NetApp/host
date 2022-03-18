@@ -1,0 +1,21 @@
+tune_performance_packages_upgrade: false
+tune_performance_configure_tuned: true
+
+tune_performance_packages_debian:
+  - tuned
+
+tune_performance_packages_rhel:
+  - tuned
+
+# tune_performance_unwanted_packages_rhel:
+#   - <PACKAGE>
+
+# tune_performance_unwanted_packages_debian:
+#   - <PACKAGE>
+
+# tune_performance_disable_services_rhel: 
+#   - <SERVICE>
+
+tune_performance_disable_services_debian: 
+  - ondemand.service
+

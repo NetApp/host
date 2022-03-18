@@ -1,0 +1,30 @@
+- name: Ensure unwanted performance tuning services are stopped/disabled (RedHat/CentOS).
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop: "{{ tune_performance_disable_services_rhel }}"
+  when: tune_performance_disable_services_rhel is defined
+
+- name: Ensure unwanted performance tuning packages are uninstalled (RedHat/CentOS).
+  yum:
+    state: absent 
+    name: |-
+      {%- set packages = [] -%}
+      {%- for package in tune_performance_unwanted_packages_rhel %}
+        {%- if packages.append(package) -%}{%- endif -%}
+      {%- endfor %}
+      {{- packages -}}
+  when: tune_performance_unwanted_packages_rhel is defined and tune_performance_unwanted_packages_rhel | type_debug == "list"
+
+- name: Ensure performance tuning packages are installed (Debian/Ubuntu).
+  yum:
+    state: |-
+      {%- if tune_performance_packages_upgrade %}latest{%- else %}present{%- endif %}
+    name: |-
+      {%- set packages = [] -%}
+      {%- for package in tune_performance_packages_rhel %}
+        {%- if packages.append(package) -%}{%- endif -%}
+      {%- endfor %}
+      {{- packages -}}
+

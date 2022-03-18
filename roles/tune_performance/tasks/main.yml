@@ -1,0 +1,11 @@
+- name: Apply packages and settings for the appropriate distribution.  
+  block:
+    - import_tasks: distribution/redhat.yml
+      when: ansible_facts['os_family'] | lower == 'redhat'
+    - import_tasks: distribution/debian.yml
+      when: ansible_facts['os_family'] | lower == 'debian'
+    - name: Configure tuned when requested. 
+      import_tasks: tuned.yml
+      when: tune_performance_configure_tuned
+  become: True
+

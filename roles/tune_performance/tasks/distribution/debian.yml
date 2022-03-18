@@ -1,0 +1,29 @@
+- name: Ensure unwanted performance tuning services are stopped/disabled (Debian/Ubuntu).
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop: "{{ tune_performance_disable_services_debian }}"
+  when: tune_performance_disable_services_debian is defined
+
+- name: Ensure unwanted performance tuning packages are uninstalled (Debian/Ubuntu).
+  apt:
+    state: absent
+    name: |-
+      {%- set packages = [] -%}
+      {%- for package in tune_performance_unwanted_packages_debian %}
+        {%- if packages.append(package) -%}{%- endif -%}
+      {%- endfor %}
+      {{- packages -}}
+  when: tune_performance_unwanted_packages_debian is defined and tune_performance_unwanted_packages_debian | type_debug == "list"
+
+- name: Ensure performance tuning packages are installed (Debian/Ubuntu).
+  apt:
+    state: |-
+      {%- if tune_performance_packages_upgrade %}latest{%- else %}present{%- endif %}
+    name: |-
+      {%- set packages = [] -%}
+      {%- for package in tune_performance_packages_debian %}
+        {%- if packages.append(package) -%}{%- endif -%}
+      {%- endfor %}
+      {{- packages -}}
