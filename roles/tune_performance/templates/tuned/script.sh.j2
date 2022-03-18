@@ -1,0 +1,21 @@
+#!/bin/sh
+
+. /usr/lib/tuned/functions
+
+start() {
+    # Increase the maximum read request for Mellanox HCAs (ref: https://hpcadvisorycouncil.atlassian.net/wiki/spaces/HPCWORKS/pages/2791440385/GPUDirect+Benchmarking#PCIe-Configuration).
+    # Note acceptable values are: 0 - 128B, 1 - 256B, 2 - 512B, 3 - 1024B, 4 - 2048B and 5 - 4096B.
+    sudo setpci -d ::207 68.w=5000:f000
+}
+
+verify() {
+    sudo lspci -d ::207 -vvv | grep MaxReadReq | grep 4096
+    return $?
+}
+
+stop() {
+    # Reset the maximum read request for Mellanox HCAs
+    sudo setpci -d ::207 68.w=2000:f000
+}
+
+process $@

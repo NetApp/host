@@ -1,0 +1,40 @@
+#
+# netapp-eseries tuned configuration (based on throughput-performance).
+#
+
+[main]
+summary=Allows configuration custom performance tuning options using Ansible.
+
+[variables]
+{% for k, v in tune_performance_variables.items() %}
+{{ k }}={{ v }}
+{% endfor %}
+
+[cpu]
+{% for k, v in tune_performance_cpu.items() %}
+{{ k }}={{ v }}
+{% endfor %}
+
+[disk]
+{% for k, v in tune_performance_disk.items() %}
+{{ k }}={{ v }}
+{% endfor %}
+
+[sysctl]
+{% for k, v in tune_performance_sysctl.items() %}
+{{ k }}={{ v }}
+{% endfor %}
+
+{# RedHat's throughput-profile has some AMD options that do not work on Ubuntu. #}
+{% if ansible_facts['os_family'] | lower == 'redhat' %}
+# AMD
+[sysctl.amd]
+{% for k, v in tune_performance_sysctl_rhel_amd.items() %}
+{{ k }}={{ v }}
+{% endfor %}
+{% endif %}
+
+# Note: Additional sysctl settings (for example virtual memory settings) are currently set via sysctl for the particular solution.
+
+[script]
+script=${i:PROFILE_DIR}/script.sh

@@ -19,3 +19,24 @@ tune_performance_packages_rhel:
 tune_performance_disable_services_debian: 
   - ondemand.service
 
+tune_performance_variables:
+  amd_cpuinfo_regex: model name\s+:.*\bAMD\b
+
+tune_performance_cpu:
+  governor: performance
+  energy_perf_bias: performance
+  min_perf_pct: 100
+
+tune_performance_disk:
+  readahead: ">4096"
+
+tune_performance_sysctl:
+  kernel.sched_min_granularity_ns: 10000000
+  kernel.sched_wakeup_granularity_ns: 15000000
+  vm.swappiness: 10
+
+tune_performance_sysctl_rhel_amd:
+  type: sysctl
+  uname_regex: x86_64
+  cpuinfo_regex: ${amd_cpuinfo_regex}
+  kernel.sched_migration_cost_ns: 5000000
