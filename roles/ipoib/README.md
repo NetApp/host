@@ -34,6 +34,10 @@ eseries_ipoib_interfaces:                  # (Required) List of InfiniBand inter
     address:                               # (Required) IPv4 address. Use the format 192.0.2.24.
     mtu:                                   # Interface maximum transmission unit measured in bytes.
     zone:                                  # Firewall zone. If the zone does not exist then it will be created. (Note: Only implemented for firewalld)
+    hook_templates:                        # List of hook templates for Network Manager dispatcher (interface definition will be accessible through
+                                           #    the interface variable within the hook templates).
+eseries_ipoib_default_hook_templates:      # Default list of hook templates for Network Manager dispatcher (interface definition will be accessible through
+                                           #    the interface variable within the hook templates).
 eseries_connected_mode:                    # Enables connected mode on all interfaces. Note that this is not supported after ConnectX-4 devices
                                            #    and some newer Linux distributions do not support it (Default: false).
 
