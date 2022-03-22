@@ -1,0 +1,37 @@
+- name: Create /etc/tuned/netapp-eseries profile. 
+  ansible.builtin.file:
+    path: /etc/tuned/netapp-eseries
+    state: directory
+    mode: '0755'
+
+- name: Configure netapp-eseries tuned profile.
+  ansible.builtin.template:
+    src: tuned/tuned.conf.j2
+    dest: /etc/tuned/netapp-eseries/tuned.conf
+    mode: 644
+
+- name: Configure netapp-eseries tuned profile.
+  ansible.builtin.template:
+    src: tuned/script.sh.j2
+    dest: /etc/tuned/netapp-eseries/script.sh
+    mode: 755
+
+- name: Get current tuned mode. 
+  ansible.builtin.shell: "tuned-adm active"
+  register: tuned_mode_result
+  changed_when: False
+
+- name: Set tuned mode to netapp-eseries
+  ansible.builtin.shell: "tuned-adm profile netapp-eseries"
+  when: "'netapp-eseries' not in tuned_mode_result.stdout"
+
+- name: Verify tuned mode.
+  ansible.builtin.shell: "tuned-adm verify"
+  register: tuned_verify_result
+  changed_when: False
+  failed_when: "tuned_verify_result.rc != 0 and 'Verification failed' not in tuned_verify_result.stdout"
+
+- name: Ensure tuned is started/enabled and restarted if the current systems settings differ from netapp-eseries.
+  ansible.builtin.systemd:
+    name: tuned
+    state: "{%- if tuned_verify_result.rc != 0 %}restarted{%- else %}started{%- endif %}"
