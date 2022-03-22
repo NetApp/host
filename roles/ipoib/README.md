@@ -41,6 +41,11 @@ eseries_ipoib_default_hook_templates:      # Default list of hook templates for 
 eseries_connected_mode:                    # Enables connected mode on all interfaces. Note that this is not supported after ConnectX-4 devices
                                            #    and some newer Linux distributions do not support it (Default: false).
 
+
+Notes
+-----
+Network manager hook templates are only applied when eseries_ipoib_default_network_tool==ifupdown which is the default for RHEL and SLES.
+
 Uninstall
 ---------
 To uninstall InfiniBand IPoIB, add '--tags ipoib_uninstall' to the ansible-playbook command.
