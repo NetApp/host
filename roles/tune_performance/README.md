@@ -18,5 +18,6 @@ None
   * `tune_performance_packages_upgrade: false`
 * Specify if a custom netapp-eseries tuned role should be created/applied (default: true).
   * `tune_performance_configure_tuned: true`
+  * Note this does not affect what packages are installed using the `tune_performance_packages_*` variable (which includes tuned by default). This allows users to use one of the default tuned roles or create their own if desired.
 
 For additional parameters see defaults/main.yml.
