@@ -3,7 +3,7 @@ netapp_eseries.host.tune_performance
 
 This package will configure system settings for maximum performance, possibly at the cost of increased energy usage.
 
-This includes installing various packages/utilities needed to enable these settings, and disable/uninstall any services/packages that may conflict. 
+This includes installing various packages/utilities needed to enable these settings, and disabling/uninstalling any services/packages that may override these settings, such as Ubuntu's ondemand.service which sets the CPU governor to ondemand or powersave.
 
 Role Variables
 --------------

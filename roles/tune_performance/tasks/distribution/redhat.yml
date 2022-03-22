@@ -7,7 +7,7 @@
   when: tune_performance_disable_services_rhel is defined
 
 - name: Ensure unwanted performance tuning packages are uninstalled (RedHat/CentOS).
-  yum:
+  ansible.builtin.yum:
     state: absent 
     name: |-
       {%- set packages = [] -%}
@@ -18,7 +18,7 @@
   when: tune_performance_unwanted_packages_rhel is defined and tune_performance_unwanted_packages_rhel | type_debug == "list"
 
 - name: Ensure performance tuning packages are installed (Debian/Ubuntu).
-  yum:
+  ansible.builtin.yum:
     state: |-
       {%- if tune_performance_packages_upgrade %}latest{%- else %}present{%- endif %}
     name: |-

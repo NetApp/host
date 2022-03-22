@@ -7,7 +7,7 @@
   when: tune_performance_disable_services_debian is defined
 
 - name: Ensure unwanted performance tuning packages are uninstalled (Debian/Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: absent
     name: |-
       {%- set packages = [] -%}
@@ -18,7 +18,7 @@
   when: tune_performance_unwanted_packages_debian is defined and tune_performance_unwanted_packages_debian | type_debug == "list"
 
 - name: Ensure performance tuning packages are installed (Debian/Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: |-
       {%- if tune_performance_packages_upgrade %}latest{%- else %}present{%- endif %}
     name: |-
