@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you  for your interest in contributing to the E-Series Host Collection project! 🎉
+Thank you for your interest in contributing to the E-Series Host Collection! 🎉
 
 We appreciate that you want to take the time to contribute! Please follow these steps before submitting your PR.
 
