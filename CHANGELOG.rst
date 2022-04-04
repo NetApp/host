@@ -5,6 +5,30 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v1.1.0
+======
+
+Minor Changes
+-------------
+
+- common - Add common inventory structure and tasks to facilitate installing and configuring external packages.
+- mount - Add eseries_mount_force_format flag to override the volume format protections.
+
+Bugfixes
+--------
+
+- Fix netplan configuration template with embedded ib_iser variable.
+- common - Fix SCSI bus recan operation when NVMe volumes are present.
+- ib_iser - Fix target selection when non-IB iSER targets are present.
+- ib_opensm - Ensure all opensm.conf* files are started and entered their expected state.
+- ib_opensm - Fix systemd unit file to start up at the right time.
+- iscsi - Fix target selection when non-iSCSI targets are present.
+- multipath - Removed multipath driver conf files and updated dracut and update-initramfs commands to add multipath support.
+- nvme_ib - Fix service and daemon to spin until NVMe sessions are established.
+- nvme_ib - Fix systemd unit file so that the nvme_ib service starts a the right time.
+- nvme_ib - Fix target selection when non-NVMe over IB targets are present.
+- opensm - Workaround an apparent Ansible bug when trying to enable a systemd service that is enabled-runtime (https://github.com/ansible/ansible/issues/72451).
+
 v1.0.1
 ======
 

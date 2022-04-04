@@ -1,2 +1,0 @@
-bugfixes:
-  - multipath - Removed multipath driver conf files and updated dracut and update-initramfs commands to add multipath support.

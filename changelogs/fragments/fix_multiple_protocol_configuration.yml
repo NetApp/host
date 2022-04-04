@@ -1,5 +1,0 @@
-bugfixes:
-  - common - Fix SCSI bus recan operation when NVMe volumes are present.
-  - ib_iser - Fix target selection when non-IB iSER targets are present.
-  - iscsi - Fix target selection when non-iSCSI targets are present.
-  - nvme_ib - Fix target selection when non-NVMe over IB targets are present.

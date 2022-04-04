@@ -1,2 +1,0 @@
-bugfixes:
-  - opensm - Workaround an apparent Ansible bug when trying to enable a systemd service that is enabled-runtime (https://github.com/ansible/ansible/issues/72451).

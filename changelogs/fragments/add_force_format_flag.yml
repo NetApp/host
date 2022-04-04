@@ -1,2 +1,0 @@
-minor_changes:
-  - mount - Add eseries_mount_force_format flag to override the volume format protections.
