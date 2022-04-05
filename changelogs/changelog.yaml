@@ -86,4 +86,4 @@ releases:
     - fix_nvme_ib_service.yml
     - fix_opensm_autostart.yml
     - fix_opensm_service.yml
-    release_date: '2022-04-04'
+    release_date: '2022-04-05'
