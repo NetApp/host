@@ -17,6 +17,11 @@
   import_role:
     name: ib_opensm
 
+# IMPORTANT: Refresh storage facts since storage interface statuses will be down until connected with hosts.
+- name: Discover mapped-volume information from associated storage systems.
+  import_role:
+    name: common
+    tasks_from: gather_storage_facts.yml
 - name: Discover mapped-volume information from associated storage systems.
   import_role:
     name: common
@@ -26,7 +31,10 @@
   import_tasks: configure.yml
 
 - name: Uninstall InfiniBand IPoIB.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall InfiniBand IPoIB.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - nvme_ib_uninstall

@@ -4,9 +4,9 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-{% for interface in eseries_ib_iser_interfaces %}
-    {{ interface["name"] }}:
+    {{ item["name"] }}:
       addresses:
-        - {{ interface["address"] }}
-      mtu: {{ interface["mtu"] | default(eseries_ipoib_mtu) }}
-{% endfor %}
+        - {{ item["address"] }}
+{% if item["mtu"] is defined or eseries_ipoib_mtu is defined %}
+      mtu: {{ item["mtu"] | default(eseries_ipoib_mtu) }}
+{% endif %}

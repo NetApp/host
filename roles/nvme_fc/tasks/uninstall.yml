@@ -3,7 +3,7 @@
   become: true
 
 - name: Unconfigure NVMe over Fibre Channel systemd service.
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ eseries_nvme_fc_service_name }}"
     state: stopped
     enabled: false
@@ -11,13 +11,13 @@
   become: true
 
 - name: Remove NVMe service daemon.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }}"
   become: true
 
 - name: Remove NVMe systemd service file.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_nvme_fc_service_path }}{{ eseries_nvme_fc_service_name }}"
   become: true

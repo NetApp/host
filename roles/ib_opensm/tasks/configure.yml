@@ -1,5 +1,60 @@
 - name: Ensure non_standard InfiniBand OpenSM subnet managers are configured.
   include_tasks: configure/opensm.yml
 
-- name: Ensure systemd service loader is installed and configured.
-  include_tasks: "service/{{ ansible_os_family | lower }}.yml"
+- name: Determine InfiniBand devices.
+  ansible.builtin.command: ibstat -p
+  changed_when: false
+  register: ibsport_guids
+  become: true
+
+- name: Create opensm daemon directory.
+  ansible.builtin.file:
+    state: directory
+    path: "{{ eseries_ib_opensm_daemon_path }}"
+  become: true
+
+- name: Create InfiniBand OpenSM service loader daemon for E-Series.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm.j2') }}"
+    dest: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
+    mode: "0744"
+  register: loader_daemon
+  become: true
+
+- name: Create InfiniBand OpenSM service loader for E-Series.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'service/eseries_opensm_service.j2') }}"
+    dest: "{{ eseries_ib_opensm_service_path }}opensm.service"
+  register: loader_service
+  become: true
+
+- name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
+  ansible.builtin.systemd:
+    name: opensm.service
+    state: "{% if opensm_update == True or loader_daemon.changed or loader_service.changed %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
+    enabled: true
+    daemon_reload: true
+  register: opensm_service
+  become: true
+
+# This is a workaround for an issue where the systemd module treats enabled-runtime the same as enabled: https://github.com/ansible/ansible/issues/72451
+- name: Determine if opensm is only enabled-runtime.
+  ansible.builtin.shell: "set -o pipefail && systemctl status opensm | grep enabled-runtime"
+  register: opensm_enabled_result
+  changed_when: false
+  failed_when: false
+
+- name: If opensm is set to enabled-runtime actually enable it.
+  ansible.builtin.shell: "systemctl enable opensm.service"
+  when: opensm_enabled_result.rc == 0
+
+- name: Wait for InfiniBand OpenSM service to complete.
+  ansible.builtin.shell: "systemctl --state=active,exited | grep opensm.service"
+  become: true
+  failed_when: false
+  changed_when: false
+  register: command_result
+  retries: 60
+  delay: 2
+  until: command_result['rc'] == 0
+  when: opensm_service['changed']

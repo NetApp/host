@@ -87,7 +87,8 @@ Example Playbook (Ensure mapped-volumes are mounted)
 
 Important Notes
 ---------------
-    When taking advantage of the volume_metadata in the SANtricity collection's nar_santricity_host role, be sure that the host inventory does not conflict with volume_metadata entries. The volume's volume_metadata will take precedence over the host inventory!
+    - When taking advantage of the volume_metadata in the SANtricity collection's nar_santricity_host role, be sure that the host inventory does not conflict with volume_metadata entries. The volume's volume_metadata will take precedence over the host inventory!
+    - Set `eseries_common_force_skip_uninstall==True` when importing this collection's role(s) into your playbook/role that use tags to avoid inadvertently applying tags to uninstall tasks.
 
 *Note: Some variables may be repeated in multiple roles which is done to maintain continuity between roles should the defaults be overwritten.
 Common Variables (common)
@@ -96,7 +97,8 @@ Common Variables (common)
     eseries_common_volume_workload_filter:             # Filters the volumes added to eseries_volumes.
     eseries_common_allow_host_reboot:                  # Whether reboots will allowed in an attempt to discover E-Series volumes. (Default: false)
     eseries_common_docker_host:                        # Docker host for SANtricity Web Services Proxy. (Default: unix://var/run/docker.sock)
-
+    eseries_common_force_skip_uninstall:               # Forces to skip uninstallation when roles has been called dynamically with applied tags; otherwise the
+                                                       #   applied tags are also applied to uninstallation (Default: False).
 Multipath Variables (multipath)
 -------------------------------
     eseries_multipath_configure_user_friendly_names:   # Ensures that all volumes are presented with their given name. (Default: true)
@@ -146,14 +148,14 @@ Unmount Variables (unmount)
 
 Snapshot Variables (snapshot)
 -----------------------------
-eseries_snapshot_pit_safe:            # Whether to wait for all files to be close, sync and unmount volume before taking a point-in-time snapshot (Default: True)
-                                      #   image; otherwise, a simple filesystem suspend (dmsetup suspend) will be issued (Default: True).
-eseries_snapshot_pit_timeout_sec:     # Maximum time to wait for files to closes when I(eseries_snapshot_pits_safe==True) (Default: 600).
-eseries_snapshot_pits:                # List of consistency group point-in-time snapshot definitions.
-  - group_name:                       # Snapshot consistency group name.
-    pit_name:                         # (Optional) Name for the point-in-time snapshot.
-    pit_description:                  # (Optional) Description for the point-in-time snapshot.
-    volumes:                          # (Optional) List of volumes that are a subset of the consistency group's volume members.
+    eseries_snapshot_pit_safe:            # Whether to wait for all files to be close, sync and unmount volume before taking a point-in-time snapshot (Default: True)
+                                          #   image; otherwise, a simple filesystem suspend (dmsetup suspend) will be issued (Default: True).
+    eseries_snapshot_pit_timeout_sec:     # Maximum time to wait for files to closes when I(eseries_snapshot_pits_safe==True) (Default: 600).
+    eseries_snapshot_pits:                # List of consistency group point-in-time snapshot definitions.
+      - group_name:                       # Snapshot consistency group name.
+        pit_name:                         # (Optional) Name for the point-in-time snapshot.
+        pit_description:                  # (Optional) Description for the point-in-time snapshot.
+        volumes:                          # (Optional) List of volumes that are a subset of the consistency group's volume members.
 
 
 InfiniBand Base Variables (ib_base)
@@ -331,6 +333,9 @@ License
 -------
     BSD-3-Clause
 
-Author Information
+Maintainer Information
 ------------------
-    Nathan Swartz (@ndswartz)
+    - Nathan Swartz (@ndswartz)
+    - Joe McCormick (@iamjoemccormick)
+    - Tracy Cummins (@tracycummins)
+

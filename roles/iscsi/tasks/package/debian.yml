@@ -1,5 +1,5 @@
 - name: Ensure expected iSCSI packages are installed (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: present
     name: "{{ eseries_iscsi_ubuntu_packages }}"
   become: true

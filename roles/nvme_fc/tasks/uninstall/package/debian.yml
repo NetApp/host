@@ -1,5 +1,5 @@
 - name: Ensure expected NVMe over Fibre Channel packages are removed (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: absent
     name: "{{ eseries_nvme_fc_ubuntu_packages }}"
   become: true

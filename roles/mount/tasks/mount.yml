@@ -1,8 +1,9 @@
 - name: Ensure volumes are formatted.
-  filesystem:
+  community.general.filesystem:
     fstype: "{{ item['fs_type'] }}"
     opts: "{{ item['fs_options'] }}"
     dev: "{{ item['path'] }}"
+    force: "{{ eseries_mount_force_format }}"
   loop: "{{ format_volumes_by_host[inventory_hostname] }}"
   become: true
 

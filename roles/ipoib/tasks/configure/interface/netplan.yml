@@ -1,22 +1,22 @@
 - name: Ensure networkd-dispatcher is configured for ifup hooks.
-  template:
-    src: netplan/networkd_dispatcher_hook.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path','netplan/networkd_dispatcher_hook.j2') }}"
     dest: "{{ eseries_ipoib_networkd_dispatcher_routable_d_path }}50-ifup-hooks"
     mode: "0755"
   register: networkd_dispatcher_hook
   become: true
 
-- name: Ensure InfiniBand iSER interfaces have netplan configuration files.
-  template:
-    src: netplan/netplan.j2
+- name: Ensure IP over InfiniBand interfaces have netplan configuration files.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan.j2') }}"
     dest: "{{ eseries_ipoib_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
   register: netplan
   loop: "{{ eseries_ipoib_interfaces }}"
   become: true
 
-- name: Ensure InfiniBand iSER interfaces have netplan configuration hooks.
-  template:
-    src: netplan/netplan_hook.j2
+- name: Ensure IP over InfiniBand interfaces have netplan configuration hooks.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan_hook.j2') }}"
     dest: "{{ eseries_ipoib_networkd_ifup_d_path }}99-eseries-ansible-{{ item['name'] }}-hook"
     mode: "0755"
   register: netplan_hook
@@ -24,13 +24,13 @@
   become: true
 
 - name: Apply changes to NetApp
-  command:
+  ansible.builtin.command:
     cmd: netplan apply
   when: networkd_dispatcher_hook['changed'] or netplan['changed'] or netplan_hook['changed']
   become: true
 
 - name: Get the link status for interface
-  command:
+  ansible.builtin.command:
     cmd: ip -4 address show {{ item['name'] }}
   changed_when: false
   register: link_info
@@ -49,15 +49,15 @@
       {%- endfor -%}
       {{ interfaces | list }}
 
-- name: Flush InfiniBand iSER interface.
-  command: ip address flush {{ item }}
+- name: Flush IP over InfiniBand interface.
+  ansible.builtin.command: ip address flush {{ item }}
   loop: "{{ changed_interfaces }}"
   become: true
-- name: Bring InfiniBand iSER interface down.
-  command: ip link set {{ item }} down
+- name: Bring IP over InfiniBand interface down.
+  ansible.builtin.command: ip link set {{ item }} down
   loop: "{{ changed_interfaces }}"
   become: true
-- name: Bring InfiniBand iSER interface up.
-  command: ip link set {{ item }} up
+- name: Bring IP over InfiniBand interface up.
+  ansible.builtin.command: ip link set {{ item }} up
   loop: "{{ changed_interfaces }}"
   become: true

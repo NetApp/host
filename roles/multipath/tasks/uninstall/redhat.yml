@@ -1,17 +1,17 @@
 - name: Ensure dracut configuration file for multipath has been removed.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_multipath_dracut_conf_d }}eseries_multipath.conf"
   become: true
   register: dracut_modules
 
 - name: Update initramfs image.
-  command: dracut --force --omit multipath
+  ansible.builtin.command: dracut --force --omit multipath
   become: true
   when: dracut_modules['changed'] == True
 
 - name: Ensure expected multipath packages have been uninstalled (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: absent
     name: "{{ eseries_multipath_rhel_packages }}"
   become: true

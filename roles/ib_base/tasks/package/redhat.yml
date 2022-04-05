@@ -3,21 +3,21 @@
     rhel_packages: |-
       {%- set packages = [] -%}
       {%- if eseries_ib_base_ipoib_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_rhel_packages["ipoib"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_rhel_packages["ipoib"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {%- if eseries_ib_base_iser_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_rhel_packages["iser"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_rhel_packages["iser"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {%- if eseries_ib_base_srp_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_rhel_packages["srp"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_rhel_packages["srp"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {%- if eseries_ib_base_nvme_enabled == True -%}
-        {%- if packages.extend(eseries_ib_base_rhel_packages["nvme"]) -%}{%- endif -%}
+        {%- if packages.extend(eseries_ib_base_rhel_packages["nvme"] | default([])) -%}{%- endif -%}
       {%- endif -%}
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand packages are installed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: present
     name: "{{ rhel_packages }}"
   register: packages

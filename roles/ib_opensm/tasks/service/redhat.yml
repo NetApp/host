@@ -1,7 +1,0 @@
-- name: Ensure subnet manager service is running and enabled.
-  systemd:
-    name: opensm.service
-    state: "{% if opensm_update == True %}restarted{% elif opensm_running == True %}started{% else %}stopped{% endif %}"
-    enabled: "{{ opensm_update == True or opensm_running == True }}"
-    daemon_reload: true
-  become: true

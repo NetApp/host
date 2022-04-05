@@ -1,4 +1,5 @@
 eseries_mount_skip_unmount: false
+eseries_mount_force_format: false  # WARNING! Forces the file system to be applied regardless whether one exists. Note that this option is not idempotent and it is recommended to set using --extra-vars.
 
 eseries_mount_volumes: ["all_volumes"]
 eseries_mount_format_type: ext4

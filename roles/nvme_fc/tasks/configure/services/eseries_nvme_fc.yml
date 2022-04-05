@@ -1,5 +1,5 @@
 - name: Get the host NVMe Qualified Name (NQN).
-  command:
+  ansible.builtin.command:
     cmd: "{{ eseries_nvme_fc_nqn_command }}"
   changed_when: false
   register: hostnqn_output
@@ -41,22 +41,22 @@
   when: targets | length == 0
 
 - name: Create NVMe service daemon.
-  template:
-    src: nvme_fc_daemon.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_fc_daemon.j2') }}"
     dest: "{{ eseries_nvme_fc_daemon_path }}{{ eseries_nvme_fc_daemon_name }}"
     mode: "0744"
   register: nvme_daemon
   become: true
 
 - name: Create NVMe systemd service file.
-  template:
-    src: nvme_fc_service.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nvme_fc_service.j2') }}"
     dest: "{{ eseries_nvme_fc_service_path }}{{ eseries_nvme_fc_service_name }}"
   register: nvme_service
   become: true
 
 - name: Ensure NVMe service is running.
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ eseries_nvme_fc_service_name }}"
     state: started
     enabled: "{{'True' if eseries_nvme_fc_use_nvmefc_boot_connections == False else 'False' }}"

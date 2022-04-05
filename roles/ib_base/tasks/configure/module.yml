@@ -1,68 +1,205 @@
-- name: Determine required InfiniBand modules.
-  set_fact:
-    expected_kernel_modules: |-
-      {%- set modules = eseries_ib_base_kernel_modules -%}
-      {%- if eseries_ib_base_ipoib_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_ipoib_kernel_modules) -%}{%- endif -%}
-      {%- endif -%}
-      {%- if eseries_ib_base_iser_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_iser_kernel_modules) -%}{%- endif -%}
-      {%- endif -%}
-      {%- if eseries_ib_base_srp_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_srp_kernel_modules) -%}{%- endif -%}
-      {%- endif -%}
-      {%- if eseries_ib_base_nvme_enabled == True -%}
-        {%- if modules.extend(eseries_ib_base_nvme_kernel_modules) -%}{%- endif -%}
-      {%- endif -%}
-      {{- modules | unique | sort -}}
-
 - name: "Ensure {{ eseries_ib_base_rdma }} directory exists."
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_base_rdma }}"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules directory exists."
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_base_rdma }}modules/"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}rdma.conf is correct (RHEL)."
-  template:
-    src: configure/redhat/rdma_conf.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/redhat/rdma_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}rdma.conf"
   when: "(ansible_os_family | lower) == 'redhat'"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/infiniband.conf is correct."
-  template:
-    src: configure/infiniband_conf.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/infiniband_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/infiniband.conf"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/srp_daemon.conf is correct."
-  template:
-    src: configure/srp_daemon_conf.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/srp_daemon_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/srp_daemon.conf"
   become: true
 
 - name: "Ensure {{ eseries_ib_base_rdma }}modules/rdma.conf is correct."
-  template:
-    src: configure/rdma_conf.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/rdma_conf.j2') }}"
     dest: "{{ eseries_ib_base_rdma }}modules/rdma.conf"
   become: true
 
 - name: Ensure required InfiniBand modules are loaded.
-  modprobe:
+  community.general.modprobe:
     state: present
     name: "{{ item['name'] }}"
     params: "{{ item['parameters'] }}"
   loop: "{{ expected_kernel_modules }}"
   become: true
+  vars:
+    expected_kernel_modules: |-
+      {%- set modules = [] -%}
+      {%- set module_list = [] -%}
 
-- name: Ensure InfiniBand kernel modules have been added to boot.
-  template:
-    src: configure/eseries_ib_base_conf.j2
-    dest: "{{ eseries_ib_base_modules_d }}eseries_ib_base.conf"
+      {%- for module in eseries_ib_base_kernel_modules if module not in module_list -%}
+        {%- if modules.append(module) -%}{%- endif -%}
+        {%- if module_list.append(module["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+
+      {%- if eseries_ib_base_ipoib_enabled == True -%}
+        {%- for module in eseries_ib_base_ipoib_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if eseries_ib_base_iser_enabled == True -%}
+        {%- for module in eseries_ib_base_iser_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if eseries_ib_base_srp_enabled == True -%}
+        {%- for module in eseries_ib_base_srp_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if eseries_ib_base_nvme_enabled == True -%}
+        {%- for module in eseries_ib_base_nvme_kernel_modules if module not in module_list -%}
+          {%- if modules.append(module) -%}{%- endif -%}
+          {%- if module_list.append(module["name"]) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{- modules -}}
+
+- name: Ensure InfiniBand base kernel modules have been added to boot process.
+  blockinfile:
+    create: true
+    path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+    marker: "# {mark} IB BASE KERNEL MODULES"
+    block: |
+      {% for module in eseries_ib_base_kernel_modules %}
+      {{ module["name"] }}
+      {% endfor %}
   become: true
+
+- name: Ensure InfiniBand base kernel module parameters have been added to boot process.
+  blockinfile:
+    create: true
+    path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+    marker: "# {mark} IB BASE KERNEL MODULE PARAMETERS"
+    block: |
+      {% for module in eseries_ib_base_kernel_modules if module["parameters"] is not none %}
+      options {{ module["name"] }} {{ module["parameters"] }}
+      {% endfor %}
+  become: true
+
+- name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
+  block:
+    - name: Ensure udev rules exist for InfiniBand device exist.
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/common/ib_udev_rules.j2') }}"
+        dest: "{{ eseries_ib_base_udev_rules_d }}{{ eseries_ib_base_udev_name }}"
+      register: ib_udev_rules
+      when: eseries_ib_base_udev_name is defined and eseries_ib_base_udev_rules is defined and eseries_ib_base_udev_rules | length > 0
+
+    - name: Ensure required kernel modules for IP over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} IPoIB KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_ipoib_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+
+    - name: Ensure required kernel module parameters for IP over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} IPoIB KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_ipoib_kernel_modules if module["parameters"] is not none %}
+          options {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+  when: eseries_ib_base_ipoib_enabled == True
+  become: true
+
+- name: Ensure required kernel modules for InfiniBand iSER are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for InfiniBand iSER are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} IB iSER KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_iser_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+
+    - name: Ensure required kernel module parameters for InfiniBand iSER are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} IB iSER KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_iser_kernel_modules if module["parameters"] is not none %}
+          options {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+  when: eseries_ib_base_iser_enabled == True
+  become: true
+
+- name: Ensure required kernel modules for InfiniBand SRP are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for InfiniBand SRP are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} IB SRP KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_srp_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+
+    - name: Ensure required kernel module parameters for InfiniBand SRP are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} IB SRP KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_srp_kernel_modules if module["parameters"] is not none %}
+          options {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+  when: eseries_ib_base_srp_enabled == True
+  become: true
+
+- name: Ensure required kernel modules for NVMe over InfiniBand are added to the boot process.
+  block:
+    - name: Ensure required kernel modules for NVMe over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_load_d }}eseries_ib_base.conf"
+        marker: "# {mark} NVMe IB KERNEL MODULES"
+        block: |
+          {% for module in eseries_ib_base_nvme_kernel_modules %}
+          {{ module["name"] }}
+          {% endfor %}
+
+    - name: Ensure required kernel module parameters for NVMe over InfiniBand are added to the boot process.
+      blockinfile:
+        path: "{{ eseries_ib_base_modules_d }}eseries_ib_base_options.conf"
+        marker: "# {mark} NVMe IB KERNEL MODULE PARAMETERS"
+        block: |
+          {% for module in eseries_ib_base_nvme_kernel_modules if module["parameters"] is not none %}
+          options {{ module["name"] }} {{ module["parameters"] }}
+          {% endfor %}
+  when: eseries_ib_base_nvme_enabled == True
+  become: true
+
+- name: Reboot any hosts with new udev rules.
+  include_role:
+    name: common
+    tasks_from: host_facts/rescue/reboot.yml
+  when: ib_udev_rules['changed'] == True

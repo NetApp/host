@@ -1,11 +1,11 @@
 - name: Ensure NVMe over Fibre Channel modules are configured.
-  template:
-    src: eseries_nvme_fc.j2
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'eseries_nvme_fc.j2') }}"
     dest: "{{ eseries_nvme_fc_modprobe_d }}eseries_nvme_fc.conf"
   register: modprobe_configuration
   become: true
 
 - name: Update initrd image.
-  command: update-initramfs -u
+  ansible.builtin.command: update-initramfs -u
   become: true
   when: modprobe_configuration['changed'] == True

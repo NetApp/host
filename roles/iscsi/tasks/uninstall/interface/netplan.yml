@@ -1,18 +1,18 @@
 - name: Ensure netplan iSCSI interfaces configuration files have been removed.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_iscsi_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
   register: netplan
   loop: "{{ eseries_iscsi_interfaces }}"
   become: true
 - name: Apply changes to Netplan
-  command:
+  ansible.builtin.command:
     cmd: netplan apply
   when: netplan['changed']
   become: true
 
 - name: Bring iSCSI interface down.
-  command: ip link set {{ item["name"] }} down
+  ansible.builtin.command: ip link set {{ item["name"] }} down
   register: ip_down
   changed_when: ip_down['rc'] != 0
   failed_when: false
@@ -20,7 +20,7 @@
   become: true
 
 - name: Flush iSCSI interface.
-  command: ip address flush dev {{ item["name"] }}
+  ansible.builtin.command: ip address flush dev {{ item["name"] }}
   register: ip_flush
   changed_when: ip_flush['rc'] != 0
   failed_when: false

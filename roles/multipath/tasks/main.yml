@@ -7,7 +7,10 @@
   when: not eseries_multipath_remove_installation
 
 - name: Uninstall multipath.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall multipath.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - multipath_uninstall

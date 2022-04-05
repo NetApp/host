@@ -1,17 +1,17 @@
 - name: Ensure RDMA configuration files are removed.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_base_rdma }}"
   become: true
 
 - name: Remove InfiniBand kernel modules from boot.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_base_modules_d }}eseries_ib_base.conf"
   become: true
 
 - name: Remove InfiniBand kernel modules.
-  modprobe:
+  community.general.modprobe:
     state: absent
     name: "{{ item }}"
   loop: "{{ eseries_ib_base_uninstall_kernel_modules }}"

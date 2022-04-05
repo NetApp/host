@@ -1,7 +1,10 @@
 eseries_ib_opensm_subnet_manager_configure: false
-eseries_ib_opensm_subnet_prefix_base: "0xfe800000000000"
+eseries_ib_opensm_subnet_prefix_base: 0xfe80000000000000
 eseries_ib_opensm_subnet_priority: 0
 eseries_ib_opensm_interfaces: []
+eseries_ib_opensm_options: {}      # opensm.conf file key, value pairs
+eseries_ib_opensm_allow_upgrades: false
+eseries_ib_opensm_skip_package_validation: false
 eseries_ib_opensm_ubuntu_packages:
   - opensm
 

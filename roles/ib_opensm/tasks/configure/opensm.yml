@@ -1,17 +1,17 @@
 - name: Get all InfiniBand link interface names.
-  command: ip -oneline link
+  ansible.builtin.command: ip -oneline link
   changed_when: false
   register: ip_link_output
   become: true
 
 - name: Determine InfiniBand devices.
-  command: ibstat -l
+  ansible.builtin.command: ibstat -l
   changed_when: false
   register: ibstat_device_list_output
   become: true
 
 - name: Determine InfiniBand device information.
-  command: "ibstat -s {{ item }}"
+  ansible.builtin.command: "ibstat -s {{ item }}"
   loop: "{{ ibstat_device_list_output['stdout_lines'] }}"
   changed_when: false
   register: ibstat_device_information_output
@@ -29,7 +29,7 @@
       {{- devices -}}
 
 - name: Compile information for each device's ports.
-  command: "ibstat {{ item['device'] }} {{ item['port'] }}"
+  ansible.builtin.command: "ibstat {{ item['device'] }} {{ item['port'] }}"
   loop: "{{ device_ports }}"
   changed_when: false
   register: ibstat_device_port_information_output
@@ -48,9 +48,10 @@
   set_fact:
     expected_interfaces: |-
       {%- set expected_interfaces = [] -%}
+      {%- set scratch = {"subnet_prefix": eseries_ib_opensm_subnet_prefix_base | int } -%}
       {%- for result in ibstat_device_port_information_output["results"] -%}
         {%- set device_name = result["item"]["device"] ~ "_" ~ result["item"]["port"] -%}
-        {%- set device_info = {"name": device_name, "aliases": [device_name]} -%}
+        {%- set device_info = {"name": device_name, "aliases": [result["item"]["device"], device_name]} -%}
 
         {#- Append InfiniBand port information -#}
         {%- for line in result["stdout_lines"] -%}
@@ -67,18 +68,12 @@
 
         {#- Add expected interface -#}
         {%- for interface in eseries_ib_opensm_interfaces if interface["name"] in device_info["aliases"] -%}
-          {%- if device_info.update({"configure": interface["configure"] | default(False),
-                                     "subnet_prefix": interface["subnet_prefix"] | default("%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"])),
+          {%- if device_info.update({"configure": interface["configure"] | default(eseries_ib_opensm_subnet_manager_configure),
+                                     "subnet_prefix": interface["subnet_prefix"] | default("%#x" % scratch["subnet_prefix"]),
                                      "priority": interface["priority"] | default(eseries_ib_opensm_subnet_priority)}) -%}{%- endif -%}
           {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
-        {%- else -%}
-          {%- if eseries_ib_opensm_subnet_manager_configure == True -%}
-            {%- if device_info.update({"configure": True,
-                                       "subnet_prefix": "%s%02d" | format(eseries_ib_opensm_subnet_prefix_base, loop["index0"]),
-                                       "priority": eseries_ib_opensm_subnet_priority}) -%}{%- endif -%}
-            {%- if expected_interfaces.append(device_info) -%}{%- endif -%}
-          {%- endif -%}
         {%- endfor -%}
+        {%- if scratch.update({"subnet_prefix": scratch["subnet_prefix"] + 1}) -%}{%- endif -%}
       {%- endfor -%}
       {{- expected_interfaces -}}
 
@@ -108,13 +103,13 @@
       {{- unavailable_interfaces -}}
 
 - name: Ensure OpenSM directory exists.
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_opensm_config_path }}"
   become: true
 
 - name: Create OpenSM configuration temporary files.
-  command:
+  ansible.builtin.command:
     cmd: "opensm --create-config {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~
                  --guid {{ item['port_guid'] }}
                  --priority {{ item['priority'] | default(eseries_ib_opensm_subnet_priority) }}
@@ -126,20 +121,48 @@
     index_var: index
   become: true
 
-# Note: --subnet-prefix is not available on Ubuntu versions of OpenSM. So to simplify automation, just modify the single line in the temporary conf files.
+# Note: --subnet-prefix is not available on certain versions of OpenSM. So to simplify automation, just modify the single line in the temporary conf files.
 - name: Update the subnet_prefix in temporary files.
   lineinfile:
     path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~"
     regexp: '^subnet_prefix'
-    line: "subnet_prefix {{ item['subnet_prefix'] | default(eseries_ib_opensm_subnet_prefix_base) }}"
+    line: "subnet_prefix {{ item['subnet_prefix'] }}"
   changed_when: false
   loop: "{{ ib_devices }}"
   loop_control:
     index_var: index
   become: true
 
+- name: Update other opensm configuration in temporary files.
+  lineinfile:
+    path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ item[0] }}.tmp~"
+    regexp: '^{{ item[1] }}'
+    line: "{{ item[1] }} {{ item[2] }}"
+  changed_when: false
+  loop: "{{ option_changes }}"
+  become: true
+  vars:
+    option_changes: |-
+      {%- set changes = [] -%}
+      {%- for device in ib_devices -%}
+        {%- set index = loop["index0"] -%}
+        {%- if eseries_ib_opensm_options is defined -%}
+          {%- for key, value in eseries_ib_opensm_options.items() -%}
+            {%- if changes.append([index, key, value]) -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+
+        {%- if "options" in (device.keys() | list) and device["options"] | length > 0 -%}
+          {%- for key, value in device["options"].items() -%}
+            {%- if changes.append([index, key, value]) -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+
+      {%- endfor -%}
+      {{- changes -}}
+
 - name: Check whether changes have been to the the OpenSM configuration files.
-  command:
+  ansible.builtin.command:
     cmd: "diff {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~ {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}"
   register: diff_opensm_config
   changed_when: false
@@ -150,7 +173,7 @@
   become: true
 
 - name: Update missing or changed OpenSM configuration files.
-  command:
+  ansible.builtin.command:
     cmd: "mv -f {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~ {{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}"
   register: update_opensm_config
   loop: "{{ diff_opensm_config['results'] }}"
@@ -160,7 +183,7 @@
   when: item['rc'] != 0
 
 - name: Remove OpenSM configuration temporary files.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_ib_opensm_config_path }}opensm.conf.{{ index }}.tmp~"
   changed_when: false
@@ -192,7 +215,7 @@
       {{ files }}
 
 - name: Remove no longer needed OpenSM configuration files.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ item }}"
   register: delete_opensm_config

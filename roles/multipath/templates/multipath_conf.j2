@@ -19,7 +19,7 @@ defaults {
 }
 multipaths {
 {% if eseries_multipath_configure_user_friendly_names == True -%}
-{% for volume in multipath_eseries_volumes %}
+{% for volume in multipath_eseries_volumes if volume["host_wwid"] and volume["name"] %}
   multipath {
     wwid {{ volume["host_wwid"] }}
     alias {{ volume["name"] }}

@@ -1,5 +1,5 @@
 - name: Ensure expected iSCSI packages are removed (RHEL).
-  yum:
+  ansible.builtin.yum:
     state: absent
     name: "{{ eseries_iscsi_rhel_packages }}"
   become: true

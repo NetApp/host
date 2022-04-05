@@ -1,5 +1,5 @@
 - name: Determine iSCSI initiatorname (IQN).
-  command:
+  ansible.builtin.command:
     cmd: "{{ eseries_ib_iser_iqn_command }}"
   changed_when: false
   register: iqn_command
@@ -32,7 +32,7 @@
   when: ib_iser_interfaces_info | length == 0
 
 - name: Ensure iSCSI ifaces path exists.
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ eseries_ib_iser_iface_path }}"
     mode: "0751"

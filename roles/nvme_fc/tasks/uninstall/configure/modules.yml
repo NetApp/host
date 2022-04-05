@@ -2,7 +2,7 @@
   include_tasks: "configure/modules/{{ ansible_os_family | lower }}.yml"
 
 #- name: Ensure NVMe over Fibre Channel modules loaded with the correct parameters.
-#  modprobe:
+#  community.general.modprobe:
 #    state: absent
 #    name: "{{ item['name'] }}"
 #    params: "{{ item['parameters'] }}"

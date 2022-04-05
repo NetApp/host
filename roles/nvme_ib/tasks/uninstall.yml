@@ -6,7 +6,7 @@
   become: true
 
 - name: Ensure NVMe service for E-Series is stopped and disabled.
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ eseries_nvme_ib_service_name }}"
     state: stopped
     enabled: false
@@ -32,13 +32,19 @@
     tasks_from: uninstall.yml
 
 - name: Remove NVMe over InfiniBand systemd service file.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}"
   become: true
 
 - name: Remove NVMe over InfiniBand daemon.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }}"
+  become: true
+
+- name: Remove NVMe over InfiniBand daemon.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_nvme_ib_daemon_path }}eseries_nvme_ib_connections.conf"
   become: true

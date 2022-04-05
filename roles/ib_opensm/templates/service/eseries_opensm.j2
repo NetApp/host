@@ -1,21 +1,45 @@
 #!/bin/sh
 
-rc=0
-
 start() {
-{% for entry in ib_devices %}
-    echo -n "Starting opensm on port {{ entry['port_guid'] }}..."
-    opensm -F {{ eseries_ib_opensm_config_path }}opensm.conf.{{ loop["index0"] }} --daemon
-    rc=$?||$rc
-    echo "Done"
-{% else %}
-    echo "No OpenSM subnet managers to start."
-{% endfor %}
+  start_time=$(date +"%Y-%m-%d %H:%M:%S")
+
+  if ls /etc/rdma/opensm.conf* > /dev/null 2>&1; then
+    start_opensm_daemons=true
+    while $start_opensm_daemons; do
+      start_opensm_daemons=false
+      for conf in /etc/rdma/opensm.conf*; do
+
+        # Check whether subnet manager has already started. If not, start it.
+        if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
+          opensm -F $conf --daemon
+
+          # Wait for subnet manager to enter master state.
+          opensm_pid=$(ps aux | grep "[o]pensm -F $conf --daemon" | sed -E "s/[ \t]+/ /g" | cut -f 2 -d " ")
+          while true; do
+            if ! (ps aux | grep "[o]pensm -F $conf --daemon" > /dev/null); then
+              start_opensm_daemons=true
+              break
+            elif journalctl -o short --since "$start_time" _PID=$opensm_pid | grep "Entering.*state"; then
+              break
+            fi
+            sleep 1
+          done
+        fi
+      done
+
+      # Check whether any subnet managers failed to start. If so, then wait 30 seconds before trying again.
+      if $start_opensm_daemons; then
+        sleep 5
+      fi
+    done
+  fi
+
+  rc=0
 }
 
 stop() {
     systemctl kill opensm.service
-    rc=$? || $rc
+    rc=$?
 }
 
 case $1 in
@@ -25,13 +49,13 @@ case $1 in
     stop)
         stop
         ;;
-    restart | reload)
+    restart)
         stop
-        sleep 5
+        sleep 1
         start
         ;;
     *)
-        echo "Usage: $0 {start|stop|restart|reload}"
+        echo "Usage: $0 {start|stop|restart}"
         rc=1
 esac
 

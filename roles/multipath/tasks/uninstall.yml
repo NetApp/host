@@ -3,7 +3,7 @@
   become: true
 
 - name: Stop and disable multipathd
-  systemd:
+  ansible.builtin.systemd:
     name: multipathd.service
     state: stopped
     enabled: false
@@ -14,19 +14,19 @@
   include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure multipath.conf has been removed.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "/etc/multipath.conf"
   become: true
 
 - name: Configure multipath.conf.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_multipath_conf_d_path }}eseries_multipath.conf"
   become: true
 
 - name: Remove multipath modules from boot.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_multipath_modules_d }}eseries_multipath.conf"
   become: true

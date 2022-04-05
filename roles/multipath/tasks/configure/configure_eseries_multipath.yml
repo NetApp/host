@@ -7,27 +7,27 @@
 - name: Configure multipath for eseries_volumes wwid/aliases.
   block:
     - name: Determine current multipath configuration.
-      command:
+      ansible.builtin.command:
         cmd: multipath -t
       register: current_multipath_configuration
       changed_when: false
       become: true
 
     - name: Ensure multipath configuration directory exists.
-      file:
+      ansible.builtin.file:
         state: directory
         path: "{{ eseries_multipath_conf_d_path }}"
       become: true
 
     - name: Configure multipath.conf.
-      template:
-        src: multipath_conf.j2
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'multipath_conf.j2') }}"
         dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
       register: multipath_conf
       become: true
 
     - name: Reload multipathd service.
-      systemd:
+      ansible.builtin.systemd:
         name: multipathd.service
         state: "{%- if multipath_conf['changed'] %}restarted{%- else %}started{%- endif %}"
         enabled: true

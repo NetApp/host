@@ -1,5 +1,5 @@
 - name: Ensure ifcfg-* files is removed for each iSCSI network interface.
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_iscsi_ifcfg_path }}ifcfg-{{ item['name'] }}"
   register: ifcfg
@@ -7,14 +7,14 @@
   become: true
 
 - name: Ensure gateway route exists for each iSCSI network interface (SUSE).
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ eseries_iscsi_ifcfg_path }}ifroute-{{ item['name'] }}"
   loop: "{{ eseries_iscsi_interfaces }}"
   when: "(ansible_os_family | lower) == 'suse'"
 
 - name: Bring iSCSI interface down using ifdown.
-  command: ifdown {{ item['name'] }}
+  ansible.builtin.command: ifdown {{ item['name'] }}
   register: ip_down
   changed_when: ip_down['rc'] != 0
   failed_when: false
@@ -22,7 +22,7 @@
   become: true
 
 - name: Flush iSCSI interface.
-  command: ip address flush dev {{ item['name'] }}
+  ansible.builtin.command: ip address flush dev {{ item['name'] }}
   register: ip_flush
   changed_when: ip_flush['rc'] != 0
   failed_when: false

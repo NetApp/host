@@ -14,7 +14,10 @@
     name: ib_opensm
 
 - name: Uninstall InfiniBand SRP.
-  import_tasks: uninstall.yml
+  block:
+    - name: Uninstall InfiniBand SRP.
+      include_tasks: uninstall.yml
+      when: eseries_common_force_skip_uninstall == False
   tags:
     - never
     - ib_srp_uninstall

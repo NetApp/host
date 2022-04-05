@@ -8,6 +8,10 @@ network:
     {{ interface["name"] }}:
       addresses:
         - {{ interface["address"] }}
-{% if "gateway" in (item.keys() | list) %}      gateway4: {{ item["gateway"] }}{% endif %}
+{% if "gateway" in (item.keys() | list) %}
+      gateway4: {{ item["gateway"] }}
+{% endif %}
+{% if interface["mtu"] is defined or eseries_iscsi_mtu is defined %}
       mtu: {{ interface["mtu"] | default(eseries_iscsi_mtu) }}
+{% endif %}
 {% endfor %}

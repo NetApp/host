@@ -1,5 +1,5 @@
 - name: Resume E-Series volume.
-  command:
+  ansible.builtin.command:
     cmd: "dmsetup resume /dev/mapper/{{ volumes['key'] }}"
   delegate_to: "{{ item['ansible_host_name'] }}"
   loop: "{{ volumes['value']['hosts'] }}"
@@ -7,7 +7,7 @@
   when: eseries_snapshot_pit_safe == False and item['mounted'] == True
 
 - name: "Wait for E-Series volume [{{ volumes['key'] }}] to be remounted."
-  command:
+  ansible.builtin.command:
     cmd: "mount /dev/mapper/{{ volumes['key'] }}"   # Options will be pulled from /etc/fstab
     warn: false
   delegate_to: "{{ item['ansible_host_name'] }}"

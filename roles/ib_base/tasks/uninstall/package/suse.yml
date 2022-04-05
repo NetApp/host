@@ -1,4 +1,4 @@
-- name: Determine packages to install (SUSE).
+- name: Determine packages to uninstall (SUSE).
   set_fact:
     suse_packages: |-
       {%- set packages = [] -%}

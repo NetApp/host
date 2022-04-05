@@ -5,7 +5,7 @@
   when: initiator_volume_facts is not defined
 
 - name: Determine whether multipath is installed.
-  command: systemctl status multipathd.service
+  ansible.builtin.command: systemctl status multipathd.service
   register: multipathd_status
   changed_when: false
   failed_when: false

@@ -7,7 +7,8 @@
   become: true
   register: initramfs_modules
 
+# Note: multipath path package installed through apt will update the kernel image.
 - name: Update initramfs image.
-  command: update-initramfs -u
+  ansible.builtin.command: update-initramfs -u
   become: true
   when: initramfs_modules['changed'] == True

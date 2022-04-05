@@ -1,6 +1,3 @@
-- name: Ensure multipath is configured.
-  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
-
 - name: Check whether /etc/multipath.conf exists
   stat:
     path: "/etc/multipath.conf"
@@ -8,7 +5,7 @@
   become: true
 
 - name: Ensure that multipath.conf exists.
-  file:
+  ansible.builtin.file:
     state: touch
     path: "/etc/multipath.conf"
   when: not multipath_conf["stat"]["exists"]
@@ -23,30 +20,34 @@
 - name: Configure eseries_multipath.conf
   block:
     - name: Determine current multipath configuration.
-      command:
+      ansible.builtin.command:
         cmd: multipath -t
       register: current_multipath_configuration
       changed_when: false
       become: true
 
     - name: Ensure multipath configuration directory exists.
-      file:
+      ansible.builtin.file:
         state: directory
         path: "{{ eseries_multipath_conf_d_path }}"
       become: true
 
     - name: Configure eseries_multipath.conf
-      template:
-        src: multipath_conf.j2
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'multipath_conf.j2') }}"
         dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
       become: true
   when: not eseries_multipath_conf["stat"]["exists"]
 
-
 - name: Ensure multipathd daemon has been started and is enabled.
-  systemd:
+  ansible.builtin.systemd:
     state: started
     name: multipathd.service
     enabled: true
     daemon_reload: true
   become: true
+
+# Based on testing we have to rebuild initramfs after running the above tasks.
+# Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot. 
+- name: Ensure initramfs includes multipath support.
+  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"

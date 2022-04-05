@@ -1,12 +1,14 @@
 [Unit]
-Description=Open subnet manager loader service for E-Series Ansible automation
-After=network.target
-Before=remote-fs-pre.target
+Description=Open subnet manager loader service (E-Series Ansible automation)
+DefaultDependencies=false
+Before=network.target remote-fs-pre.target
+After=rdma-hw.target
 
 [Service]
-Type=forking
+Type=simple
+RemainAfterExit=yes
 ExecStart={{ eseries_ib_opensm_daemon_path }}eseries_opensm start
 ExecStop={{ eseries_ib_opensm_daemon_path }}eseries_opensm stop
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=network.target

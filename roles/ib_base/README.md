@@ -4,13 +4,15 @@ netapp_eseries.host.ib_base
 
 Variables (Values specified are the defaults)
 ---------
+eseries_ib_base_skip:                    # Whether we should skip configuring InfiniBand entirely (Default: false). Useful to just use functionality provided by other roles that inherit this one when IB is already setup.
 eseries_ib_base_ipoib_enabled:           # Whether InfiniBand IPoIB should be configured (Default: false).
 eseries_ib_base_iser_enabled:            # Whether InfiniBand iSER should be configured (Default: false).
 eseries_ib_base_srp_enabled:             # Whether InfiniBand SRP should be configured (Default: false).
 eseries_ib_base_nvme_enabled:            # Whether InfiniBand SRP should be configured (Default: false).
 eseries_ib_base_rdma:                    # Directory for RDMA configuration files (Default: /etc/rdma/).
 eseries_ib_base_rdma_memory_conf:        # Absolute path to the rdma.conf file for configuring rdma security limitations (Default: /etc/security/limits.d/rdma.conf).
-eseries_ib_base_modules_d:               # Systemd module configuration files directory (Default: file/etc/modules-load.d/).
+eseries_ib_base_modules_load_d:          # File directory for required kernel modules (Default: /etc/modules-load.d/).
+eseries_ib_base_modules_d:               # File directory for the default options for required kernel modules (Default: /etc/modules.d/).
 eseries_ib_base_ubuntu_packages:         # Packages to install for hosts running Ubuntu (Default: [infiniband-diags, rdma-core]).
 eseries_ib_base_suse_packages:           # Packages to install for hosts running SUSE (Default: [infiniband-diags, rdma-core]).
 eseries_ib_base_rhel_packages:           # Packages to install for hosts running RedHat (Default: [infiniband-diags, rdma-core]).

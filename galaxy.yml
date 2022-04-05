@@ -1,9 +1,12 @@
 namespace: "netapp_eseries"
+description: "Configure your host storage connection for iSCSI, InfiniBand, and NVMe; Discover mapped E-Series volumes, format them to your specifications, and assign persistent mount points to them."
 name: "host"
-version: "1.0.0"
+version: "1.1.0"
 readme: "README.md"
 authors:
-  - Nathan Swartz (@ndswartz)
+  - "Joe McCormick (@iamjoemccormick)"
+  - "Nathan Swartz (@ndswartz)"
+  - "Tracy Cummins (@tracycummins)"
 dependencies:
   "ansible.posix": "*"
   "ansible.netcommon": "*"

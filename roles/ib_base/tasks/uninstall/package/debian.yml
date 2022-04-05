@@ -1,4 +1,4 @@
-- name: Determine packages to install (Ubuntu).
+- name: Determine packages to uninstall (Ubuntu).
   set_fact:
     ubuntu_packages: |-
       {%- set packages = [] -%}
@@ -17,7 +17,7 @@
       {{- packages | unique | sort -}}
 
 - name: Ensure expected InfiniBand base packages are removed (Ubuntu).
-  apt:
+  ansible.builtin.apt:
     state: absent
     name: "{{ ubuntu_packages }}"
   become: true

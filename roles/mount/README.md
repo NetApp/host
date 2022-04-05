@@ -14,6 +14,7 @@ eseries_mount_format_options:             # Volume format type options (Default:
                                           #   VOLUME_STRIPE_COUNT will be replaced with the volume's RAID stripe count.
 eseries_mount_persistent_mount_options:   # Volume mount options (Default: _netdev)
 eseries_mount_root_directory:             # Volume mount path directory. (Default: /mnt/)
+eseries_mount_force_format:               # WARNING! Forces the file system to be applied regardless whether one exists. Note that this option is not idempotent and it is recommended to set using --extra-vars.
 
 Tips
 ----
