@@ -1,4 +1,3 @@
-eseries_iscsi_initiator_service: open-iscsi.service
 eseries_iscsi_node_path: /etc/iscsi/nodes/
 eseries_iscsi_iface_path: /etc/iscsi/ifaces/
 eseries_iscsi_static_path: /etc/iscsi/static/

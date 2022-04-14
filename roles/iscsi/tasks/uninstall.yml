@@ -1,34 +1,20 @@
-- name: Ensure Ubuntu iSCSI packages are uninstalled.
-  import_tasks: uninstall/package.yml
+- name: Ensure iSCSI packages are uninstalled.
+  ansible.builtin.import_tasks: uninstall/package.yml
 
-- name: Delete iSCSI session configuration directories.
-  ansible.builtin.file:
-    state: absent
-    path: "{{ item }}"
-  loop:
-    - "{{ eseries_iscsi_node_path }}"
-    - "{{ eseries_iscsi_iface_path }}"
-    - "{{ eseries_iscsi_static_path }}"
-  become: true
+- name: Ensure iSCSI is unconfigure.
+  ansible.builtin.import_tasks: uninstall/configure.yml
 
-- name: Unconfigure iSCSI network interfaces
-  block:
-    - name: Remove iSCSI network interfaces using ifupdown configuration.
-      include_tasks: uninstall/interface/ifupdown.yml
-      when: eseries_iscsi_network_tool | default(eseries_iscsi_default_network_tool) == 'ifupdown'
-
-    - name: Remove iSCSI network interfaces using netplan configuration.
-      include_tasks: uninstall/interface/netplan.yml
-      when: eseries_iscsi_network_tool | default(eseries_iscsi_default_network_tool) == 'netplan'
-  when: eseries_iscsi_configure_network
-
-- name: Set facts for firewall configuration.
-  ansible.builtin.set_fact:
-    eseries_common_firewall_zone: "{{ eseries_iscsi_firewall_zone | default(eseries_common_firewall_zone | default(omit)) }}"
-    eseries_common_interfaces: "{{ eseries_iscsi_interfaces }}"
-
-- name: Apply any interface firewall changes.
+- name: Unconfigure IPoIB interfaces, hooks and firewall configuration.
   ansible.builtin.include_role:
-    name: common
-    tasks_from: interface/firewall_zone/uninstall.yml
-  when: eseries_common_firewall_zone is defined
+    name: netapp_eseries.host.ip_base
+    tasks_from: uninstall.yml
+    apply:
+      vars:
+        eseries_ip_base_configure_network: "{{ eseries_iscsi_configure_network }}"
+        eseries_ip_base_configure_firewall: "{{ eseries_iscsi_configure_firewall }}"
+        eseries_ip_base_interface_type: "{{ eseries_iscsi_interface_type }}"
+        eseries_ip_base_interfaces: "{{ eseries_iscsi_interfaces }}"
+        eseries_ip_base_interface_ignore_keys: "{{ eseries_iscsi_interface_ignore_keys }}"
+        eseries_ip_base_interface_common: "{{ eseries_iscsi_interface_common }}"
+        eseries_ip_base_firewall_zone: "{{ eseries_iscsi_firewall_zone }}"
+        eseries_ip_base_default_hook_templates: "{{ eseries_iscsi_default_hook_templates }}"

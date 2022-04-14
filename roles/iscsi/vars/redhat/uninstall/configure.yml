@@ -1,4 +1,3 @@
-eseries_iscsi_initiator_service: iscsi.service
 eseries_iscsi_node_path: /var/lib/iscsi/nodes/
 eseries_iscsi_iface_path: /var/lib/iscsi/ifaces/
 eseries_iscsi_static_path: /var/lib/iscsi/static/

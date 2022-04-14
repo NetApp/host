@@ -1,5 +1,28 @@
-- name: Ensure host iSCSI IQN exists.
-  include_tasks: "configure/open_iscsi.yml"
+- name: Configure iSCSI configuration files.
+  ansible.builtin.include_tasks: configure/iscsi.yml
 
-- name: Ensure host iSCSI IQN exists.
-  include_tasks: "configure/iqn.yml"
+- name: Configure ethernet interfaces.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ip_base
+    apply:
+      vars:
+        eseries_ip_base_configure_network: "{{ eseries_iscsi_configure_network }}"
+        eseries_ip_base_configure_firewall: "{{ eseries_iscsi_configure_firewall }}"
+        eseries_ip_base_interface_type: "{{ eseries_iscsi_interface_type }}"
+        eseries_ip_base_interface_ignore_keys: "{{ eseries_iscsi_interface_ignore_keys }}"
+        eseries_ip_base_interfaces: "{{ eseries_iscsi_interfaces }}"
+        eseries_ip_base_interface_common: "{{ eseries_iscsi_interface_common }}"
+        eseries_ip_base_interface_defaults: "{{ eseries_iscsi_interface_defaults }}"
+        eseries_ip_base_firewall_zone: "{{ eseries_iscsi_firewall_zone }}"
+        eseries_ip_base_default_hook_templates: "{{ eseries_iscsi_default_hook_templates }}"
+
+- name: Configure iSCSI interface bindings.
+  ansible.builtin.include_tasks: configure/iface.yml
+
+- name: Discover mapped-volume information from associated storage systems.
+  ansible.builtin.import_role:
+    name: netapp_eseries.host.common
+    tasks_from: volume_facts.yml
+
+- name: Configure iSCSI sessions.
+  ansible.builtin.include_tasks: configure/session.yml
