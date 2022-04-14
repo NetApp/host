@@ -1,0 +1,12 @@
+- name: Ensure interfaces have netplan configuration files.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'netplan/netplan.j2') }}"
+    dest: "{{ eseries_ip_base_netplan_path }}99-eseries-ansible-{{ item['name'] }}.yaml"
+  register: netplan
+  loop: "{{ eseries_ip_base_interfaces }}"
+  become: true
+
+- name: Apply any changes to Netplan configuration.
+  ansible.builtin.command: netplan apply
+  become: true
+  when: netplan['changed']

@@ -1,0 +1,77 @@
+eseries_ip_base_configure_network: true
+eseries_ip_base_configure_firewall: true
+
+eseries_ip_base_network_manager_dispatcher_d: /etc/NetworkManager/dispatcher.d/
+eseries_ip_base_netplan_path: /etc/netplan/
+#eseries_ip_base_ifcfg_path:  # This path is different depending on the OS distribution so it is defined in var/<os_family>.yml
+
+eseries_ip_base_firewall_zone: ""
+eseries_ip_base_default_hook_templates: []
+eseries_ip_base_interface_common: {}
+eseries_ip_base_interface_defaults: {}
+eseries_ip_base_interface_required_keys: # Anything specified in eseries_ip_base_interfaces not in this list will be added directly to ifcfg or netplan files.
+  - name
+  - address
+eseries_ip_base_interface_ignore_keys:
+  - hook_templates
+  - zone
+eseries_ip_base_interface_type: Ethernet
+eseries_ip_base_interface_ifcfg_defaults: # Be sure to quote values that will be converted into a boolean value (on, off, yes, no, etc.) otherwise they will be converted into True/False.
+  redhat:
+    redhat7: &redhat7
+      type: "{{ item['type'] | default(eseries_ip_base_interface_type) }}"
+      bootproto: "none"
+      onboot: "yes"
+      name: "{{ item['name'] }}"
+      device: "{{ item['name'] }}"
+      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      prefix: "{{ item['address'] | ansible.netcommon.ipaddr('prefix') }}"
+      zone: "{{ item['zone'] | default(eseries_ip_base_interface_common['zone'] | default(eseries_common_firewall_zone | default(''))) }}"
+    redhat8: &redhat8
+      type: "{{ item['type'] | default(eseries_ip_base_interface_type) }}"
+      bootproto: "none"
+      onboot: "yes"
+      name: "{{ item['name'] }}"
+      device: "{{ item['name'] }}"
+      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      prefix: "{{ item['address'] | ansible.netcommon.ipaddr('prefix') }}"
+      zone: "{{ item['zone'] | default(eseries_ip_base_interface_common['zone'] | default(eseries_common_firewall_zone | default(''))) }}"
+    centos7: *redhat7
+    centos8: *redhat8
+    default: *redhat8
+  suse:
+    suse12: &suse12
+      type: "{{ item['type'] | default(eseries_ip_base_interface_type) }}"
+      bootproto: "static"
+      onboot: "yes"
+      name: "{{ item['name'] }}"
+      device: "{{ item['name'] }}"
+      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      zone: "{{ item['zone'] | default(eseries_ip_base_interface_common['zone'] | default(eseries_common_firewall_zone | default(''))) }}"
+    suse15: &suse15
+      type: "{{ item['type'] | default(eseries_ip_base_interface_type) }}"
+      bootproto: "static"
+      onboot: "yes"
+      name: "{{ item['name'] }}"
+      device: "{{ item['name'] }}"
+      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      zone: "{{ item['zone'] | default(eseries_ip_base_interface_common['zone'] | default(eseries_common_firewall_zone | default(''))) }}"
+    opensuse12: *suse12
+    opensuse15: *suse15
+    default: *suse15
+  debian:
+    ubuntu16:
+      iface: "{{ item['name'] }} inet static"
+      address: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+    ubuntu18:
+      iface: "{{ item['name'] }} inet static"
+      address: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+    ubuntu20: &ubuntu20
+      iface: "{{ item['name'] }} inet static"
+      address: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+    default: *ubuntu20

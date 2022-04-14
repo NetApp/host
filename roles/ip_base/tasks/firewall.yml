@@ -1,0 +1,9 @@
+- name: Apply any interface firewall changes.
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: interface/firewall_zone/install.yml
+    apply:
+      vars:
+        eseries_common_firewall_zone: "{{ eseries_ip_base_firewall_zone }}"
+        eseries_common_interfaces: "{{ eseries_ip_base_interfaces }}"
+  when: eseries_ip_base_configure_firewall and eseries_ip_base_firewall_zone

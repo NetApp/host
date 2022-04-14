@@ -1,0 +1,26 @@
+- name: Check interface definitions.
+  ansible.builtin.fail:
+    msg: "Interface(s) are missing required information! Required keys: [ {{- eseries_ip_base_interface_required_keys | join(', ') -}} ]. Definitions missing required keys: [ {{- invalid_interfaces | join(', ') -}} ]"
+  when: invalid_interfaces | length > 0
+  vars:
+    invalid_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for interface in eseries_ip_base_interfaces -%}
+        {%- set keys = interface.keys() | list -%}
+        {%- for required_key in eseries_ip_base_interface_required_keys if required_key not in keys -%}
+          {%- if interfaces.append(interface) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- interfaces -}}
+
+- name: Configure interfaces using ifupdown configuration.
+  ansible.builtin.include_tasks: interface/ifupdown.yml
+  when: '"ifupdown" in eseries_ip_base_manager_tools'
+
+- name: Configure interfaces using netplan configuration.
+  ansible.builtin.include_tasks: interface/netplan.yml
+  when: '"netplan" in eseries_ip_base_manager_tools'
+
+- name: Install any Network Manager dispatcher hooks.
+  ansible.builtin.include_tasks: interface/hook/network_manager.yml
+  when: '"network_manager" in eseries_ip_base_manager_tools'

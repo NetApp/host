@@ -1,0 +1,48 @@
+- name: Determine network management tools
+  block:
+    - name: Get systemd services
+      ansible.builtin.service_facts:
+      become: true
+
+    - name: Determine whether netplan is installed.
+      ansible.builtin.command: command -v netplan
+      register: netplan
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Determine whether ifupdown or compatible tool is installed.
+      ansible.builtin.command: command -v ifup
+      register: ifupdown
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Populate eseries_ip_base_manager list.
+      ansible.builtin.set_fact:
+        eseries_ip_base_manager_tools: |-
+          {%- set managers = [] -%}
+          {%- if netplan["rc"] == 0 -%}
+            {%- if managers.append("netplan") -%}{%- endif -%}
+          {%- endif -%}
+          {%- if ifupdown["rc"] == 0 -%}
+            {%- if managers.append("ifupdown") -%}{%- endif -%}
+          {%- endif -%}
+          {%- if ansible_facts["services"]["NetworkManager.service"] is defined -%}
+            {%- if managers.append("network_manager") -%}{%- endif -%}
+          {%- endif -%}
+          {%- if ansible_facts["services"]["systemd-networkd.service"] is defined -%}
+            {%- if managers.append("networkd") -%}{%- endif -%}
+          {%- endif -%}
+          {{- managers -}}
+  when: eseries_ip_base_manager_tools is not defined
+
+- name: Verify Netplan and ifupdown are not both installed.
+  ansible.builtin.fail:
+    msg: "Netplan and ifupdown compatible tool are both installed! Remove the one you are not using or define eseries_ip_base_manager_tools to your inventory."
+  when: '"netplan" in eseries_ip_base_manager_tools and "ifupdown" in eseries_ip_base_manager_tools'
+
+- name: Verify NetworkManager and systemd-networkd are not both installed.
+  ansible.builtin.fail:
+    msg: "NetworkManager and systemd-networkd are both installed! Remove the one you are not using or define eseries_ip_base_manager_tools in you inventory."
+  when: '"network_manager" in eseries_ip_base_manager_tools and "networkd" in eseries_ip_base_manager_tools'

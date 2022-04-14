@@ -1,0 +1,23 @@
+# Managed by NetApp E-Series Ansible
+{% set family = ansible_os_family | lower %}
+{% set distro = (ansible_distribution | lower) ~ ansible_distribution_major_version %}
+{% set ifcfg_defaults = eseries_ip_base_interface_ifcfg_defaults[family][distro] | default(eseries_ip_base_interface_ifcfg_defaults[family]["default"]) %}
+{% set interface_definition = ifcfg_defaults | combine(eseries_ip_base_interface_defaults) | combine(eseries_ip_base_interface_common) | combine(item) %}
+
+{#- Template for RedHat and SUSE distributes #}
+{% if family in ["redhat", "suse"] %}
+{%    for key, value in interface_definition.items() if key not in eseries_ip_base_interface_ignore_keys %}
+{%      if not value | regex_search("__omit_place_holder__") %}
+{{ key | upper }}="{{ value }}"
+{%      endif %}
+{%    endfor %}
+
+{#- Template for Ubuntu distributions. #}
+{% elif family in ["debian"] %}
+{%    for key, value in interface_definition.items() if key not in eseries_ip_base_interface_ignore_keys %}
+{%      set key = key | lower %}
+{%      if not value | regex_search("__omit_place_holder__") %}
+{%        if not loop["first"] %}    {% endif %}{{ key | lower }} {{ value }}
+{%      endif %}
+{%    endfor %}
+{% endif %}

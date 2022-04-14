@@ -1,0 +1,27 @@
+- name: Unconfigure network interfaces
+  block:
+    - name: Determine the network manager (netplan, ifupdown, network_manager, networkd)
+      ansible.builtin.include_tasks: get_manager.yml
+
+    - name: Uninstall any Network Manager dispatcher hooks.
+      ansible.builtin.include_tasks: uninstall/interface/hook/network_manager.yml
+      when: '"network_manager" in eseries_ip_base_manager_tools'
+
+    - name: Remove network interfaces using ifupdown configuration.
+      ansible.builtin.include_tasks: uninstall/interface/ifupdown.yml
+      when: '"ifupdown" in eseries_ip_base_manager_tools'
+
+    - name: Remove network interfaces using netplan configuration.
+      ansible.builtin.include_tasks: uninstall/interface/netplan.yml
+      when: '"netplan" in eseries_ip_base_manager_tools'
+  when: eseries_ip_base_configure_network
+
+- name: Remove any firewall configuration.
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: interface/firewall_zone/uninstall.yml
+    apply:
+      vars:
+        eseries_common_firewall_zone: "{{ eseries_ip_base_firewall_zone }}"
+        eseries_common_interfaces: "{{ eseries_ip_base_interfaces }}"
+  when: eseries_ip_base_configure_firewall and eseries_ip_base_firewall_zone
