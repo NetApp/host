@@ -1,4 +1,11 @@
 eseries_ipoib_configure_network: true
+eseries_ipoib_configure_firewall: true
+
+eseries_ipoib_interface_type: InfiniBand
+eseries_ipoib_interface_common: {}
+eseries_ipoib_interface_defaults: {}
+eseries_ipoib_firewall_zone: ""
 eseries_ipoib_default_hook_templates: []  # Default List of hook templates to apply to all defined interfaces.
-eseries_connected_mode: false   # Connected mode is not supported after Mellanox ConnectX-4 and some newer Linux distributions do not support it.
-eseries_ipoib_network_manager_dispatcher_d: /etc/NetworkManager/dispatcher.d/
+eseries_ipoib_interface_ignore_keys:
+  - hook_template
+  - zone

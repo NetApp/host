@@ -1,11 +1,18 @@
-- name: Include operating specific variables.
-  include_vars: "{{ ansible_os_family | lower }}.yml"
-
-- name: Ensure InfiniBand iSER network interfaces are unconfigured.
-  include_tasks: uninstall/interface.yml
-  when: eseries_ipoib_configure_network
+- name: Unconfigure IPoIB interfaces, hooks and firewall configuration.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ip_base
+    tasks_from: uninstall.yml
+    apply:
+      vars:
+        eseries_ip_base_configure_network: "{{ eseries_ipoib_configure_network }}"
+        eseries_ip_base_configure_firewall: "{{ eseries_ipoib_configure_firewall }}"
+        eseries_ip_base_interface_type: "{{ eseries_ipoib_interface_type }}"
+        eseries_ip_base_interfaces: "{{ eseries_ipoib_interfaces }}"
+        eseries_ip_base_interface_common: "{{ eseries_ipoib_interface_common }}"
+        eseries_ip_base_firewall_zone: "{{ eseries_ipoib_firewall_zone }}"
+        eseries_ip_base_default_hook_templates: "{{ eseries_ipoib_default_hook_templates }}"
 
 - name: Ensure InfiniBand base has been uninstalled.
-  import_role:
-    name: ib_base
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib_base
     tasks_from: uninstall.yml
