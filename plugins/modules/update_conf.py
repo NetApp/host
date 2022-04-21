@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 ---
-module: update_conf
+module: netapp_eseries.host.update_conf
 short_description: Update configuration file
 description:
     - Update an existing configuration file with specified options.
@@ -21,6 +21,21 @@ options:
             - The configuration copy is important to keep the original defaults, so if an option is removed at a later time then the default will be known.
         type: str
         required: false
+    create_copy:
+        description:
+            - Whether to create a backup of the original when I(path) is provided.
+            - No copy will be made when I(src) is provided.
+        type: bool
+        required: false
+        default: true
+    copy_path:
+        description:
+            - Path where the backup configuration file should be placed.
+            - When I(copy_path) is specified then the original I(path) will be used as part of the name to avoid conflicts with slashes replaced with underscores.
+            - This is useful when all configuration files are read within the directory resulting in duplicate configuration files.
+        type: str
+        required: false
+        default: ""
     copy_extension:
         description: String that will be postpended to the I(path) file name.
         type: str
@@ -70,20 +85,32 @@ notes:
     - Configuration file with options that are not found will be placed at the end of the file within a comment block and a warning will be issued.
 """
 
-EXAMPLES = """
-- name: test update_conf module
-  netapp_eseries.host.update_conf:
-    path: /root/beegfs-mgmtd.conf
-    options: {connMgmtdPortTCP: 8008, connMgmtdPortUDP: 18008}
-    mode: "0644"
-  become: true
+RETURN = """
+msg:
+    description: Message describing what was changed.
+    returned: on success
+    type: str
+    sample: Configuration file changed.
+src:
+    description: Source of the configuration file.
+    returned: on success
+    type: str
+    sample: /etc/iscsi/.iscsid.conf.~original
+dest:
+    description: Destination of the configuration file.
+    returned: on success
+    type: str
+    sample: /etc/iscsi/iscsid.conf
+"""
 
-- name: test update_conf module
+EXAMPLES = """
+- name: Update iscsid.conf.
   netapp_eseries.host.update_conf:
-    src: /etc/beegfs/beegfs-mgmtd.conf
-    dest: /root/beegfs-mgmtd.conf
-    options: {connMgmtdPortTCP: 8008, connMgmtdPortUDP: 18008}
-    mode: "0644"
+    path: /etc/iscsi/iscsid.conf
+    options:
+      node.session.timeo.replacement_timeout: 20
+      node.session.queue_depth: 128
+      node.session.nr_sessions: 2
   become: true
 """
 
@@ -97,6 +124,8 @@ class UpdateConfigFile(object):
     def __init__(self):
         ansible_options = dict(
             path=dict(type="str", require=False),
+            create_copy=dict(type="bool", require=False, default=True),
+            copy_path=dict(type="str", required=False, default=""),
             copy_extension=dict(type="str", required=False, default=".~original"),
             src=dict(type="str", require=False),
             dest=dict(type="str", require=False),
@@ -115,9 +144,15 @@ class UpdateConfigFile(object):
         args = self.module.params
         if args["path"]:
             self.path = args["path"]
-            path_directory = dirname(args["path"])
-            path_filename = basename(args["path"])
-            self.src = path_directory + "/." + path_filename + args["copy_extension"]
+            if args["create_copy"]:
+                path_filename = re.sub("[\/]+", "_", args["path"])
+                if args["copy_path"]:
+                    self.path_directory = args["copy_path"]
+                else:
+                    self.path_directory = dirname(args["path"])
+                self.src = self.path_directory + "/." + path_filename + args["copy_extension"]
+            else:
+                self.src = args["path"]
             self.dest = args["path"]
         else:
             self.path = None
@@ -131,7 +166,9 @@ class UpdateConfigFile(object):
         self.block_message = args["block_message"]
 
         self.copy_lines_cached = None
-        self.update_required_cached = None
+        self.update_configuration_file_required_cached = None
+        self.update_mode_required_cached = None
+        self.create_source_copy_required_cache = None
 
     @property
     def updated_copy(self):
@@ -174,50 +211,65 @@ class UpdateConfigFile(object):
 
         return self.copy_lines_cached
 
-    def check_source(self):
-        """Ensure an original configuration file exists."""
-        if self.path is not None:
-            if not exists(self.path) and not isfile(self.path):
-                self.module.fail_json(msg="Invalid configuration path was provided! path: %s" % self.path)
+    @property
+    def create_source_copy_required(self):
+        """Check whether a copy of the source file needs to be created."""
+        if self.create_source_copy_required_cache is None:
 
-            # Create a read-only copy of source if path was provide and one didn't exist.
-            if not exists(self.src):
-                try:
-                    read_fh = open(self.path, "r")
-                    try:
-                        write_fh = open(self.src, "w")
-                        write_fh.writelines(read_fh.readlines())
-                        write_fh.close()
-                        chmod(self.src, int("0o%s" % self.mode, 8))
-                    except Exception as error:
-                        self.module.fail_json(msg="Failed to create copy of the original! Source: [%s]. Destination: [%s]. Error [%s]." % (self.src, self.dest, error))
-                except Exception as error:
-                    self.module.fail_json(msg="Failed to open source file! Source [%s]. Error [%s]." % (self.path, error))
+            self.create_source_copy_required_cache = False
+            if self.path is not None:
+                if not exists(self.path) and not isfile(self.path):
+                    self.module.fail_json(msg="Invalid configuration path was provided! path: %s" % self.path)
 
-        elif not exists(self.src) and not isfile(self.src):
-            self.module.fail_json(msg="Invalid configuration path was provided! src: %s" % self.src)
+                # Create a read-only copy of source if path was provide and one didn't exist.
+                if not exists(self.src):
+                    self.create_source_copy_required_cache = True
+
+            elif not exists(self.src) and not isfile(self.src):
+                self.module.fail_json(msg="Invalid configuration path was provided! src: %s" % self.src)
+
+        return self.create_source_copy_required_cache
 
     @property
-    def update_required(self):
+    def update_configuration_file_required(self):
         """Determine whether an update is required."""
-        if self.update_required_cached is None:
-            self.check_source()
-
-            self.update_required_cached = False
+        if self.update_configuration_file_required_cached is None:
+            self.update_configuration_file_required_cached = False
             if exists(self.dest):
                 with open(self.dest, "r") as fh:
-                    self.update_required_cached = self.updated_copy != fh.readlines()
-
-                if self.mode:
-                    mode = oct(stat(self.dest).st_mode)[-1 * len(self.mode):]
-                    if self.mode != mode:
-                        update_required_cached = True
+                    self.update_configuration_file_required_cached = self.updated_copy != fh.readlines()
             else:
-                self.update_required_cached = True
+                self.update_configuration_file_required_cached = True
 
-        return self.update_required_cached
+        return self.update_configuration_file_required_cached
 
-    def write_copy(self):
+    @property
+    def update_mode_required(self):
+        """Determine whether an update is required."""
+        if self.update_mode_required_cached is None:
+            self.update_mode_required_cached = False
+            if exists(self.dest) and self.mode:
+                mode = oct(stat(self.dest).st_mode)[-1 * len(self.mode):]
+                self.update_mode_required_cached = self.mode != mode
+            else:
+                self.update_mode_required_cached = False
+
+        return self.update_mode_required_cached
+
+    def create_source_copy(self):
+        """Create a copy of the original configuration file."""
+        try:
+            read_fh = open(self.path, "r")
+            try:
+                write_fh = open(self.src, "w")
+                write_fh.writelines(read_fh.readlines())
+                write_fh.close()
+            except Exception as error:
+                self.module.fail_json(msg="Failed to create copy of the original! Source: [%s]. Destination: [%s]. Error [%s]." % (self.src, self.dest, error))
+        except Exception as error:
+            self.module.fail_json(msg="Failed to open source file! Source [%s]. Error [%s]." % (self.path, error))
+
+    def update_configuration_file(self):
         """Write copy to the destination."""
         with open(self.dest, "w") as fh:
             fh.writelines(self.updated_copy)
@@ -225,12 +277,35 @@ class UpdateConfigFile(object):
         if self.mode:
             chmod(self.dest, int("0o%s" % self.mode, 8))
 
+    def update_mode(self):
+        """Change the configuration file's permissions."""
+        try:
+            chmod(self.dest, int("0o%s" % self.mode, 8))
+        except Exception as error:
+            self.module.fail_json(msg="Failed to change the configuration file permissions! File [%s]. Permission [%s]. Error [%s]." % (self.src, self.mode, error))
+
     def apply(self):
         """Determine and apply any required change to a copy of the source conf file."""
-        if self.update_required and not self.module.check_mode:
-            self.write_copy()
+        exit_message = "No changes required."
+        changed_required = False
+        if self.create_source_copy_required or self.update_configuration_file_required or self.update_mode_required:
+            changed_required = True
 
-        self.module.exit_json(changed=self.update_required)
+        if changed_required and not self.module.check_mode:
+            exit_message = ""
+            if self.create_source_copy_required:
+                self.create_source_copy()
+                exit_message = "Original source copied. "
+
+            if self.update_configuration_file_required:
+                self.update_configuration_file()
+                exit_message = exit_message + "Configuration file changed. "
+
+            if self.update_mode_required:
+                self.update_mode()
+                exit_message = exit_message + "Configuration file permissions changed."
+
+        self.module.exit_json(msg=exit_message, src=self.src, dest=self.dest, changed=changed_required)
 
 def main():
     update_conf = UpdateConfigFile()
