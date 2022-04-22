@@ -1,4 +1,5 @@
 eseries_nvme_ib_configure_network: true
+eseries_nvme_ib_configure_firewall: true
 eseries_nvme_ib_service_name: eseries_nvme_ib.service
 
 eseries_nvme_ib_daemon_name: eseries_nvme_ib_daemon
@@ -7,7 +8,16 @@ eseries_nvme_ib_daemon_path: /etc/nvme/
 eseries_nvme_ib_service_path: /etc/systemd/system/
 
 eseries_nvme_ib_port: 4420
-eseries_nvme_ib_mtu: 65520
 eseries_nvme_ib_queue_depth: 1024
 eseries_nvme_ib_controller_loss_timeout: 3600
 eseries_nvme_ib_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
+
+eseries_nvme_ib_interface_common: {}
+eseries_nvme_ib_interface_defaults:
+  mtu: 65520
+
+eseries_nvme_ib_firewall_zone: ""
+eseries_nvme_ib_default_hook_templates: []
+eseries_nvme_ib_interface_ignore_keys:
+  - hook_template
+  - zone
