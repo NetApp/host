@@ -36,6 +36,9 @@ connect_storage() {
   storage_name=$2
   storage_nqn=$3
   storage_address=$4
+  port=$5
+  queue_depth=$6
+  controller_loss_timeout=$7
 
   # Check whether storage has been connected through port.
   if ! (is_storage_port_connected $storage_nqn $storage_address); then
@@ -46,8 +49,8 @@ connect_storage() {
       echo "Failed! $storage_address not reachable."
 
     # Discover and connect to storage via port address.
-    elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=4420 --hostnqn=$host_nqn > /dev/null 2>&1; then
-      if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=1024 --ctrl-loss-tmo=3600 > /dev/null 2>&1; then
+    elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=$port --hostnqn=$host_nqn > /dev/null 2>&1; then
+      if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=$queue_depth --ctrl-loss-tmo=$controller_loss_timeout > /dev/null 2>&1; then
         sleep 1
         trigger_udev_device_rules $storage_nqn $storage_address
         echo "Connected."
@@ -90,7 +93,7 @@ start() {
     # Connect to all known E-Series storage system(s).
     while read -r line; do
       connect_storage $host_nqn $line &
-    done < /etc/nvme/eseries_nvme_ib_connections.conf
+    done < /etc/nvme/eseries_nvme_ib_connections.conf | grep "^ *[^#]"
 
     # Wait for all tasks to complete.
     wait

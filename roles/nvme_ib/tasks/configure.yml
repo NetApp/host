@@ -24,9 +24,9 @@
                 {%- if targets.update({volume["ansible_array_name"] ~ ":" ~ host_port_information["interface_reference"]: {
                         "array_name": volume["ansible_array_name"],
                         "address": host_port_information["ipv4"]["address"],
-                        "port": eseries_nvme_ib_port,
+                        "port": interface_info["port"] | default(eseries_nvme_ib_port),
                         "queue_depth": interface_info["queue_depth"] | default(eseries_nvme_ib_queue_depth),
-                        "controller_loss_timeout": eseries_nvme_ib_controller_loss_timeout,
+                        "controller_loss_timeout": interface_info["controller_loss_timeout"] | default(eseries_nvme_ib_controller_loss_timeout),
                         "hostnqn": hostnqn_output["stdout"],
                         "nqn": host_port_information["nqn"] }}) -%}{%- endif -%}
               {%- endif -%}
