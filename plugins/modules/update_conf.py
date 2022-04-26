@@ -65,7 +65,7 @@ options:
             - Must return three groups in the format "^(option)(equivalence)(value)$.
         type: str
         required: false
-        default: "^([A-Za-z0-9_-]+)( *= *)(.*)$"
+        default: "^#? ?([A-Za-z0-9._-]+)( *= *)(.*)$"
     padding:
         description: Ensures there's padding after the equivalence.
         type: bool
@@ -77,7 +77,7 @@ options:
         default: "#"
     mode:
         description:
-            - Permissions for the destination and backup configuration files.
+            - The permissions the destination and backup configuration files should have.
             - The permissions must be in octal number form ("0644", "644"). Be sure to place these in quotes to avoid unintended integer conversion.
             - When not specified, the file permissions will be determined by the operating system defaults.
         type: str
@@ -193,7 +193,7 @@ class UpdateConfigFile(object):
                     self.path_directory = dirname(self.source)
                 self.backup_source = self.path_directory + "/" + backup_filename
             else:
-                self.backup_source = self.source
+                self.backup_source = None
         else:
             self.source = abspath(args["src"])
             self.destination = args["dest"]
