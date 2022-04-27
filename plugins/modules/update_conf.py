@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# (c) 2021, NetApp, Inc
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# (c) 2022, NetApp, Inc
+# License: BSD-3-Clause
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
@@ -24,17 +24,21 @@ options:
     backup_original:
         description:
             - Whether to create a backup of the original configuration file when I(path) is provided.
-            - When I(backup_original==False) and I(path) is specified then there will be no source for the original configuration defaults; so when an option
-              is removed from I(options) it will remain the same rather than reverting to its original value.
+            - When I(backup_original==False) and I(path) is specified then there will be no source for the original
+              configuration defaults; so when an option is removed from I(options) it will remain the same rather than
+              reverting to its original value.
             - No backup will be made when I(src) is provided.
+            - I(insert_block_comments==True) option can be used in conjunction or as an alternative to backup_original.
         type: bool
         required: false
         default: true
     backup_path:
         description:
             - Path where the backup configuration file should be placed.
-            - When I(backup_path) is specified then the original configuration file, I(path), will be used as part of the name to avoid conflicts with slashes replaced with underscores.
-            - This is useful when all configuration files are read within the directory resulting in duplicate configuration files.
+            - When I(backup_path) is specified then the original configuration file, I(path), will be used as part of
+              the name to avoid conflicts with slashes replaced with underscores.
+            - This is useful when all configuration files are read within the directory resulting in duplicate
+              configuration files.
         type: str
         required: false
     backup_extension:
@@ -71,22 +75,25 @@ options:
         type: bool
         require: false
     comment_start:
-        description: String that begins a comment line.
+        description: Character that is used to indicate a line should be skipped or ignored.
         type: str
         required: false
         default: "#"
     mode:
         description:
             - The permissions the destination and backup configuration files should have.
-            - The permissions must be in octal number form ("0644", "644"). Be sure to place these in quotes to avoid unintended integer conversion.
+            - The permissions must be in octal number form ("0644", "644"). Be sure to place these in quotes to avoid
+              unintended integer conversion.
             - When not specified, the file permissions will be determined by the operating system defaults.
         type: str
         required: false
     block_message:
-        description: The message on the begin and end marker lines within the configuration file for options that were not found.
+        description:
+            - The message on the begin and end marker lines within the configuration file for options that were not
+              found.
         type: str
         required: false
-        default: ANSIBLE MANAGED BLOCK
+        default: ANSIBLE NETAPP_ESERIES.HOST.UPDATE_CONF MANAGED BLOCK
     insert_block_comments:
         description: Whether to wrap options that are undefined in the source configuration file within comment blocks.
         type: bool
@@ -100,8 +107,9 @@ options:
         description:
             - Where to insert options that are undefined in the source configuration file.
             - I(insert=="before") and I(insert=="after") requires I(insert_pattern) to be defined.
-            - If I(insert=="skip") then any option that was undefined in the source configuration file will not be appended.
-            - A warning is issued whenever option(s) are specified that are not defined in the source configuration file.
+            - If I(insert=="skip") then any option that was undefined in the source configuration file will not be
+              appended.
+            - Warning is issued whenever option(s) are specified that are not defined in the source configuration file.
         type: str
         default: end
         choices:
@@ -111,7 +119,8 @@ options:
             - after
             - skip
 notes:
-    - Configuration file with options that are not found will be placed at the end of the file within a comment block and a warning will be issued.
+    - Configuration file with options that are not found will be placed at the end of the file within a comment block
+      and a warning will be issued.
 """
 
 RETURN = """
@@ -121,7 +130,7 @@ msg:
     type: str
     sample: Configuration file changed.
 source:
-    description: Source of the configuration file or the default copy created by this module.
+    description: Source of the configuration file.
     returned: on success
     type: str
     sample: /etc/iscsi/iscsid.conf
@@ -168,10 +177,12 @@ class UpdateConfigFile(object):
             padding=dict(type="bool", required=False, default=True),
             comment_start=dict(type="str", required=False, default="#"),
             mode=dict(type="str", required=False),
-            block_message=dict(type="str", required=False, default="ANSIBLE MANAGED BLOCK"),
+            block_message=dict(type="str", required=False,
+                               default="ANSIBLE NETAPP_ESERIES.HOST.UPDATE_CONF MANAGED BLOCK"),
             insert_block_comments=dict(type="bool", required=False, default=True),
             insert_pattern=dict(type="str", required=False),
-            insert=dict(type="str", required=False, choices=["beginning", "end", "before", "after", "skip"], default="end")
+            insert=dict(type="str", required=False, choices=["beginning", "end", "before", "after", "skip"],
+                        default="end")
         )
         self.module = AnsibleModule(argument_spec=ansible_options,
                                     mutually_exclusive=[["path", "src"]],
@@ -227,7 +238,7 @@ class UpdateConfigFile(object):
             comment_block_end_index = None
             insert_index = None
 
-            source = self.backup_source if self.backup_source is not None else self.source
+            source = self.backup_source or self.source
             with open(source, "r") as fh:
                 self.copy_lines_cached = fh.readlines()
 
@@ -235,7 +246,7 @@ class UpdateConfigFile(object):
             comment_section = False
             for index, line in enumerate(self.copy_lines_cached):
 
-                # Skip comment session to address any options that are not expected later.
+                # Skip comment section to address any options that are not expected later.
                 if line == comment_begin:
                     comment_section = True
                     comment_block_begin_index = index
@@ -253,9 +264,11 @@ class UpdateConfigFile(object):
                     if option in options:
                         options_applied.append(option)
                         if self.padding:
-                            self.copy_lines_cached[index] = "%s%s %s\n" % (option, equivalence.rstrip(" "), str(self.options.pop(option)))
+                            self.copy_lines_cached[index] = "%s%s %s\n" % (option, equivalence.rstrip(" "),
+                                                                           str(self.options.pop(option)))
                         else:
-                            self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence, str(self.options.pop(option)))
+                            self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence,
+                                                                          str(self.options.pop(option)))
 
                     # Comment out any expected options that have already been set previously to prevent duplicates
                     elif not re.search("^%s" % self.comment_start, line) and option in options_applied:
@@ -268,7 +281,8 @@ class UpdateConfigFile(object):
 
             # Check for whether any options were not used. If so, insert them into a comment block and issue a warning.
             if self.options:
-                self.module.warn("Warning! Option(s) were not found and have been placed within a comment block at the end of the configuration file. Option(s) not found: [%s]" % ", ".join(self.options))
+                self.module.warn("Warning! Option(s) were not found and have been placed within a comment block at the"
+                                 " end of the configuration file. Option(s) not found: [%s]" % ", ".join(self.options))
 
                 if self.insert != "skip":
 
@@ -333,13 +347,13 @@ class UpdateConfigFile(object):
             if self.mode:
                 if exists(self.destination):
                     source_mode = oct(stat(self.destination).st_mode)[-1 * len(self.mode):]
-                elif exists(self.source):
+                else:
                     source_mode = oct(stat(self.source).st_mode)[-1 * len(self.mode):]
+                self.update_mode_required_cached = self.mode != source_mode
 
                 if self.backup_source is not None and exists(self.backup_source):
                     backup_mode = oct(stat(self.backup_source).st_mode)[-1 * len(self.mode):]
-
-                self.update_mode_required_cached = self.mode != source_mode or self.mode != backup_mode
+                    self.update_mode_required_cached = self.update_mode_required_cached or self.mode != backup_mode
 
         return self.update_mode_required_cached
 
@@ -355,9 +369,12 @@ class UpdateConfigFile(object):
                 if self.mode:
                     chmod(self.backup_source, int("0o%s" % self.mode, 8))
             except Exception as error:
-                self.module.fail_json(msg="Failed to create default copy of the original configuration file! Source: [%s]. Destination: [%s]. Error [%s]." % (self.source, self.backup_source, error))
+                self.module.fail_json(msg="Failed to create default copy of the original configuration file!"
+                                          " Source: [%s]. Destination: [%s]."
+                                          " Error [%s]." % (self.source, self.backup_source, error))
         except Exception as error:
-            self.module.fail_json(msg="Failed to open source configuration file! Source [%s]. Error [%s]." % (self.path, error))
+            self.module.fail_json(msg="Failed to open source configuration file! Source [%s]."
+                                      " Error [%s]." % (self.path, error))
 
     def update_configuration_file(self):
         """Write copy to the destination."""
@@ -369,7 +386,8 @@ class UpdateConfigFile(object):
             if self.mode:
                 chmod(self.destination, int("0o%s" % self.mode, 8))
         except Exception as error:
-            self.module.fail_json(msg="Failed to write configuration file! Destination [%s]. Error [%s]." % (self.destination, error))
+            self.module.fail_json(msg="Failed to write configuration file! Destination [%s]."
+                                      " Error [%s]." % (self.destination, error))
 
     def update_mode(self):
         """Change the configuration file's permissions."""
@@ -377,7 +395,8 @@ class UpdateConfigFile(object):
             chmod(self.destination, int("0o%s" % self.mode, 8))
             chmod(self.backup_source, int("0o%s" % self.mode, 8))
         except Exception as error:
-            self.module.fail_json(msg="Failed to change the configuration file permissions! File [%s]. Permission [%s]. Error [%s]." % (self.source, self.mode, error))
+            self.module.fail_json(msg="Failed to change the configuration file permissions! File [%s]."
+                                      " Permission [%s]. Error [%s]." % (self.source, self.mode, error))
 
     def apply(self):
         """Determine and apply any required change to a copy of the source conf file."""
@@ -387,7 +406,8 @@ class UpdateConfigFile(object):
         if not exists(self.source) or not isfile(self.source):
             self.module.fail_json(msg="Invalid configuration path was provided! Source [%s]." % self.source)
 
-        if self.backup_original_source_required or self.update_configuration_file_required or self.update_mode_required:
+        if (self.backup_original_source_required or self.update_configuration_file_required or
+             self.update_mode_required):
             changed_required = True
 
         if changed_required and not self.module.check_mode:
@@ -404,7 +424,8 @@ class UpdateConfigFile(object):
                 self.update_mode()
                 exit_message = exit_message + "Configuration file permissions were changed."
 
-        self.module.exit_json(msg=exit_message, source=self.source, backup=self.backup_source, destination=self.destination, changed=changed_required)
+        self.module.exit_json(msg=exit_message, source=self.source, backup=self.backup_source,
+                              destination=self.destination, changed=changed_required)
 
 def main():
     update_conf = UpdateConfigFile()
