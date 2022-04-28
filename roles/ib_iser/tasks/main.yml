@@ -9,6 +9,7 @@
     tasks_from: configure/iscsi.yml
     apply:
       vars:
+        eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
         eseries_iscsi_iscsid_conf_options: "{{ eseries_ib_iser_iscsid_conf_options }}"
         eseries_iscsi_iscsid_conf_group_options: "{{ eseries_ib_iser_iscsid_conf_group_options }}"
         eseries_iscsi_iscsid_conf_default_options: "{{ eseries_ib_iser_iscsid_conf_default_options }}"
