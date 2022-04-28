@@ -185,6 +185,7 @@ class UpdateConfigFile(object):
                         default="end")
         )
         self.module = AnsibleModule(argument_spec=ansible_options,
+                                    required_one_of=[["path", "src"]],
                                     mutually_exclusive=[["path", "src"]],
                                     required_together=[["src", "dest"]],
                                     required_if=[["insert", "before", ["insert_pattern"]],
