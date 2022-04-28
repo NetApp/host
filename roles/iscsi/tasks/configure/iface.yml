@@ -1,7 +1,7 @@
 - name: Include operating specific variables.
   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/configure/iface.yml"
 
-- name: Ensure that they're is at least one iSCSI interface to configure.
+- name: Ensure that there is at least one iSCSI interface to configure.
   ansible.builtin.fail:
     msg: "There are no usable iSCSI interfaces found! Check host inventory."
   when: eseries_iscsi_interfaces | length == 0
@@ -56,5 +56,3 @@
         {%- if interfaces.append(iface["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {{- interfaces -}}
-
-# TODO: Changes will not be applied unless sessions are started for the first time. Should we do anything to reload changes???

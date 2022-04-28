@@ -124,9 +124,8 @@
   changed_when: false
   failed_when: false
 
-
-# TODO: Logout of sessions when sessions are no longer needed or changes are needed to update iface or target node definitions.
-
+# Jira Issue: ESOLA-211
+#    Logout of sessions when sessions are no longer needed or changes are needed to update iface or target node definitions.
 
 - name: Login of sessions.
   ansible.builtin.command: "{{ item }}"

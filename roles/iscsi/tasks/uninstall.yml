@@ -1,7 +1,7 @@
 - name: Ensure iSCSI packages are uninstalled.
   ansible.builtin.import_tasks: uninstall/package.yml
 
-- name: Ensure iSCSI is unconfigure.
+- name: Ensure iSCSI is unconfigured.
   ansible.builtin.import_tasks: uninstall/configure.yml
 
 - name: Unconfigure IPoIB interfaces, hooks and firewall configuration.
