@@ -79,10 +79,10 @@ configure_kernel() {
   arp_ignore=$4
   rp_filter=$5
 
-  sysctl -w net.ipv4.conf.$interface.arp_announce=$arp_announce
-  sysctl -w net.ipv4.conf.$interface.arp_filter=$arp_filter
-  sysctl -w net.ipv4.conf.$interface.arp_ignore=$arp_ignore
-  sysctl -w net.ipv4.conf.$interface.rp_filter=$rp_filter
+  sysctl -qw net.ipv4.conf.$interface.arp_announce=$arp_announce
+  sysctl -qw net.ipv4.conf.$interface.arp_filter=$arp_filter
+  sysctl -qw net.ipv4.conf.$interface.arp_ignore=$arp_ignore
+  sysctl -qw net.ipv4.conf.$interface.rp_filter=$rp_filter
 }
 
 rt_tables=/etc/iproute2/rt_tables
