@@ -6,14 +6,6 @@
   loop: "{{ eseries_ip_base_interfaces }}"
   become: true
 
-- name: Flush ethernet interface.
-  ansible.builtin.command: ip address flush dev {{ item["name"] }}
-  register: ip_flush
-  changed_when: ip_flush['rc'] != 0
-  failed_when: false
-  loop: "{{ eseries_ip_base_interfaces }}"
-  become: true
-
 - name: Apply changes to Netplan
   ansible.builtin.command:
     cmd: netplan apply

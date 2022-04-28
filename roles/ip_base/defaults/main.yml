@@ -3,20 +3,23 @@ eseries_ip_base_configure_firewall: true
 
 eseries_ip_base_network_manager_dispatcher_d: /etc/NetworkManager/dispatcher.d/
 eseries_ip_base_netplan_path: /etc/netplan/
-#eseries_ip_base_ifcfg_path:  # This path is different depending on the OS distribution so it is defined in var/<os_family>.yml
+#eseries_ip_base_ifupdown_path:  # This path is different depending on the OS distribution so it is defined in var/<os_family>.yml
 
 eseries_ip_base_firewall_zone: ""
 eseries_ip_base_default_hook_templates: []
 eseries_ip_base_interface_common: {}
 eseries_ip_base_interface_defaults: {}
-eseries_ip_base_interface_required_keys: # Anything specified in eseries_ip_base_interfaces not in this list will be added directly to ifcfg or netplan files.
+
+# Anything specified in eseries_ip_base_interfaces not in eseries_ip_base_interface_required_keys or eseries_ip_base_interface_ignore_keys
+#   will be added directly to ifupdown or netplan files.
+eseries_ip_base_interface_required_keys:
   - name
   - address
 eseries_ip_base_interface_ignore_keys:
   - hook_templates
   - zone
 eseries_ip_base_interface_type: Ethernet
-eseries_ip_base_interface_ifcfg_defaults: # Be sure to quote values that will be converted into a boolean value (on, off, yes, no, etc.) otherwise they will be converted into True/False.
+eseries_ip_base_interface_ifupdown_defaults: # Be sure to quote values that will be converted into a boolean value (on, off, yes, no, etc.) otherwise they will be converted into True/False.
   redhat:
     redhat7: &redhat7
       type: "{{ item['type'] | default(eseries_ip_base_interface_type) }}"

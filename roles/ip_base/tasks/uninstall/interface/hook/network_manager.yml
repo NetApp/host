@@ -25,7 +25,6 @@
   register: hook_templates_stats
   loop: "{{ hook_templates }}"
 
-# Ensure hooks are brought down and removed.
 - name: Send down action to existing Network Manager dispatcher hooks.
   ansible.builtin.command: "{{ item }}"
   loop: '{{ hook_commands }}'
@@ -50,7 +49,7 @@
       {%- endfor -%}
       {{- hook_commands -}}
 
-- name: Create Network Manager dispatcher hooks.
+- name: Delete Network Manager dispatcher hooks.
   ansible.builtin.file:
     state: absent
     path: "{{ eseries_ip_base_network_manager_dispatcher_d }}{{ item['filename'] }}"

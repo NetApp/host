@@ -4,9 +4,9 @@
 - name: Configure expected interfaces.
   ansible.builtin.template:
     backup: true
-    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'ifcfg.j2') }}"
-    dest: "{{ eseries_ip_base_ifcfg_path }}ifcfg-{{ item['name'] }}"
-  register: ifcfg
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'ifupdown.j2') }}"
+    dest: "{{ eseries_ip_base_ifupdown_path }}ifcfg-{{ item['name'] }}"
+  register: ifupdown
   loop: "{{ eseries_ip_base_interfaces }}"
   become: true
 
@@ -26,7 +26,7 @@
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
-      {%- for result in ifcfg["results"] if result["changed"] -%}
+      {%- for result in ifupdown["results"] if result["changed"] -%}
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {%- for result in link_info["results"] if "state UP" not in result["stdout"] -%}

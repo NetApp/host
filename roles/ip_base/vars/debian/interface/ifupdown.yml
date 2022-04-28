@@ -1,1 +1,1 @@
-eseries_ip_base_ifcfg_path: /etc/network/interfaces.d/
+eseries_ip_base_ifupdown_path: /etc/network/interfaces.d/

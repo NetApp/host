@@ -1,1 +1,1 @@
-eseries_ip_base_ifcfg_path: /etc/sysconfig/network-scripts/
+eseries_ip_base_ifupdown_path: /etc/sysconfig/network-scripts/

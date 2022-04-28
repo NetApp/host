@@ -8,8 +8,8 @@
         hook_templates:                      # List of hook templates for Network Manager dispatcher (interface definition will be accessible through
                                              #   the item["interface"] dictionary within the hook templates).
         zone:                                # Firewall zone. If the zone does not exist then it will be created. (Note: Only implemented for firewalld)
-        (...)                                # Add any valid key-value pair for the expected Netplan or ifcfg-x configuration files.
-    eseries_ip_base_interface_common:        # Dictionary containing any common valid key-value pair for Netplan or ifcfg-x configuration files. Be
+        (...)                                # Add any valid key-value pair for the expected Netplan or ifupdown configuration files.
+    eseries_ip_base_interface_common:        # Dictionary containing any common valid key-value pair for Netplan or ifupdown configuration files. Be
                                              #   sure to quote values that will be converted into a boolean value (on, off, yes, no, etc.) otherwise
                                              #   they will be converted into True/False.
     eseries_ip_base_configure_network:       # Whether to configure network interfaces. Choices: true, false (Default: true)
@@ -17,7 +17,7 @@
     eseries_ip_base_manager_tools:           # List of network manager tools that are being used. Only required if Netplan and an ifupdown compatible
                                              #   tool are both installed or NetworkManager and systemd-networkd are both installed.
                                              #   Choices: [netplan/ifupdown, network_manager/networkd]
-    eseries_ip_base_interface_type:          # Interface type as defined for ifcfg-x files. Default: Ethernet
+    eseries_ip_base_interface_type:          # Interface type as defined for ifupdown files. Default: Ethernet
     eseries_ip_base_default_hook_templates:  # Default list of hook templates for Network Manager dispatcher (interface definition will be accessible through
                                              #    the interface variable within the hook templates).
 

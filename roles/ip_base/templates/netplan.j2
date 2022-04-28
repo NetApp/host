@@ -8,9 +8,9 @@ network:
       addresses:
         - {{ item["address"] }}
 {# Output any additions from eseries_ip_base_interface_common or eseries_ip_base_interfaces list item #}
-{% for key, value in interface_definition.items() if key not in eseries_ip_base_interface_ignore_keys  %}
-{% set key = key | lower %}
-{%   if key not in eseries_ip_base_interface_required_keys %}
+{% for key, value in interface_definition.items() %}
+{%   set key = key | lower %}
+{%   if key not in eseries_ip_base_interface_ignore_keys and key not in eseries_ip_base_interface_required_keys %}
 {%     if key == "gateway" %}
 {%       if value | ansible.netcommon.ipv4 %}
       gateway4: {{ value }}
