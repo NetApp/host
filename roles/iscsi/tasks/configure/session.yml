@@ -83,8 +83,10 @@
     path: "{{ item['target_node_path'] }}"
     options: "{{ item['node'] }}"
     mode: "0600"
-    pattern: "^([A-Za-z0-9_.-]+)( *= *)(.*)$"
-    copy_path: "{{ eseries_iscsi_conf_path }}"
+    backup_path: "{{ eseries_iscsi_conf_path }}"
+    insert_block_comments: false
+    insert_pattern: "# END RECORD"
+    insert: before
   register: target_node
   loop: "{{ targets }}"
 

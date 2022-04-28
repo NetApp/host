@@ -37,8 +37,10 @@
                            "iface.initiatorname": iscsi_iqn["stdout"],
                            "iface.iscsi_ifacename": item["name"]}) -}}
     mode: "0600"
-    pattern: "^([A-Za-z0-9_.-]+)( *= *)(.*)$"
-    copy_path: "{{ eseries_iscsi_conf_path }}"
+    backup_path: "{{ eseries_iscsi_conf_path }}"
+    insert_block_comments: false
+    insert_pattern: "# END RECORD"
+    insert: before
   register: ifaces
   loop: "{{ eseries_iscsi_interfaces }}"
   become: true

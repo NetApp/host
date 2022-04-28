@@ -17,7 +17,6 @@
     path: "{{ eseries_iscsi_conf_path }}iscsid.conf"
     options: "{{ eseries_iscsi_iscsid_conf_default_options | combine(eseries_iscsi_node_settings | default({})) | combine(eseries_iscsi_iscsid_conf_group_options) | combine(eseries_iscsi_iscsid_conf_options) }}"
     mode: "0600"
-    pattern: "^#?([A-Za-z0-9_.-]+)( *= *)(.*)$"
   register: iscsid_conf
 
 - name: Start iscsid.service.
