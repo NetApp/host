@@ -2,9 +2,9 @@
     Ensure NVMe RoCE is configured on host.
 
 ## Role Variables
-    eseries_nvme_roce_configure_network:         # Whether to configure iSCSI network interfaces. Choices: true, false (Default: true)
-    eseries_nvme_roce_configure_firewall:        # Whether to configure firewall. Choices true, false (Default: true)
-    eseries_nvme_roce_interfaces:                # (Required) List of IP-based interfaces.
+    eseries_roce_configure_network:         # Whether to configure iSCSI network interfaces. Choices: true, false (Default: true)
+    eseries_roce_configure_firewall:        # Whether to configure firewall. Choices true, false (Default: true)
+    eseries_roce_interfaces:                # (Required) List of IP-based interfaces.
       - name:                                    # (Required) Name of interface (i.e. ib0, eth0, em1, ens160).
         address:                                 # (Required) IPv4 address. Use the format 192.0.2.24/24.
         hook_templates:                          # List of hook templates for Network Manager dispatcher (interface definition will be accessible through
@@ -12,15 +12,16 @@
         zone:                                    # Firewall zone. If the zone does not exist then it will be created. (Note: Only implemented for firewalld)
         (...)                                    # Add any valid key-value pair for the expected Netplan or ifcfg-x configuration files. Be sure to quote recognized
                                                  #   boolean values (on, off, yes, no, etc.) otherwise they will be converted into True/False.
-
-        mstconfig:                               # Dictionary containing key-value options for mstconfig to apply to interface.
-    eseries_nvme_roce_default_hook_templates:    # Default list of hook templates for Network Manager dispatcher (interface definition will be accessible through
+        iface:                                   # Dictionary defining additional interface information for open-iscsi (<iscsi_dir>/iface/<interface>).
+        node:                                    # Dictionary defining additional targets information for open-iscsi (<iscsi_dir>/nodes/<target_iqn>/<address>,<port>,[0-9]+/<interface>).
+                                                 #   Look at /etc/iscsi/iscsid.conf for options.
+    eseries_roce_default_hook_templates:    # Default list of hook templates for Network Manager dispatcher (interface definition will be accessible through
                                                  #    the interface variable within the hook templates).
-    eseries_nvme_roce_firewall_zone:             # Default firewall zone. (Note: Only implemented for firewalld)
-    eseries_nvme_roce_nqn:                       # Host NVMe qualified name.
+    eseries_roce_firewall_zone:             # Default firewall zone. (Note: Only implemented for firewalld)
+    eseries_roce_nqn:                       # Host NVMe qualified name.
 
 ## Notes
-    WARNING! Role will configure the specified network interfaces unless eseries_nvme_roce_configure_network is set to false.
+    WARNING! Role will configure the specified network interfaces unless eseries_roce_configure_network is set to false.
 
 ## License
     BSD-3-Clause
