@@ -70,6 +70,13 @@ options:
         type: str
         required: false
         default: "^#? ?([A-Za-z0-9._-]+)( *= *)(.*)$"
+    equivalence_characters:
+        description:
+            - String containing all the possible equivalence characters that will be allowed in the equivalence group
+              in I(pattern).
+        type: str
+        required: false
+        default: "=:"
     padding:
         description: Ensures there's padding after the equivalence.
         type: bool
@@ -167,7 +174,6 @@ from os.path import exists, isfile, abspath, basename, dirname
 from os import chmod, stat
 
 class UpdateConfigFile(object):
-    VALID_EQUIVALENCE_CHARACTERS = "=:"  # String containing all valid equivalence characters
     def __init__(self):
         ansible_options = dict(
             path=dict(type="str", require=False),
@@ -179,6 +185,7 @@ class UpdateConfigFile(object):
             options=dict(type="dict", required=False, default={}),
             pattern=dict(type="str", required=False, default="^#? ?([A-Za-z0-9._-]+)( *= *)(.*)$"),
             padding=dict(type="bool", required=False, default=True),
+            equivalence_characters=dict(type="str", required=False, default="=:"),
             comment_start=dict(type="str", required=False, default="#"),
             mode=dict(type="str", required=False),
             block_message=dict(type="str", required=False,
@@ -219,7 +226,7 @@ class UpdateConfigFile(object):
 
         # Validate pattern and determine expected equivalence character.
         self.pattern = args["pattern"]
-        pattern_results = re.search("^(\^.*)(\(.+\))(\(.?[\*\+\?]?)([%s]+)(.?[\*\+\?]?)\)(\(.+\))(\$)$" % self.VALID_EQUIVALENCE_CHARACTERS, self.pattern)
+        pattern_results = re.search("^(\^.*)(\(.+\))(\(.?[\*\+\?]?)([%s]+)(.?[\*\+\?]?)\)(\(.+\))(\$)$" % args["equivalence_characters"], self.pattern)
         if pattern_results:
             pattern_parts = list(pattern_results.groups())
             self.equivalence_character = pattern_parts[3]
