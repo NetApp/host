@@ -100,7 +100,10 @@ options:
         required: false
         default: true
     insert_pattern:
-        description: String or regular expression that is used to determine the line to insert before or after.
+        description:
+            - String or regular expression that is used to determine the line to insert before or after.
+            - If the pattern fails to locate a line in the configuration file then any unspecified options will be
+              placed at the end of the file.
         type: str
         required: false
     insert:
@@ -164,6 +167,7 @@ from os.path import exists, isfile, abspath, basename, dirname
 from os import chmod, stat
 
 class UpdateConfigFile(object):
+    VALID_EQUIVALENCE_CHARACTERS = "=:"  # String containing all valid equivalence characters
     def __init__(self):
         ansible_options = dict(
             path=dict(type="str", require=False),
@@ -212,7 +216,16 @@ class UpdateConfigFile(object):
             self.backup_source = None
 
         self.options = args["options"]
+
+        # Validate pattern and determine expected equivalence character.
         self.pattern = args["pattern"]
+        pattern_results = re.search("^(\^.*)(\(.+\))(\(.?[\*\+\?]?)([%s]+)(.?[\*\+\?]?)\)(\(.+\))(\$)$" % self.VALID_EQUIVALENCE_CHARACTERS, self.pattern)
+        if pattern_results:
+            pattern_parts = list(pattern_results.groups())
+            self.equivalence_character = pattern_parts[3]
+        else:
+            self.module.fail_json(msg="Invalid pattern argument! Must return three groups in the format '^(option)(equivalence)(value)$'. Pattern [%s]." % self.pattern)
+
         self.padding = args["padding"]
         self.comment_start = args["comment_start"]
         self.mode = args["mode"]
@@ -292,6 +305,10 @@ class UpdateConfigFile(object):
                         for index, line in enumerate(self.copy_lines_cached):
                             if re.search(self.insert_pattern, line):
                                 insert_index = index if self.insert == "before" else index + 1
+                                break
+                        else:
+                            insert_index = len(self.copy_lines_cached) + 1
+                            self.module.warn("insert_index: %s" % insert_index)
                     elif self.insert == "beginning":
                         insert_index = 0
                     else:
@@ -304,9 +321,9 @@ class UpdateConfigFile(object):
 
                     for option, value in self.options.items():
                         if self.padding:
-                            self.copy_lines_cached.insert(insert_index, "%s = %s\n" % (option, value))
+                            self.copy_lines_cached.insert(insert_index, "%s %s %s\n" % (option, self.equivalence_character, value))
                         else:
-                            self.copy_lines_cached.insert(insert_index, "%s=%s\n" % (option, value))
+                            self.copy_lines_cached.insert(insert_index, "%s%s%s\n" % (option, self.equivalence_character, value))
                         insert_index += 1
 
                     if self.insert_block_comments:
