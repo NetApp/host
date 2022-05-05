@@ -1,7 +1,7 @@
 # Note: The when condition is evaluated for each sub-task and find_path.yml sets the conditional values.
 #         So, find_path.yml can cause sub-tasks to be skipped and is expected behavior.
 - name: Scan for all mapped volumes.
-  include_tasks: volume_facts.yml
+  ansible.builtin.include_tasks: volume_facts.yml
   when: initiator_volume_facts is not defined
 
 - name: Determine whether multipath is installed.
@@ -14,29 +14,30 @@
 - name: Discover multipath devices.
   block:
     - name: Scan for all mapped volumes.
-      include_tasks: host_facts/find_path.yml
+      ansible.builtin.include_tasks: host_facts/find_path.yml
 
     - name: Force a rescue when volumes are not available.
       block:
         - name: Volumes are not available...Rescanning SCSI buses.
-          include_tasks: host_facts/rescue/rescan_scsi_bus.yml
+          ansible.builtin.include_tasks: host_facts/rescue/rescan_scsi_bus.yml
           when: "'rescan_scsi_bus' in rescan_actions"
 
         - name: Rescan for all mapped volume paths.
-          include_tasks: host_facts/find_path.yml
+          ansible.builtin.include_tasks: host_facts/find_path.yml
 
         - name: Volumes are not available...Rebooting.
-          include_tasks: host_facts/rescue/reboot.yml
-          when: eseries_common_allow_host_reboot == True
+          ansible.builtin.include_tasks: reboot.yml
+          vars:
+            eseries_common_allow_host_reboot_reason: "Volumes are not available, rebooting..."
 
         - name: Rescan for all mapped volume paths.
-          include_tasks: host_facts/find_path.yml
+          ansible.builtin.include_tasks: host_facts/find_path.yml
 
         - name: Fail when volumes are not available.
-          fail:
+          ansible.builtin.fail:
             msg: "Failed to discover E-Series volumes!"
       when: "'rescan' in rescan_actions"
 
     - name: Add volume paths to volumes
-      import_tasks: host_facts/add_path.yml
+      ansible.builtin.import_tasks: host_facts/add_path.yml
   when: multipathd_status["rc"] == 0

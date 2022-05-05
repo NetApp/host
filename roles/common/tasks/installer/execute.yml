@@ -35,8 +35,8 @@
   when: '"commands" in (execute_config.keys() | list)'
 
 - name: Reboot hosts.
-  include_tasks: host_facts/rescue/reboot.yml
-  when: reboot == true
+  include_tasks: reboot.yml
+  when: reboot
   vars:
     reboot: |-
       {%- set scratch = {"reboot": false} -%}
