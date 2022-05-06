@@ -1,30 +1,46 @@
 # netapp_eseries.host.ib_iser
-    Ensure InfiniBand iSER is configured on host.
+    This role will install and configure required packages needed to communicate with NetApp E-Series storage using the
+    InfiniBand iSER protocol.
 
 ## Role Variables
-    eseries_iscsi_iqn:                          # Host IQN (iSCSI Qualified Name).
-    eseries_ib_iser_configure_network:          # Whether to configure iSCSI network interfaces. Choices: true, false (Default: true)
-    eseries_ib_iser_configure_firewall:         # Whether to configure firewall. Choices true, false (Default: true)
-    eseries_ib_iser_interfaces:                 # (Required) List of IP-based interfaces.
-      - name:                                   # (Required) Name of interface (i.e. ib0, eth0, em1, ens160).
-        address:                                # (Required) IPv4 address. Use the format 192.0.2.24/24.
-        hook_templates:                         # List of hook templates for Network Manager dispatcher (interface definition will be accessible through
-                                                #   the interface variable within the hook templates).
-        zone:                                   # Firewall zone. If the zone does not exist then it will be created. (Note: Only implemented for firewalld)
-        (...)                                   # Add any valid key-value pair for the expected Netplan or ifcfg-x configuration files. Be sure to quote recognized
-                                                #   boolean values (on, off, yes, no, etc.) otherwise they will be converted into True/False.
-        iface:                                  # Dictionary defining additional interface binding information for open-iscsi (<iscsi_dir>/iface/<interface>).
-        node:                                   # Dictionary defining additional target information for open-iscsi (<iscsi_dir>/nodes/<target_iqn>/<address>,<port>,[0-9]+/<interface>).
-                                                #   Look at /etc/iscsi/iscsid.conf for options.
-    eseries_ib_iser_default_hook_templates:     # Default list of hook templates for Network Manager dispatcher (interface definition will be accessible through
-                                                #    the interface variable within the hook templates).
-    eseries_ib_iser_firewall_zone:              # Default firewall zone. (Note: Only implemented for firewalld)
-    eseries_ib_iser_iscsid_conf_options:        # Dictionary containing option-value pairs for open-iscsi global configuration options for Ansible node (iscsid.conf).
-    eseries_ib_iser_iscsid_conf_group_options:  # Dictionary containing option-value pairs for open-iscsi global configuration options for Ansible group (iscsid.conf).
-    eseries_ib_iser_iface_options:              # Dictionary containing option-value pairs for open-iscsi interface bindings for Ansible node.
-    eseries_ib_iser_iface_group_options:        # Dictionary containing option-value pairs for open-iscsi interface bindings for Ansible group.
-    eseries_ib_iser_node_options:               # Dictionary containing option-value pairs for open-iscsi target node information for Ansible node.
-    eseries_ib_iser_node_group_options:         # Dictionary containing option-value pairs for open-iscsi target node information for Ansible group.
+    eseries_ib_iser_configure_network:       # Whether to configure iSCSI network interfaces.
+                                             #    Choices: true, false (Default: true)
+    eseries_ib_iser_configure_firewall:      # Whether to configure firewall.
+                                             #    Choices true, false (Default: true)
+    eseries_ib_iser_interfaces:              # (Required) List of IP-based interfaces.
+      - name:                                # (Required) Name of interface (i.e. ib0, eth0, em1, ens160).
+        address:                             # (Required) IPv4 address. Use the format 192.0.2.24/24.
+        hook_templates:                      # List of hook templates for Network Manager dispatcher.
+                                             #   Note: eseries_ip_interfaces entry definition will be accessible through
+                                             #   the interface variable within the hook templates.
+                                             #   See 99-multihoming.j2 in role's templates directory for an example.
+        zone:                                # Firewall zone. If the zone does not exist then it will be created.
+                                             #   Note: Only implemented for firewalld
+        (...)                                # Add any valid key-value pair for the expected Netplan or ifupdown
+                                             #   configuration files. Be sure to quote recognized boolean values (on,
+                                             #   off, yes, no, etc.) otherwise they will be converted into True/False.
+        iface:                               # Dictionary defining additional interface information for
+                                             #   open-iscsi (<iscsi_dir>/iface/<interface>).
+        node:                                # Dictionary defining additional targets information for open-iscsi
+                                             #   (<iscsi_dir>/nodes/<target_iqn>/<address>,<port>,[0-9]+/<interface>).
+                                             #   Look at /etc/iscsi/iscsid.conf for options.
+    eseries_ib_iser_interface_common:        # Dictionary of common interface definitions for eseries_ib_iser_interfaces.
+    eseries_iscsi_iqn:                       # ISCSI qualified name (iqn)
+    eseries_ib_iser_default_hook_templates:  # Default list of hook templates for Network Manager dispatcher. Hooks
+                                             #   will be applied for individual interfaces.
+                                             #   Note: eseries_ip_interfaces entry definition will be accessible
+                                             #   through the interface variable within the hook templates.
+                                             #   See 99-multihoming.j2 in role's templates directory for an example.
+    eseries_ib_iser_firewall_zone:           # Default firewall zone. (Note: Only implemented for firewalld)
+    eseries_ib_iser_udev_name:               # Filename for applying eseries_ib_iser_udev_rules
+    eseries_ib_iser_udev_rules:              # Dictionary containing interface PCI slots to interface names for ensuring
+                                             #   persistent interface names.
+                                             #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
+                                             #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+
+## Uninstall
+    To uninstall, add '--tags ib_iser_uninstall' to the ansible-playbook command or import uninstall.yml task directly
+    from role.
 
 ## License
     BSD-3-Clause

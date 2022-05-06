@@ -10,23 +10,24 @@
   loop: "{{ eseries_ib_iser_interfaces }}"
   become: true
 
-- name: Configure interface configuration files.
+- name: Set facts required for configuring iSCSI interface bindings.
+  ansible.builtin.set_fact:
+    eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
+    eseries_iscsi_iface_default_options: "{{ eseries_ib_iser_iface_default_options }}"
+    eseries_iscsi_iface_group_options: "{{ eseries_ib_iser_iface_group_options }}"
+    eseries_iscsi_iface_options: "{{ eseries_ib_iser_iface_options }}"
+    eseries_iscsi_tcp_port: "{{ eseries_ib_iser_tcp_port | default() }}"
+    eseries_iscsi_queue_depth: "{{ eseries_ib_iser_queue_depth | default() }}"
+    eseries_iscsi_nr_session: "{{ eseries_ib_iser_nr_session | default() }}"
+    eseries_iscsi_mtu: "{{ eseries_ib_iser_mtu | default() }}"
+    eseries_iscsi_session_replacement_timeout: "{{ eseries_ib_iser_session_replacement_timeout | default() }}"
+    eseries_iscsi_username: "{{ eseries_ib_iser_username | default() }}"
+    eseries_iscsi_password: "{{ eseries_ib_iser_password | default() }}"
+
+- name: Configure iSCSI interface bindings.
   ansible.builtin.include_role:
     role: iscsi
     tasks_from: configure/iface.yml
-    apply:
-      vars:
-        eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
-        eseries_iscsi_iface_default_options: "{{ eseries_ib_iser_iface_default_options }}"
-        eseries_iscsi_iface_group_options: "{{ eseries_ib_iser_iface_group_options }}"
-        eseries_iscsi_iface_options: "{{ eseries_ib_iser_iface_options }}"
-        eseries_iscsi_tcp_port: "{{ eseries_ib_iser_tcp_port | default() }}"
-        eseries_iscsi_queue_depth: "{{ eseries_ib_iser_queue_depth | default() }}"
-        eseries_iscsi_nr_session: "{{ eseries_ib_iser_nr_session | default() }}"
-        eseries_iscsi_mtu: "{{ eseries_ib_iser_mtu | default() }}"
-        eseries_iscsi_session_replacement_timeout: "{{ eseries_ib_iser_session_replacement_timeout | default() }}"
-        eseries_iscsi_username: "{{ eseries_ib_iser_username | default() }}"
-        eseries_iscsi_password: "{{ eseries_ib_iser_password | default() }}"
 
 # This tasks updates ifaces_changed create by the iscsi role's tasks configure/iface.yml
 - name: Determine iface configuration files that have been modified.

@@ -1,14 +1,23 @@
 eseries_ib_iser_configure_network: true
 eseries_ib_iser_configure_firewall: true
-eseries_ib_iser_firewall_zone: ""
+# eseries_ib_iser_firewall_zone: # Determined at runtime
 eseries_ib_iser_default_hook_templates: []
+
+eseries_ib_iser_udev_name: 99-eseries_ib_iser_udev.rules
+eseries_ib_iser_udev_rules: {}
+
 eseries_ib_iser_interface_common: {}
 eseries_ib_iser_interface_defaults: {}
+eseries_ib_iser_interface_required_keys:
+  - name
+  - address
 eseries_ib_iser_interface_ignore_keys:
+  - address
   - hook_template
   - iface
   - node
-  - zone
+  - configure
+  - mstconfig
 
 # Configuration dictionaries for iscsid.conf (/etc/iscsi/iscsid.conf)
 eseries_ib_iser_iscsid_conf_options: {}

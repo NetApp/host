@@ -6,24 +6,25 @@
     name: netapp_eseries.host.common
     tasks_from: volume_facts.yml
 
+- name: Set facts required for configuring iSCSI sessions.
+  ansible.builtin.set_fact:
+    eseries_iscsi_protocol: ib_iser
+    eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
+    eseries_iscsi_iface_default_options: "{{ eseries_ib_iser_iface_default_options }}"
+    eseries_iscsi_iface_group_options: "{{ eseries_ib_iser_iface_group_options }}"
+    eseries_iscsi_iface_options: "{{ eseries_ib_iser_iface_options }}"
+    eseries_iscsi_node_default_options: "{{ eseries_ib_iser_node_default_options }}"
+    eseries_iscsi_node_group_options: "{{ eseries_ib_iser_node_group_options }}"
+    eseries_iscsi_node_options: "{{ eseries_ib_iser_node_options }}"
+    eseries_iscsi_tcp_port: "{{ eseries_ib_iser_tcp_port | default() }}"
+    eseries_iscsi_mtu: "{{ eseries_ib_iser_mtu | default() }}"
+    eseries_iscsi_nr_session: "{{ eseries_ib_iser_nr_session | default() }}"
+    eseries_iscsi_queue_depth: "{{ eseries_ib_iser_queue_depth | default() }}"
+    eseries_iscsi_session_replacement_timeout: "{{ eseries_ib_iser_session_replacement_timeout | default() }}"
+    eseries_iscsi_username: "{{ eseries_ib_iser_username | default() }}"
+    eseries_iscsi_password: "{{ eseries_ib_iser_password | default() }}"
+
 - name: Ensure InfiniBand iSER iSCSI sessions are configured.
   ansible.builtin.include_role:
     name: netapp_eseries.host.iscsi
     tasks_from: configure/session.yml
-    apply:
-      vars:
-        eseries_iscsi_protocol: ib_iser
-        eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
-        eseries_iscsi_iface_default_options: "{{ eseries_ib_iser_iface_default_options }}"
-        eseries_iscsi_iface_group_options: "{{ eseries_ib_iser_iface_group_options }}"
-        eseries_iscsi_iface_options: "{{ eseries_ib_iser_iface_options }}"
-        eseries_iscsi_node_default_options: "{{ eseries_ib_iser_node_default_options }}"
-        eseries_iscsi_node_group_options: "{{ eseries_ib_iser_node_group_options }}"
-        eseries_iscsi_node_options: "{{ eseries_ib_iser_node_options }}"
-        eseries_iscsi_tcp_port: "{{ eseries_ib_iser_tcp_port | default() }}"
-        eseries_iscsi_mtu: "{{ eseries_ib_iser_mtu | default() }}"
-        eseries_iscsi_nr_session: "{{ eseries_ib_iser_nr_session | default() }}"
-        eseries_iscsi_queue_depth: "{{ eseries_ib_iser_queue_depth | default() }}"
-        eseries_iscsi_session_replacement_timeout: "{{ eseries_ib_iser_session_replacement_timeout | default() }}"
-        eseries_iscsi_username: "{{ eseries_ib_iser_username | default() }}"
-        eseries_iscsi_password: "{{ eseries_ib_iser_password | default() }}"
