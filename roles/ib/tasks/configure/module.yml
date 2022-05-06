@@ -1,0 +1,19 @@
+- name: Ensure required InfiniBand modules are loaded.
+  community.general.modprobe:
+    state: present
+    name: "{{ item['name'] }}"
+    params: "{{ item['parameters'] }}"
+  loop: "{{ eseries_ib_kernel_modules }}"
+  become: true
+
+- name: Ensure required InfiniBand kernel modules have been added to boot process.
+  ansible.builtin.template:
+    src: configure/module/module_conf.j2
+    dest: "{{ eseries_ib_modules_load_d }}eseries_ib.conf"
+  become: true
+
+- name: Ensure required InfiniBand kernel module parameters have been added to boot process.
+  ansible.builtin.template:
+    src: configure/module/module_options_conf.j2
+    dest: "{{ eseries_ib_modules_d }}eseries_ib.conf"
+  become: true

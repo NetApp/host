@@ -1,0 +1,48 @@
+eseries_ib_skip: False
+eseries_ib_udev_name: 99-eseries_ib_udev.rules
+eseries_ib_udev_rules: {}
+
+eseries_ib_rdma: /etc/rdma/
+eseries_ib_rdma_memory_conf: /etc/security/limits.d/eseries_rdma.conf
+eseries_ib_modules_load_d: /etc/modules-load.d/
+eseries_ib_modules_d: /etc/modprobe.d/
+
+eseries_ib_ubuntu_packages:
+  - infiniband-diags
+  - libibverbs
+  - libibverbs-utils
+  - rdma-core
+  - mstflint
+eseries_ib_rhel_packages:
+  - infiniband-diags
+  - libibverbs
+  - libibverbs-utils
+  - rdma-core
+  - mstflint
+eseries_ib_suse_packages:
+  - infiniband-diags
+  - libibverbs
+  - libibverbs-utils
+  - rdma-core
+  - mstflint
+
+eseries_ib_kernel_modules:
+  - name: mlx5_ib
+    parameters:
+  - name: ib_core
+    parameters:
+  - name: ib_umad     # Access to fabric management SMPs and GMPs from userspace.
+    parameters:
+  - name: ib_uverbs   # User access to RDMA verbs (supports libibverbs)
+    parameters:
+  - name: rdma_cm     # RDMA connection management
+    parameters:
+  - name: rdma_ucm    # User access to RDMA connection management (supports librdmacm)
+    parameters:
+
+eseries_ib_uninstall_kernel_modules:
+  - rdma_ucm
+  - rdma_cm
+  - ib_umad
+  - ib_uverbs
+  - ib_core

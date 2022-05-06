@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand packages are removed (Ubuntu).
+  ansible.builtin.apt:
+    state: absent
+    name: "{{ eseries_ib_ubuntu_packages }}"
+  become: true
