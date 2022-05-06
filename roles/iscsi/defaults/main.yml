@@ -5,7 +5,10 @@ eseries_iscsi_conf_path: /etc/iscsi/
 eseries_iscsi_interface_type: Ethernet
 eseries_iscsi_iqn: ""
 
-eseries_iscsi_firewall_zone: ""
+eseries_iscsi_udev_name: 99-eseries_iscsi_udev.rules
+eseries_iscsi_udev_rules: {}
+
+# eseries_iscsi_firewall_zone:  # Determined at runtime
 eseries_iscsi_default_hook_templates: []
 eseries_iscsi_interface_common: {}
 eseries_iscsi_interface_defaults: {}
@@ -13,7 +16,6 @@ eseries_iscsi_interface_ignore_keys:
   - hook_template
   - iface
   - node
-  - zone
 
 # Configuration dictionaries for iscsid.conf (/etc/iscsi/iscsid.conf)
 eseries_iscsi_iscsid_conf_options: {}
