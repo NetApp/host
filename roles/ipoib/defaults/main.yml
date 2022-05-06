@@ -1,11 +1,19 @@
 eseries_ipoib_configure_network: true
 eseries_ipoib_configure_firewall: true
 
+eseries_ipoib_udev_name: 99-eseries_ipoib_udev.rules
+eseries_ipoib_udev_rules: {}
+
 eseries_ipoib_interface_type: InfiniBand
 eseries_ipoib_interface_common: {}
 eseries_ipoib_interface_defaults: {}
-eseries_ipoib_firewall_zone: ""
+# eseries_ipoib_firewall_zone:  # Determined at runtime
 eseries_ipoib_default_hook_templates: []  # Default List of hook templates to apply to all defined interfaces.
+eseries_ipoib_interface_required_keys:
+  - name
+  - address
 eseries_ipoib_interface_ignore_keys:
+  - address
   - hook_template
-  - zone
+  - configure
+  - mstconfig
