@@ -1,0 +1,6 @@
+- name: Ensure the host NVMe Qualified Name (NQN) is correctly set.
+  ansible.builtin.copy:
+    content: "{{ eseries_nvme_nqn }}"
+    dest: "{{ eseries_nvme_hostnqn }}"
+  become: true
+  when: eseries_nvme_nqn is defined and eseries_nvme_nqn

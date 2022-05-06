@@ -1,0 +1,4 @@
+# Maintained by E-Series Ansible
+{% for module in eseries_nvme_kernel_modules if module["parameters"] is not none %}
+options {{ module["name"] }} {{ module["parameters"] }}
+{% endfor %}

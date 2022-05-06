@@ -1,0 +1,5 @@
+- name: Ensure expected NVMe packages are installed (SUSE).
+  community.general.zypper:
+    state: present
+    name: "{{ eseries_nvme_suse_packages }}"
+  become: true

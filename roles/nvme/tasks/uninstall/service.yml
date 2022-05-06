@@ -1,0 +1,39 @@
+- name: Configure service for NVMe over InfiniBand and NVMe RoCE
+  block:
+    - name: Determine NVMe storage target information.
+      set_fact:
+        eseries_nvme_daemon_name: eseries_{{ eseries_nvme_protocol }}_deamon.sh
+        eseries_nvme_service_name: eseries_{{ eseries_nvme_protocol }}.service
+        eseries_nvme_connections_file: eseries_{{ eseries_nvme_protocol }}_connections
+
+    - name: Get list of systemd services.
+      ansible.builtin.service_facts:
+
+    - name: Ensure NVMe service is stopped.
+      ansible.builtin.systemd:
+        name: "{{ eseries_nvme_service_name }}"
+        state: stopped
+        enabled: false
+      when: ansible_facts["services"][eseries_nvme_service_name] is defined
+
+    - name: Remove NVMe service daemon connections file.
+      ansible.builtin.file:
+        state: absent
+        path: "{{ eseries_nvme_daemon_path }}{{ eseries_nvme_connections_file }}"
+
+    - name: Remove NVMe service daemon.
+      ansible.builtin.file:
+        state: absent
+        path: "{{ eseries_nvme_daemon_path }}{{ eseries_nvme_daemon_name }}"
+
+    - name: Remove NVMe systemd service file.
+      ansible.builtin.file:
+        state: absent
+        path: "{{ eseries_nvme_service_path }}{{ eseries_nvme_service_name }}"
+  when: eseries_nvme_protocol in ['nvme_ib', 'nvme_roce']
+  become: true
+
+# TODO: This should enable NVMe systemd service for discover/connect to targets via udev triggers.
+# - name: Configure service for NVMe over Fibre Channel
+#   block:
+#   when: eseries_nvme_protocol in ['nvme_fc']

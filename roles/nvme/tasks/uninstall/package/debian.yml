@@ -1,0 +1,5 @@
+- name: Remove required NVMe packages (Ubuntu).
+  ansible.builtin.apt:
+    state: absent
+    name: "{{ eseries_nvme_ubuntu_packages }}"
+  become: true

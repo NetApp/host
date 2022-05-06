@@ -1,0 +1,8 @@
+- name: Ensure NVMe service is stopped and removed.
+  include_tasks: "uninstall/service.yml"
+
+- name: Ensure NVMe kernel modules are unloaded and removed from boot process.
+  include_tasks: "uninstall/configure/module.yml"
+
+- name: Ensure NVMe packages are uninstalled.
+  include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"
