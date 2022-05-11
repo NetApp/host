@@ -65,23 +65,33 @@ options:
         default: {}
     pattern:
         description:
-            - Regular expression pattern to capture and update options
-            - Must return three groups in the format "^(option)(equivalence)(value)$.
+            - Regular expression pattern to capture and update options.
+            - Must return four regular expression groups in the order comment, option, equivalence, and then value.
+            - The equivalence group can be left empty to be generated based on I(equivalence_character).
+            - The comment group can be left empty to be generated based on I(comment_character).
         type: str
         required: false
-        default: "^#? ?([A-Za-z0-9._-]+)( *= *)(.*)$"
-    equivalence_characters:
-        description:
-            - String containing all the possible equivalence characters that will be allowed in the equivalence group
-              in I(pattern).
+        default: "()([A-Za-z0-9._-]+)()(.*)"
+    equivalence_character:
+        description: The equivalence character used in the configuration file.
         type: str
         required: false
-        default: "=:"
+        default: "="
     padding:
-        description: Ensures there's padding after the equivalence.
-        type: bool
-        require: false
-    comment_start:
+        description:
+            - Padding to be applied around the I(equivalence_character) for any option(s) not found in the original configuration file.
+            - A space will be added to the left of the I(equivalence_character) when I(padding=='left')
+            - A space will be added to the right of the I(equivalence_character) when I(padding=='right')
+            - A space will be added to both sides of the I(equivalence_character) when I(padding=='both')
+        type: str
+        choices:
+            - left
+            - right
+            - both
+            - none
+        required: false
+        default: none
+    comment_character:
         description: Character that is used to indicate a line should be skipped or ignored.
         type: str
         required: false
@@ -183,10 +193,10 @@ class UpdateConfigFile(object):
             src=dict(type="str", require=False),
             dest=dict(type="str", require=False),
             options=dict(type="dict", required=False, default={}),
-            pattern=dict(type="str", required=False, default="^#? ?([A-Za-z0-9._-]+)( *= *)(.*)$"),
-            padding=dict(type="bool", required=False, default=True),
-            equivalence_characters=dict(type="str", required=False, default="=:"),
-            comment_start=dict(type="str", required=False, default="#"),
+            pattern=dict(type="str", required=False, default="()([A-Za-z0-9._-]+)()(.*)"),
+            padding=dict(type="str", required=False, choices=["left", "right", "both", "none"], default="none"),
+            equivalence_character=dict(type="str", required=False, default="="),
+            comment_character=dict(type="str", required=False, default="#"),
             mode=dict(type="str", required=False),
             block_message=dict(type="str", required=False,
                                default="ANSIBLE NETAPP_ESERIES.HOST.UPDATE_CONF MANAGED BLOCK"),
@@ -225,16 +235,36 @@ class UpdateConfigFile(object):
         self.options = args["options"]
 
         # Validate pattern and determine expected equivalence character.
-        self.pattern = args["pattern"]
-        pattern_results = re.search("^(\^.*)(\(.+\))(\(.?[\*\+\?]?)([%s]+)(.?[\*\+\?]?)\)(\(.+\))(\$)$" % args["equivalence_characters"], self.pattern)
+        self.comment_character = args["comment_character"]
+        pattern_results = re.search("^\^?(\(.*\)).*(\(.+\)).*(\(.*\)).*(\(.*\)).*\$?$", args["pattern"])
         if pattern_results:
             pattern_parts = list(pattern_results.groups())
-            self.equivalence_character = pattern_parts[3]
-        else:
-            self.module.fail_json(msg="Invalid pattern argument! Must return three groups in the format '^(option)(equivalence)(value)$'. Pattern [%s]." % self.pattern)
+            if len(pattern_parts) != 4:
+                self.module.fail_json(msg="Invalid pattern argument! Must return four regular expression groups in the "
+                                          "order comment, option, equivalence, and then value.'. Pattern [%s]." % args["pattern"])
 
-        self.padding = args["padding"]
-        self.comment_start = args["comment_start"]
+            # Check for empty comment and equivalence groups.
+            if pattern_parts[0] == "()":
+                pattern_parts[0] = "([%s ]*)" % self.comment_character
+            if pattern_parts[2] == "()":
+                pattern_parts[2] = "( *%s *)" % args["equivalence_character"]
+
+            self.pattern = "".join(pattern_parts)
+            if not self.pattern.startswith("^"):
+                self.pattern = "^" + self.pattern
+            if not self.pattern.endswith("$"):
+                self.pattern = self.pattern + "$"
+        else:
+            self.module.fail_json(msg="Invalid pattern argument! Must return four regular expression groups in the "
+                                        "order comment, option, equivalence, and then value.'. Pattern [%s]." % args["pattern"])
+
+        # Determine padding for any option(s) not found in the original configuration file.
+        self.equivalence_string = args["equivalence_character"]
+        if args["padding"] in ["left", "both"]:
+            self.equivalence_string = " " + self.equivalence_string
+        if args["padding"] in ["right", "both"]:
+            self.equivalence_string = self.equivalence_string + " "
+
         self.mode = args["mode"]
         self.block_message = args["block_message"]
         self.insert_block_comments = args["insert_block_comments"]
@@ -253,8 +283,8 @@ class UpdateConfigFile(object):
         options_applied = []
 
         if self.copy_lines_cached is None:
-            comment_begin = "%s BEGIN %s\n" % (self.comment_start, self.block_message)
-            comment_end = "%s END %s\n" % (self.comment_start, self.block_message)
+            comment_begin = "%s BEGIN %s\n" % (self.comment_character, self.block_message)
+            comment_end = "%s END %s\n" % (self.comment_character, self.block_message)
             comment_block_begin_index = None
             comment_block_end_index = None
             insert_index = None
@@ -281,19 +311,17 @@ class UpdateConfigFile(object):
 
                 result = re.search(self.pattern, line)
                 if result:
-                    option, equivalence, value = list(result.groups())
+                    comment, option, equivalence, value = list(result.groups())
                     if option in options:
                         options_applied.append(option)
-                        if self.padding:
-                            self.copy_lines_cached[index] = "%s%s %s\n" % (option, equivalence.rstrip(" "),
-                                                                           str(self.options.pop(option)))
-                        else:
-                            self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence,
-                                                                          str(self.options.pop(option)))
+                        self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence, str(self.options.pop(option)))
 
                     # Comment out any expected options that have already been set previously to prevent duplicates
-                    elif not re.search("^%s" % self.comment_start, line) and option in options_applied:
-                        self.copy_lines_cached[index] = "%s%s\n" % (self.comment_start, line)
+                    elif option in options_applied:
+                        self.module.warn("options_applied: [%s], %s, %s" % (",".join(options_applied), comment, option))
+                        if not comment:
+                            self.copy_lines_cached[index] = "%s %s\n" % (self.comment_character, line)
+
 
             # Remove all options within existing comment block.
             if comment_block_begin_index is not None:
@@ -315,7 +343,6 @@ class UpdateConfigFile(object):
                                 break
                         else:
                             insert_index = len(self.copy_lines_cached) + 1
-                            self.module.warn("insert_index: %s" % insert_index)
                     elif self.insert == "beginning":
                         insert_index = 0
                     else:
@@ -327,10 +354,7 @@ class UpdateConfigFile(object):
                         insert_index += 1
 
                     for option, value in self.options.items():
-                        if self.padding:
-                            self.copy_lines_cached.insert(insert_index, "%s %s %s\n" % (option, self.equivalence_character, value))
-                        else:
-                            self.copy_lines_cached.insert(insert_index, "%s%s%s\n" % (option, self.equivalence_character, value))
+                        self.copy_lines_cached.insert(insert_index, "%s%s%s\n" % (option, self.equivalence_string, value))
                         insert_index += 1
 
                     if self.insert_block_comments:
@@ -344,7 +368,7 @@ class UpdateConfigFile(object):
         if self.backup_original_source_required_cache is None:
             self.backup_original_source_required_cache = False
 
-            if self.backup_source is not None and not exists(self.backup_source):
+            if self.backup_source and not exists(self.backup_source):
                 self.backup_original_source_required_cache = True
 
         return self.backup_original_source_required_cache
