@@ -2,7 +2,8 @@
 {% set interface_definition = eseries_ip_interface_defaults | combine(eseries_ip_interface_common) | combine(item) %}
 network:
   version: 2
-  renderer: {% if "network_manager" in eseries_ip_manager_tools %}NetworkManager{% elif "networkd" eseries_ip_manager_tools in %}networkd{% endif %}
+  renderer: {% if "network_manager" in eseries_ip_manager_tools %}NetworkManager{% elif "networkd" in eseries_ip_manager_tools %}networkd{% endif %}
+
   ethernets:
     {{ item["name"] }}:
       addresses:
