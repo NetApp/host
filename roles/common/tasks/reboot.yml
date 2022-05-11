@@ -1,0 +1,21 @@
+- name: Wait for user to continue before rebooting hosts.
+  ansible.builtin.pause:
+    prompt: "{{ eseries_common_allow_host_reboot_reason }}. Press enter to continue, Ctrl+C to interrupt"
+  when: not eseries_common_allow_host_reboot
+
+- name: Reboot hosts.
+  ansible.builtin.reboot:
+    test_command: "systemctl is-active default.target"
+    reboot_timeout: 3600
+  become: true
+
+- name: Wait for test command to succeed on rebooted hosts.
+  ansible.builtin.shell: "{{ eseries_common_reboot_test_command }}"
+  failed_when: false
+  changed_when: false
+  register: command_result
+  retries: 36
+  delay: 5
+  until: command_result['rc'] == 0
+  when: eseries_common_reboot_test_command is defined
+  become: true
