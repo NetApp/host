@@ -25,10 +25,8 @@ options:
         description:
             - Whether to create a backup of the original configuration file when I(path) is provided.
             - When I(backup_original==False) and I(path) is specified then there will be no source for the original
-              configuration defaults; so when an option is removed from I(options) it will remain the same rather than
-              reverting to its original value.
+              configuration defaults; so when an option is removed from I(options), it will remain unchanged.
             - No backup will be made when I(src) is provided.
-            - I(insert_block_comments==True) option can be used in conjunction or as an alternative to backup_original.
         type: bool
         required: false
         default: true
@@ -48,24 +46,27 @@ options:
         default: ".~ansible-original"
     src:
         description:
-            - Source for the base standard Linux conf file.
+            - Path to the source configuration file.
+            - Use I(path) if I(src) and I(dest) are the same.
             - I(src) is mutually exclusive with I(path)
         type: str
         required: false
     dest:
         description:
-            - Destination for the updated standard Linux conf file.
+            - Destination path for the updated configuration file.
             - I(dest) is mutually exclusive with I(path)
         type: str
         required: false
     options:
-        description: Dictionary containing the options key-value pairs to update conf file.
+        description:
+            - Dictionary containing the options to be update in the destination configuration file.
+            - Any options that are not found in the source configuration file will be added with a warning.
         type: dict
         required: false
         default: {}
     pattern:
         description:
-            - Regular expression pattern to capture and update options.
+            - Regular expression pattern to capture and update configuration file options.
             - Must return four regular expression groups in the order comment, option, equivalence, and then value.
             - The equivalence group can be left empty to be generated based on I(equivalence_character).
             - The comment group can be left empty to be generated based on I(comment_character).
@@ -79,7 +80,8 @@ options:
         default: "="
     padding:
         description:
-            - Padding to be applied around the I(equivalence_character) for any option(s) not found in the original configuration file.
+            - Where padding should be added around the I(equivalence_character) for any option not found in the
+              source configuration file.
             - A space will be added to the left of the I(equivalence_character) when I(padding=='left')
             - A space will be added to the right of the I(equivalence_character) when I(padding=='right')
             - A space will be added to both sides of the I(equivalence_character) when I(padding=='both')
@@ -106,30 +108,34 @@ options:
         required: false
     block_message:
         description:
-            - The message on the begin and end marker lines within the configuration file for options that were not
-              found.
+            - Message inserted between the begin and end comment lines surrounding options that were not found
+              in the source configuration file.
         type: str
         required: false
         default: ANSIBLE NETAPP_ESERIES.HOST.UPDATE_CONF MANAGED BLOCK
     insert_block_comments:
-        description: Whether to wrap options that are undefined in the source configuration file within comment blocks.
+        description:
+            - Whether to add begin and end comment lines around options added that were not found in the source
+              configuration file.
+            - True is recommended when I(path) is defined and I(backup_original==False) to delineate between options
+              that existed in the original I(path) file.
         type: bool
         required: false
         default: true
     insert_pattern:
         description:
             - String or regular expression that is used to determine the line to insert before or after.
-            - If the pattern fails to locate a line in the configuration file then any unspecified options will be
-              placed at the end of the file.
+            - If the pattern fails to locate a line matching the expression I(insert_pattern) in the configuration file
+              then any options not found will be placed at the end of the file.
         type: str
         required: false
     insert:
         description:
-            - Where to insert options that are undefined in the source configuration file.
+            - Where to insert options that were not found in the source configuration file.
             - I(insert=="before") and I(insert=="after") requires I(insert_pattern) to be defined.
-            - If I(insert=="skip") then any option that was undefined in the source configuration file will not be
-              appended.
-            - Warning is issued whenever option(s) are specified that are not defined in the source configuration file.
+            - If I(insert=="skip") then any options that were not found in the source configuration file will not be
+              added.
+            - A warning will be issued for options that are not found in the source configuration file.
         type: str
         default: end
         choices:
@@ -138,9 +144,6 @@ options:
             - before
             - after
             - skip
-notes:
-    - Configuration file with options that are not found will be placed at the end of the file within a comment block
-      and a warning will be issued.
 """
 
 RETURN = """
@@ -256,7 +259,8 @@ class UpdateConfigFile(object):
                 self.pattern = self.pattern + "$"
         else:
             self.module.fail_json(msg="Invalid pattern argument! Must return four regular expression groups in the "
-                                        "order comment, option, equivalence, and then value.'. Pattern [%s]." % args["pattern"])
+                                      "order comment, option, equivalence, and then value. "
+                                      "Pattern [%s]." % args["pattern"])
 
         # Determine padding for any option(s) not found in the original configuration file.
         self.equivalence_string = args["equivalence_character"]
@@ -320,7 +324,7 @@ class UpdateConfigFile(object):
                     elif option in options_applied:
                         self.module.warn("options_applied: [%s], %s, %s" % (",".join(options_applied), comment, option))
                         if not comment:
-                            self.copy_lines_cached[index] = "%s %s\n" % (self.comment_character, line)
+                            self.copy_lines_cached[index] = "%s %s" % (self.comment_character, line)
 
 
             # Remove all options within existing comment block.
@@ -328,10 +332,10 @@ class UpdateConfigFile(object):
                 for index in range(comment_block_begin_index, comment_block_end_index + 1):
                     self.copy_lines_cached.pop(comment_block_begin_index)
 
-            # Check for whether any options were not used. If so, insert them into a comment block and issue a warning.
+            # Check for whether any options were not used.
             if self.options:
-                self.module.warn("Warning! Option(s) were not found and have been placed within a comment block at the"
-                                 " end of the configuration file. Option(s) not found: [%s]" % ", ".join(self.options))
+                self.module.warn("Warning! Option(s) were not found in the source configuration file. "
+                                 "Options(s) not found: [%s]" % ", ".join(self.options))
 
                 if self.insert != "skip":
 
@@ -442,7 +446,8 @@ class UpdateConfigFile(object):
         """Change the configuration file's permissions."""
         try:
             chmod(self.destination, int("0o%s" % self.mode, 8))
-            chmod(self.backup_source, int("0o%s" % self.mode, 8))
+            if self.backup_source:
+                chmod(self.backup_source, int("0o%s" % self.mode, 8))
         except Exception as error:
             self.module.fail_json(msg="Failed to change the configuration file permissions! File [%s]."
                                       " Permission [%s]. Error [%s]." % (self.source, self.mode, error))
