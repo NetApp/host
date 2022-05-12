@@ -1,6 +1,9 @@
 eseries_ipoib_configure_network: true
 eseries_ipoib_configure_firewall: true
 
+eseries_ipoib_modules_load_d: /etc/modules-load.d/
+eseries_ipoib_modules_d: /etc/modprobe.d/
+
 eseries_ipoib_udev_name: 99-eseries_ipoib_udev.rules
 eseries_ipoib_udev_rules: {}
 
@@ -17,3 +20,10 @@ eseries_ipoib_interface_ignore_keys:
   - hook_template
   - configure
   - mstconfig
+
+eseries_ipoib_kernel_modules:
+  - name: ib_ipoib
+    parameters:
+
+eseries_ipoib_uninstall_kernel_modules:
+  - ib_ipoib

@@ -18,11 +18,14 @@
   ansible.builtin.include_role:
     name: netapp_eseries.host.ib
 
-- name: Configure InfiniBand interfaces.
+- name: Ensure IP over InfiniBand is configured.
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Configure IP over InfiniBand interfaces.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ip
 
-- name: Uninstall InfiniBand IPoIB.
+- name: Uninstall IP over InfiniBand.
   block:
     - name: Uninstall InfiniBand IPoIB.
       ansible.builtin.include_tasks: uninstall.yml

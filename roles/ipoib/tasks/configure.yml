@@ -1,0 +1,2 @@
+- name: Ensure required IP over InfiniBand kernel modules are loaded.
+  ansible.builtin.include_tasks: configure/module.yml

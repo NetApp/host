@@ -19,6 +19,9 @@
     name: netapp_eseries.host.ip
     tasks_from: uninstall.yml
 
+- name: Ensure IP over InfiniBand is unconfigured.
+  ansible.builtin.include_tasks: uninstall/configure/module.yml
+
 - name: Ensure InfiniBand base has been uninstalled.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ib
