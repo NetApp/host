@@ -1,27 +1,13 @@
-- name: Include operating specific variables.
-  include_vars: "{{ ansible_os_family | lower }}.yml"
-
 - name: Ensure iSCSI packages are installed.
-  import_tasks: package.yml
+  ansible.builtin.import_tasks: package.yml
 
 - name: Ensure iSCSI is configured.
-  import_tasks: configure.yml
-
-- name: Ensure iSCSI interfaces are configured.
-  import_tasks: interface.yml
-
-- name: Discover mapped-volume information from associated storage systems.
-  import_role:
-    name: common
-    tasks_from: volume_facts.yml
-
-- name: Ensure iSCSI sessions are configured and established.
-  import_tasks: session.yml
+  ansible.builtin.import_tasks: configure.yml
 
 - name: Uninstall iSCSI.
   block:
     - name: Uninstall iSCSI.
-      include_tasks: uninstall.yml
+      ansible.builtin.include_tasks: uninstall.yml
       when: eseries_common_force_skip_uninstall == False
   tags:
     - never

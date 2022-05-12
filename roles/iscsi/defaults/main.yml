@@ -1,14 +1,43 @@
 eseries_iscsi_configure_network: true
-eseries_iscsi_conf_path: "/etc/iscsi/"
+eseries_iscsi_configure_firewall: true
+eseries_iscsi_protocol: iscsi
+eseries_iscsi_conf_path: /etc/iscsi/
+eseries_iscsi_interface_type: Ethernet
+eseries_iscsi_iqn: ""
 
-eseries_iscsi_tcp_port: 3260
-eseries_iscsi_username: ""
-eseries_iscsi_password: ""
+eseries_iscsi_udev_name: 99-eseries_iscsi_udev.rules
+eseries_iscsi_udev_rules: {}
 
-eseries_iscsi_nr_session: 1
-eseries_iscsi_mtu: 1500
-eseries_iscsi_queue_depth: 32
-eseries_iscsi_session_replacement_timeout: 20
+# eseries_iscsi_firewall_zone:  # Determined at runtime
+eseries_iscsi_default_hook_templates: []
+eseries_iscsi_interface_common: {}
+eseries_iscsi_interface_defaults: {}
+eseries_iscsi_interface_ignore_keys:
+  - hook_template
+  - iface
+  - node
+
+# Configuration dictionaries for iscsid.conf (/etc/iscsi/iscsid.conf)
+eseries_iscsi_iscsid_conf_options: {}
+eseries_iscsi_iscsid_conf_group_options: {}
+eseries_iscsi_iscsid_conf_default_options: {}
+
+# Configuration dictionaries for iface files (<iscsi_dir>/iface/<interface>).
+eseries_iscsi_iface_options: {}
+eseries_iscsi_iface_group_options: {}
+eseries_iscsi_iface_default_options:
+  iface.transport_name: tcp
+  iface.port: 3260
+  iface.mtu: 1500
+
+# Configuration dictionaries for node files  (<iscsi_dir>/nodes/<target_iqn>/<address>,<port>,[0-9]+/<interface>).
+eseries_iscsi_node_options: {}
+eseries_iscsi_node_group_options: {}
+eseries_iscsi_node_default_options:
+  node.startup: automatic
+  node.session.nr_sessions: 1
+  node.session.queue_depth: 32
+  node.session.timeo.replacement_timeout: 20
 
 eseries_iscsi_ubuntu_packages:
   - open-iscsi

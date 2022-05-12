@@ -1,0 +1,147 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/configure/session.yml"
+
+- name: Determine iSCSI target nodes.
+  ansible.builtin.set_fact:
+    targets: |-
+      {%- set targets = [] -%}
+      {%- set targets_appended = [] -%}
+      {%- set scratch = {"target_portal_index": 1} -%}
+      {%- for interface in eseries_iscsi_interfaces -%}
+        {%- if scratch.update({"target_portal_index": 1}) -%}{%- endif -%}
+
+        {#- Options to apply to open-iscsi interface bindings (backwards compatible with previous versions). -#}
+        {%- set iface = eseries_iscsi_iface_default_options -%}
+        {%- if eseries_iscsi_tcp_port | default(False) and iface.update({"iface.port": eseries_iscsi_tcp_port}) -%}{%- endif -%}
+        {%- if eseries_iscsi_mtu | default(False) and iface.update({"iface.mtu": eseries_iscsi_mtu}) -%}{%- endif -%}
+        {%- if iface.update(eseries_iscsi_iface_group_options) -%}{% endif -%}
+        {%- if interface["port"] | default(False) and iface.update({"iface.port": interface["port"]}) -%}{%- endif -%}
+        {%- if interface["mtu"] | default(False) and iface.update({"iface.mtu": interface["mtu"]}) -%}{%- endif -%}
+        {%- if iface.update(eseries_iscsi_iface_options) -%}{%- endif -%}
+        {%- if iface.update(interface["iface"] | default({})) -%}{%- endif -%}
+        {%- set iface_iscsi_ifacename = interface["name"] -%}
+        {%- set iface_required = {"iface.net_ifacename": interface["name"], "iface.initiatorname": iscsi_iqn["stdout"], "iface.iscsi_ifacename": iface_iscsi_ifacename} -%}
+
+        {#- Options to apply to open-iscsi target nodes (backwards compatible with previous versions). -#}
+        {%- set node = eseries_iscsi_node_default_options -%}
+        {%- if eseries_iscsi_nr_session | default(False) and node.update({"node.session.nr_sessions": eseries_iscsi_nr_session}) -%}{%- endif -%}
+        {%- if eseries_iscsi_queue_depth | default(False) and node.update({"node.session.queue_depth": eseries_iscsi_queue_depth}) -%}{%- endif -%}
+        {%- if eseries_iscsi_session_replacement_timeout | default(False) and node.update({"node.session.timeo.replacement_timeout": eseries_iscsi_session_replacement_timeout}) -%}{%- endif -%}
+        {%- if eseries_iscsi_username | default(False) and node.update({"node.session.auth.username": eseries_iscsi_username}) -%}{%- endif -%}
+        {%- if eseries_iscsi_password | default(False) and node.update({"node.session.auth.password": eseries_iscsi_password}) -%}{%- endif -%}
+        {%- if node.update(eseries_iscsi_node_group_options) -%}{%- endif -%}
+        {%- if interface["nr_sessions"] | default(False) and node.update({"node.session.nr_sessions": interface["nr_sessions"]}) -%}{%- endif -%}
+        {%- if interface["queue_depth"] | default(False) and node.update({"node.session.queue_depth": interface["queue_depth"]}) -%}{%- endif -%}
+        {%- if interface["username"] | default(False) and node.update({"node.session.auth.username": interface["username"]}) -%}{%- endif -%}
+        {%- if interface["password"] | default(False) and node.update({"node.session.auth.password": interface["password"]}) -%}{%- endif -%}
+        {%- if node.update(eseries_iscsi_node_options) -%}{%- endif -%}
+        {%- if node.update(interface["node"] | default({})) -%}{%- endif -%}
+        {%- if node.update({"node.tpgt": scratch["target_portal_index"]}) -%}{%- endif -%}
+
+        {%- for volume in initiator_volume_facts if volume["host_port_information"][eseries_iscsi_protocol] is defined -%}
+          {%- for host_port_information in volume["host_port_information"][eseries_iscsi_protocol] if host_port_information["link_status"] in ["up", "active"] and
+                                                                                                      host_port_information["ipv4"]["address"] | default("") | ansible.netcommon.ipaddr(interface["address"]) -%}
+            {%- set target = interface["name"] ~ "_" ~ host_port_information["iqn"] ~ "_" ~ host_port_information["interface_reference"] -%}
+            {%- set target_node_directory = eseries_iscsi_node_path ~ host_port_information["iqn"] ~ "/" -%}
+            {%- set target_portal = host_port_information["ipv4"]["address"] ~ ":" ~ iface["iface.port"] ~ "," ~ scratch["target_portal_index"] -%}
+            {%- set target_node_path = target_node_directory ~ host_port_information["ipv4"]["address"] ~ "," ~ iface["iface.port"] ~ "," ~ scratch["target_portal_index"] ~ "/" ~ iface_iscsi_ifacename -%}
+
+            {%- if target not in targets_appended -%}
+              {%- if targets_appended.append(target) -%}{%- endif -%}
+              {%- if targets.append({"target": target,
+                                      "target_node_directory": target_node_directory,
+                                      "target_node_path": target_node_path,
+                                      "target_portal": target_portal,
+                                      "target_iqn": host_port_information["iqn"],
+                                      "target_address": host_port_information["ipv4"]["address"],
+                                      "iface": iface | combine(iface_required),
+                                      "node": node,
+                                      "interface": interface,
+                                      "force_logout": interface["name"] in ifaces_changed}) -%}{%- endif -%}
+              {%- if scratch.update({"target_portal_index": scratch["target_portal_index"] + 1 }) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- targets -}}
+
+- name: Ensure that there is at least one iSCSI target to configure.
+  ansible.builtin.fail:
+    msg: "There are no usable iSCSI targets found! Check host inventory and network configuration."
+  when: targets | length == 0
+
+- name: Create target node configuration files.
+  ansible.builtin.command:
+    cmd: "iscsiadm -m node -T {{ item['target_iqn'] }} -p {{ item['target_portal'] }} -I {{ item['interface']['name'] }} -o new"
+    creates: "{{ item['target_node_path'] }}"
+  register: create_target_node
+  loop: "{{ targets }}"
+  become: true
+
+- name: Update target node configuration files.
+  netapp_eseries.host.update_conf:
+    path: "{{ item['target_node_path'] }}"
+    options: "{{ item['node'] }}"
+    mode: "0600"
+    backup_path: "{{ eseries_iscsi_conf_path }}"
+    insert_block_comments: false
+    insert_pattern: "# END RECORD"
+    insert: before
+  register: target_node
+  loop: "{{ targets }}"
+
+- name: Update and enable iSCSI service.
+  ansible.builtin.systemd:
+    #state:  # state parameter is not needed since iscsi initiator services are just for starting iscsi sessions during the boot process.
+    name: "{{ eseries_iscsi_initiator_service }}"
+    daemon-reload: true
+    enabled: true
+  become: true
+
+- name: Start iscsid.service.
+  ansible.builtin.systemd:
+    name: iscsid.service
+    state: "{% if create_target_node['changed'] or target_node['changed'] %}restarted{% else %}started{% endif %}"
+    daemon-reload: true
+    enabled: true
+  register: iscsid_service
+  become: true
+
+- name: Determine the status of iscsid.service and wait for it to be started.
+  ansible.builtin.command: systemctl status iscsid.service
+  register: iscsid_status
+  become: true
+  retries: 30
+  delay: 2
+  until: iscsid_status['stdout'] | regex_search('Started Open-iSCSI|iSCSI daemon with pid=[0-9]* started!', multiline=True, ignorecase=True)  # TODO: Add fail condition and failed_when: with a matching condition to fail immediately.
+  changed_when: false
+  when: iscsid_service['changed']
+
+- name: Get the current session list.
+  ansible.builtin.command: iscsiadm -m session
+  register: target_sessions
+  become: true
+  changed_when: false
+  failed_when: false
+
+# Jira Issue: ESOLA-211
+#    Logout of sessions when sessions are no longer needed or changes are needed to update iface or target node definitions.
+
+- name: Login of sessions.
+  ansible.builtin.command: "{{ item }}"
+  register: target_login
+  failed_when: target_login['rc'] not in [0, 15]
+  loop: "{{ login_session_commands }}"
+  become: true
+  vars:
+    login_session_commands: |-
+      {%- set login = [] -%}
+      {%- set session_stdout = target_sessions["stdout"] | default("") -%}
+      {%- for target in targets -%}
+        {%- set session_regex = target["target_address"] ~ ":" ~ target["iface"]["iface.port"] ~ ",.* " ~ target["target_iqn"] -%}
+        {%- set current_session_count = session_stdout | regex_findall(session_regex) | length -%}
+        {%- if current_session_count < target["node"]["node.session.nr_sessions"] | int -%}
+          {%- if login.append("iscsiadm -m node -T " ~ target["target_iqn"] ~ " -p " ~ target["target_portal"] ~ " --login") -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- login -}}

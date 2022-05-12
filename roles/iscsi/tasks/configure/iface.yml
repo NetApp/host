@@ -1,0 +1,58 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/configure/iface.yml"
+
+- name: Ensure that there is at least one iSCSI interface to configure.
+  ansible.builtin.fail:
+    msg: "There are no usable iSCSI interfaces found! Check host inventory."
+  when: eseries_iscsi_interfaces | length == 0
+
+- name: Get iSCSI initiator name.
+  ansible.builtin.command: "grep -o iqn.* {{ eseries_iscsi_conf_path }}initiatorname.iscsi"
+  register: iscsi_iqn
+  changed_when: false
+  become: true
+
+- name: Ensure iSCSI binding exist for each interface.
+  ansible.builtin.shell:
+    cmd: "iscsiadm -m iface -I {{ item['name'] }} > {{ eseries_iscsi_iface_path }}{{ item['name'] }}"
+    creates: "{{ eseries_iscsi_iface_path }}{{ item['name'] }}"
+  register: create_iscsi_bindings
+  loop: "{{ eseries_iscsi_interfaces }}"
+  become: true
+
+- name: Configure iSCSI interfaces.
+  netapp_eseries.host.update_conf:
+    path: "{{ eseries_iscsi_iface_path }}{{ item['name'] }}"
+    options: |-
+      {#- Options to apply to open-iscsi interface bindings (backwards compatible with previous versions). -#}
+      {%- set iface = eseries_iscsi_iface_default_options -%}
+      {%- if eseries_iscsi_tcp_port | default(False) and iface.update({"iface.port": eseries_iscsi_tcp_port}) -%}{%- endif -%}
+      {%- if eseries_iscsi_mtu | default(False) and iface.update({"iface.mtu": eseries_iscsi_mtu}) -%}{%- endif -%}
+      {%- if iface.update(eseries_iscsi_iface_group_options) -%}{%- endif -%}
+      {%- if item["port"] | default(False) and iface.update({"iface.port": item["port"]}) -%}{%- endif -%}
+      {%- if item["mtu"] | default(False) and iface.update({"iface.mtu": item["mtu"]}) -%}{%- endif -%}
+      {%- if iface.update(eseries_iscsi_iface_options) -%}{%- endif -%}
+      {%- if iface.update(item["iface"] | default({})) -%}{%- endif -%}
+      {{- iface | combine({"iface.net_ifacename": item["name"],
+                           "iface.initiatorname": iscsi_iqn["stdout"],
+                           "iface.iscsi_ifacename": item["name"]}) -}}
+    mode: "0600"
+    backup_path: "{{ eseries_iscsi_conf_path }}"
+    insert_block_comments: false
+    insert_pattern: "# END RECORD"
+    insert: before
+  register: ifaces
+  loop: "{{ eseries_iscsi_interfaces }}"
+  become: true
+
+- name: Determine iface configuration files that have been modified.
+  ansible.builtin.set_fact:
+    ifaces_changed: |-
+      {%- set interfaces = [] -%}
+      {%- for iface in create_iscsi_bindings["results"] if iface['changed'] and iface["item"]["name"] not in interfaces -%}
+        {%- if interfaces.append(iface["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for iface in ifaces["results"] if iface['changed'] and iface["item"]["name"] not in interfaces -%}
+        {%- if interfaces.append(iface["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}
