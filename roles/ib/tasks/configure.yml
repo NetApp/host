@@ -6,8 +6,8 @@
 
 - name: Set facts required for configuring persistent network interface names.
   ansible.builtin.set_fact:
-    eseries_common_udev_name: "{{ eseries_ib_udev_name }}"
-    eseries_common_udev_rules: "{{ eseries_ib_udev_rules }}"
+    eseries_common_udev_name: "{{ eseries_ib_base_udev_name | default(eseries_ib_udev_name) }}"
+    eseries_common_udev_rules: "{{ eseries_ib_base_udev_rules | default(eseries_ib_udev_rules) }}"
 
 - name: Configure persistent network interface names.
   ansible.builtin.include_role:
