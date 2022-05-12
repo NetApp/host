@@ -1,6 +1,3 @@
-- name: Include operating specific variables.
-  ansible.builtin.include_vars: "../../iscsi/vars/{{ ansible_os_family | lower }}/configure/session.yml"
-
 - name: Discover mapped-volume information from associated storage systems.
   ansible.builtin.include_role:
     name: netapp_eseries.host.common

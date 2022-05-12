@@ -1,7 +1,11 @@
+# By default include_vars will search the role's vars directory first which indirectly allows access to other roles in
+#   the collection. This relative path is used to avoid redefining the OS specific path definitions (eseries_iscsi_iface_path).
 - name: Include operating specific variables.
   ansible.builtin.include_vars: "../../iscsi/vars/{{ ansible_os_family | lower }}/configure/iface.yml"
 
-# This task creates the file that would have been created by the iscsi role's tasks configure/iface.yml and so by skipping that step.
+# The interface bindings for iscsi and iser differ and both tasks are accomplished using similar shell commands that
+#   are only execute when the interface binding configuration file does not exist. So this task creates that file and
+#   thereby skips the interface binding creation task in the iscsi role.
 - name: Ensure InfiniBand iSER iSCSI binding exist for each interface.
   ansible.builtin.shell:
     cmd: "iscsiadm -m iface -I iser > {{ eseries_iscsi_iface_path }}{{ item['name'] }}"
@@ -24,9 +28,9 @@
     eseries_iscsi_username: "{{ eseries_ib_iser_username | default() }}"
     eseries_iscsi_password: "{{ eseries_ib_iser_password | default() }}"
 
-- name: Configure iSCSI interface bindings.
+- name: Ensure iSCSI Extensions for RDMA (iSER) is configured.
   ansible.builtin.include_role:
-    role: iscsi
+    role: netapp_eseries.host.iscsi
     tasks_from: configure/iface.yml
 
 # This tasks updates ifaces_changed create by the iscsi role's tasks configure/iface.yml

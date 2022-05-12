@@ -41,5 +41,3 @@ eseries_ib_iser_node_default_options:
   node.session.nr_sessions: 1
   node.session.queue_depth: 32
   node.session.timeo.replacement_timeout: 20
-
-eseries_ib_base_iser_enabled: true
