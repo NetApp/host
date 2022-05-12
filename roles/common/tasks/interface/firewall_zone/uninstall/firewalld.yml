@@ -34,7 +34,7 @@
     permanent: true
     offline: true
   register: firewall_zone
-  when: (item["zone"] is defined or eseries_common_firewall_zone is defined) and item["zone"] | default(eseries_common_firewall_zone) in zones_without_interfaces
+  when: item['zone'] | default(eseries_common_firewall_zone | default(False)) and item["zone"] | default(eseries_common_firewall_zone) in zones_without_interfaces
   loop: "{{ eseries_common_interfaces }}"
 
 - name: Reload firewall to recognize the zone changes.

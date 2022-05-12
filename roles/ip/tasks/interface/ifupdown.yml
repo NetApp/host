@@ -1,0 +1,39 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/ifupdown.yml"
+
+- name: Determine facts for configuring firewall configuration.
+  ansible.builtin.set_fact:
+    eseries_ip_firewall_zone: "{{ eseries_ip_interface_common['zone'] | default(eseries_ip_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+
+- name: Configure expected interfaces.
+  ansible.builtin.template:
+    backup: true
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'ifupdown.j2') }}"
+    dest: "{{ eseries_ip_ifupdown_path }}ifcfg-{{ item['name'] }}"
+  register: ifupdown
+  loop: "{{ eseries_ip_interfaces }}"
+  become: true
+
+- name: Get link status for interfaces.
+  ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
+  changed_when: false
+  register: link_info
+  loop: "{{ eseries_ip_interfaces }}"
+  become: true
+
+# Wicked: ifup (wrapper for wicked ifup command which (re)reads from /etc/sysconfig/network/ifcfg-X)
+# NetworkManager: ifup (wrapper for nmcli commands which (re)reads from /etc/sysconfig/network-scripts/ifcfg-X)
+- name: Reload changed interfaces.
+  ansible.builtin.command: "ifup {{ item }}"
+  loop: "{{ update_interfaces }}"
+  become: true
+  vars:
+    update_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for result in ifupdown["results"] if result["changed"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for result in link_info["results"] if "state UP" not in result["stdout"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}
