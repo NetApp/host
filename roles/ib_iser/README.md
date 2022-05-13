@@ -19,6 +19,10 @@
         (...)                                # Add any valid key-value pair for the expected Netplan or ifupdown
                                              #   configuration files. Be sure to quote recognized boolean values (on,
                                              #   off, yes, no, etc.) otherwise they will be converted into True/False.
+        mstconfig:                           # Dictionary containing any key-value options for mstconfig to apply to interface.
+                                             #   mstconfig is a tool for burning Mellanox HCA cards that is include in mstflint,
+                                             #   an open source package that is a subset of the Mellanox Firmware Tools (MFT).
+                                             #   For more details checkout the [MFT documentation](https://docs.nvidia.com/networking/display/MFTV4133/MFT+Supported+Configurations+and+Parameters)
         iface:                               # Dictionary defining additional interface information for
                                              #   open-iscsi (<iscsi_dir>/iface/<interface>).
         node:                                # Dictionary defining additional targets information for open-iscsi
