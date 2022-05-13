@@ -20,6 +20,10 @@
         configure:                           # Whether to configure OpenSM for interface.
         subnet_prefix:                       # OpenSM subnet manager's subnet prefix.
         priority:                            # OpenSM subnet manager's priority.
+        mstconfig:                           # Dictionary containing any key-value options for mstconfig to apply to interface.
+                                             #   mstconfig is a tool for burning Mellanox HCA cards that is include in mstflint,
+                                             #   an open source package that is a subset of the Mellanox Firmware Tools (MFT).
+                                             #   For more details checkout the [MFT documentation](https://docs.nvidia.com/networking/display/MFTV4133/MFT+Supported+Configurations+and+Parameters)
     eseries_nvme_ib_interface_common:        # Dictionary containing any common valid key-value pair for Netplan or
                                              #   ifcfg-x configuration files. Be sure to quote values that will be
                                              #   converted into a boolean value (on, off, yes, no, etc.) otherwise
