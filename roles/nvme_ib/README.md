@@ -24,6 +24,11 @@
                                              #   mstconfig is a tool for burning Mellanox HCA cards that is include in mstflint,
                                              #   an open source package that is a subset of the Mellanox Firmware Tools (MFT).
                                              #   For more details checkout the [MFT documentation](https://docs.nvidia.com/networking/display/MFTV4133/MFT+Supported+Configurations+and+Parameters)
+            LINK_TYPE_PX: ib                 # LINK_TYPE_P1, LINK_TYPE_P2, ..., LINK_TYPE_PX are used to configure the port's
+                                             #   working mode. Note that X must match the HCA's port number for the interface which
+                                             #   can be determined by 'grep PCI_SLOT_NAME /sys/class/net/<INTERFACE_NAME>/device/uevent',
+                                             #   adding 1 to the last number from the PCI slot name and converting to decimal.
+                                             #     Example: PCI_SLOT_NAME=0000:2f:00.2 (2 + 1 -> HCA port 3) -> LINK_TYPE_P3: ib
     eseries_nvme_ib_interface_common:        # Dictionary containing any common valid key-value pair for Netplan or
                                              #   ifcfg-x configuration files. Be sure to quote values that will be
                                              #   converted into a boolean value (on, off, yes, no, etc.) otherwise
