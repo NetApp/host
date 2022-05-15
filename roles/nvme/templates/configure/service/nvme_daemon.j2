@@ -1,3 +1,4 @@
+{%- set connections_file = eseries_nvme_daemon_path ~ eseries_nvme_connections_file -%}
 #!/bin/sh
 
 is_storage_port_connected() {
@@ -36,6 +37,9 @@ connect_storage() {
   storage_name=$2
   storage_nqn=$3
   storage_address=$4
+  port=$5
+  queue_depth=$6
+  controller_loss_timeout=$7
 
   # Check whether storage has been connected through port.
   if ! (is_storage_port_connected $storage_nqn $storage_address); then
@@ -46,8 +50,8 @@ connect_storage() {
       echo "Failed! $storage_address not reachable."
 
     # Discover and connect to storage via port address.
-    elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=4420 --hostnqn=$host_nqn > /dev/null 2>&1; then
-      if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=1024 --ctrl-loss-tmo=3600 > /dev/null 2>&1; then
+    elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=$port --hostnqn=$host_nqn > /dev/null 2>&1; then
+      if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=$queue_depth --ctrl-loss-tmo=$controller_loss_timeout > /dev/null 2>&1; then
         sleep 1
         trigger_udev_device_rules $storage_nqn $storage_address
         echo "Connected."
@@ -85,12 +89,12 @@ start() {
   host_nqn=$(cat /etc/nvme/hostnqn)
 
   # Spin every 5 seconds and validate NVMe connections.
-  while [ -f /etc/nvme/eseries_nvme_ib_connections.conf ]; do
+  while [ -f {{ connections_file }} ]; do
 
     # Connect to all known E-Series storage system(s).
     while read -r line; do
       connect_storage $host_nqn $line &
-    done < /etc/nvme/eseries_nvme_ib_connections.conf
+    done < {{ connections_file }}
 
     # Wait for all tasks to complete.
     wait
@@ -102,7 +106,7 @@ start() {
       if ! is_storage_port_connected $array_info; then
         storage_connected=1
       fi
-    done < /etc/nvme/eseries_nvme_ib_connections.conf
+    done < {{ connections_file }}
     if [ $storage_connected = 0 ]; then
       return
     fi
@@ -114,10 +118,10 @@ start() {
 
 stop() {
 
-  if [ -f /etc/nvme/eseries_nvme_ib_connections.conf ]; then
+  if [ -f {{ connections_file }} ]; then
 
     # Create a temporary file with only the entries that are required for disconnecting from storage system(s).
-    cat /etc/nvme/eseries_nvme_ib_connections.conf | awk '{print $1" "$2}' | uniq > /tmp/~eseries_nvme_ib_disconnections.conf
+    cat {{ connections_file }} | awk '{print $1" "$2}' | uniq > /tmp/~eseries_nvme_ib_disconnections.conf
 
     # Disconnect from all E-Series storage system(s).
     while read -r line; do
@@ -132,7 +136,7 @@ stop() {
   fi
 }
 
-# Note: reload will start any NVMe IB sessions that were not started found in /etc/nvme/eseries_nvme_ib_connections.conf
+# Note: reload will start any NVMe IB sessions that were not started found in {{ connections_file }}
 #   This functionality allows new sessions to be created and started without affecting existing sessions.
 case $1 in
   start|reload)

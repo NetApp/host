@@ -1,0 +1,19 @@
+- name: Ensure required NVMe kernel modules have been removed to boot process.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_nvme_modules_load_d }}eseries_{{ eseries_nvme_protocol }}.conf"
+  become: true
+
+- name: Ensure required NVMe kernel module parameters have been removed to boot process.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_nvme_modules_d }}eseries_{{ eseries_nvme_protocol }}.conf"
+  become: true
+
+- name: Remove InfiniBand kernel modules.
+  community.general.modprobe:
+    state: absent
+    name: "{{ item }}"
+  loop: "{{ eseries_nvme_uninstall_kernel_modules }}"
+  ignore_errors: true
+  become: true

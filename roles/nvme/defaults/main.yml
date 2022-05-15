@@ -1,0 +1,44 @@
+#eseries_nvme_interfaces: {} #- DEFINED BY CALLING ROLE
+#eseries_nvme_interface_type: #- DEFINED BY CALLING ROLE
+#eseries_nvme_protocol:  # Choices: nvme_fc, nvme_ib, nvme_roce - DEFINED BY CALLING ROLE
+
+eseries_nvme_port: 4420
+eseries_nvme_queue_depth: 1024
+eseries_nvme_controller_loss_timeout: 3600
+eseries_nvme_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
+
+#eseries_nvme_service_name: #eseries_nvme.service - GENERATED
+#eseries_nvme_daemon_name: #eseries_nvme_daemon - GENERATED
+#eseries_nvme_connections_file: eseries_nvme_connections - GENERATED
+eseries_nvme_hostnqn: /etc/nvme/hostnqn
+eseries_nvme_daemon_path: /etc/nvme/
+eseries_nvme_service_path: /etc/systemd/system/
+
+eseries_nvme_skip: False # Escape hatch if a user just wants to use the other roles (i.e., IPoIB, NVMe) and IB packages were installed by something else.
+eseries_nvme_rdma: /etc/rdma/
+eseries_nvme_rdma_memory_conf: /etc/security/limits.d/rdma.conf
+eseries_nvme_modules_load_d: /etc/modules-load.d/
+eseries_nvme_modules_d: /etc/modprobe.d/
+
+eseries_nvme_ubuntu_packages:
+  - rdma-core
+  - nvme-cli
+eseries_nvme_rhel_packages:
+  - rdma-core
+  - nvme-cli
+eseries_nvme_suse_packages:
+  - rdma-core
+  - nvme-cli
+
+eseries_nvme_kernel_modules:
+  - name: nvme_core
+    parameters: multipath=Y
+  - name: nvme-rdma
+    parameters:
+  - name: nvme_fabrics
+    parameters:
+
+eseries_nvme_uninstall_kernel_modules:
+  - nvme-fabrics
+  - nvme-rdma
+  - nvme-core

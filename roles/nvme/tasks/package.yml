@@ -1,0 +1,2 @@
+- name: Ensure NVMe base packages are installed.
+  ansible.builtin.include_tasks: "package/{{ ansible_os_family | lower }}.yml"
