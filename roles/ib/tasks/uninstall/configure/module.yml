@@ -1,0 +1,19 @@
+- name: Ensure required InfiniBand kernel modules have been removed to boot process.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ib_modules_load_d }}eseries_ib.conf"
+  become: true
+
+- name: Ensure required InfiniBand kernel module parameters have been removed to boot process.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ib_modules_d }}eseries_ib.conf"
+  become: true
+
+- name: Ensure required InfiniBand modules are unloaded.
+  community.general.modprobe:
+    state: absent
+    name: "{{ item['name'] }}"
+  loop: "{{ eseries_ib_kernel_modules }}"
+  ignore_errors: true
+  become: true

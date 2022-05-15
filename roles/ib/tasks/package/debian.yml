@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand packages are installed (Ubuntu).
+  ansible.builtin.apt:
+    state: present
+    name: "{{ eseries_ib_ubuntu_packages }}"
+  become: true

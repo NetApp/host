@@ -1,0 +1,65 @@
+- name: Get InfiniBand device PCI slot name.
+  ansible.builtin.command: "grep -o '[0-9a-f]*:[0-9a-f]*:[0-9a-f]*.[0-9]*' /sys/class/net/{{ item['name'] }}/device/uevent"
+  register: pci_slot_names
+  changed_when: false
+  loop: "{{ eseries_ib_interfaces }}"
+
+- name: Get current Infiniband device configuration.
+  ansible.builtin.command: "mstconfig -d {{ item['stdout'] }} query"
+  register: ib_devices_info
+  changed_when: false
+  loop: "{{ pci_slot_names['results'] }}"
+
+- name: Determine any required InfiniBand device changes.
+  ansible.builtin.set_fact:
+    mstconfig_change_info: |-
+      {%- set mstconfig_change_info = [] -%}
+      {%- for ib_device_info in ib_devices_info["results"] -%}
+
+        {#- Determine current configuration for InfiniBand device -#}
+        {%- set scratch = {"config_section": False, "configuration": {}} -%}
+        {%- set pci_slot_name = ib_device_info["item"]["stdout"] -%}
+        {%- set interface_info = ib_device_info["item"]["item"] -%}
+
+        {%- for line in ib_device_info["stdout_lines"] -%}
+          {%- if line | regex_search("Configurations:") -%}
+            {%- if scratch.update({"config_section": True}) -%}{%- endif -%}
+          {%- elif scratch["config_section"] -%}
+            {%- set info = (line | regex_replace("^ +", "") | regex_replace(" +", " ") | regex_replace(" +$", "")).split(" ") -%}
+            {%- if info | length == 2 -%}
+              {%- set key, values = info[0], (info[1] | regex_replace("\)", "")).split("(") -%}
+              {%- if scratch["configuration"].update({key: values}) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {#- Determine supplied configuration options that need to be updated. -#}
+        {%- if scratch.update({"set_args": []}) -%}{%- endif -%}
+        {%- for mstconfig_key, mstconfig_value in (interface_info["mstconfig"] | default({})).items() -%}
+          {%- set key = mstconfig_key | upper -%}
+          {%- set value = mstconfig_value | string | upper -%}
+        
+          {%- if scratch["configuration"][key] | default(False) and value not in scratch["configuration"][key] -%}
+            {%- if scratch["set_args"].append(key ~ "=" ~ value) -%}{%- endif -%}
+          {%- endif -%}
+
+        {%- endfor -%}
+        {%- if scratch["set_args"] -%}
+          {%- if mstconfig_change_info.append({"device": pci_slot_name, "set_args": scratch["set_args"] | join(" ")}) -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- mstconfig_change_info -}}
+
+- name: Apply any mstconfig changes required.
+  ansible.builtin.command: "mstconfig -y -d {{ item['device'] }} set {{ item['set_args'] }}"
+  loop: "{{ mstconfig_change_info }}"
+  register: mstconfig_set
+
+- name: Reboot host to update InfiniBand devices.
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: reboot.yml
+    apply:
+      vars:
+        eseries_common_allow_host_reboot_reason: "InfiniBand device configuration changed. Reboot is required."
+  when: mstconfig_set["changed"]

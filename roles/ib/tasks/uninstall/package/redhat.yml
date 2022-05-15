@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand packages are removed (RHEL).
+  ansible.builtin.yum:
+    state: absent
+    name: "{{ eseries_ib_rhel_packages }}"
+  become: true
