@@ -1,0 +1,19 @@
+- name: Ensure required IP over InfiniBand modules are loaded.
+  community.general.modprobe:
+    state: present
+    name: "{{ item['name'] }}"
+    params: "{{ item['parameters'] }}"
+  loop: "{{ eseries_ipoib_kernel_modules }}"
+  become: true
+
+- name: Ensure required IP over InfiniBand kernel modules have been added to boot process.
+  ansible.builtin.template:
+    src: configure/module/module_conf.j2
+    dest: "{{ eseries_ipoib_modules_load_d }}eseries_ipoib.conf"
+  become: true
+
+- name: Ensure required IP over InfiniBand kernel module parameters have been added to boot process.
+  ansible.builtin.template:
+    src: configure/module/module_options_conf.j2
+    dest: "{{ eseries_ipoib_modules_d }}eseries_ipoib.conf"
+  become: true

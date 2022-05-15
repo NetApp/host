@@ -1,6 +1,0 @@
-eseries_ipoib_default_network_tool: netplan
-eseries_ipoib_ifcfg_path: /etc/network/interfaces.d/
-eseries_ipoib_netplan_path: /etc/netplan/
-eseries_ipoib_networkd_dispatcher_routable_d_path: /etc/networkd-dispatcher/routable.d/
-eseries_ipoib_networkd_ifup_d_path: /etc/network/if-up.d/
-eseries_ipoib_rdma_memory_conf: /etc/security/limits.d/rdma.conf
