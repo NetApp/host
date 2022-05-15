@@ -1,50 +1,33 @@
-- name: Include operating specific variables.
-  include_vars: "{{ ansible_os_family | lower }}.yml"
-
-- name: Collect facts about systemd services.
-  service_facts:
-  become: true
-
-- name: Ensure NVMe service for E-Series is stopped and disabled.
-  ansible.builtin.systemd:
-    name: "{{ eseries_nvme_ib_service_name }}"
-    state: stopped
-    enabled: false
-    daemon_reload: true
-  when: "eseries_nvme_ib_service_name in (ansible_facts['services'].keys() | list)"
-  become: true
-
-- name: Determine variable values required for ipoib and ib_opensm roles.
-  set_fact:
-    eseries_ib_base_nvme_enabled: true
-    eseries_ipoib_interfaces: "{{ eseries_ipoib_interfaces | default(eseries_nvme_ib_interfaces | default(omit)) }}"
+- name: Determine required facts for installing NVMe over InfiniBand.
+  ansible.builtin.set_fact:
+    eseries_ipoib_configure_network: "{{ eseries_nvme_ib_configure_network }}"
+    eseries_ipoib_configure_firewall: "{{ eseries_nvme_ib_configure_firewall }}"
+    eseries_ipoib_interfaces: "{{ eseries_nvme_ib_interfaces }}"
+    eseries_ipoib_interface_required_keys: "{{ eseries_nvme_ib_interface_required_keys }}"
+    eseries_ipoib_interface_ignore_keys: "{{ eseries_nvme_ib_interface_ignore_keys }}"
+    eseries_ipoib_interface_common: "{{ eseries_nvme_ib_interface_common }}"
+    eseries_ipoib_interface_defaults: "{{ eseries_nvme_ib_interface_defaults }}"
+    eseries_ipoib_firewall_zone: "{{ eseries_nvme_ib_interface_common['zone'] | default(eseries_nvme_ib_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_ipoib_default_hook_templates: "{{ eseries_nvme_ib_default_hook_templates }}"
     eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_nvme_ib_mtu | default(omit)) }}"
     eseries_ib_opensm_interfaces: "{{ eseries_nvme_ib_interfaces }}"
+    eseries_nvme_protocol: nvme_ib
+    eseries_nvme_interfaces: "{{ eseries_nvme_ib_interfaces }}"
+    eseries_nvme_port: "{{ eseries_nvme_ib_port }}"
+    eseries_nvme_queue_depth: "{{ eseries_nvme_ib_queue_depth }}"
+    eseries_nvme_controller_loss_timeout: "{{ eseries_nvme_ib_controller_loss_timeout }}"
 
-- name: Ensure InfiniBand IPoIB is installed and configured.
-  import_role:
-    name: ib_opensm
+- name: Uninstall NVMe.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.nvme
     tasks_from: uninstall.yml
 
-- name: Ensure InfiniBand IPoIB is uninstalled.
+- name: Uninstall OpenSM.
   import_role:
-    name: ipoib
+    name: netapp_eseries.host.ib_opensm
     tasks_from: uninstall.yml
 
-- name: Remove NVMe over InfiniBand systemd service file.
-  ansible.builtin.file:
-    state: absent
-    path: "{{ eseries_nvme_ib_service_path }}{{ eseries_nvme_ib_service_name }}"
-  become: true
-
-- name: Remove NVMe over InfiniBand daemon.
-  ansible.builtin.file:
-    state: absent
-    path: "{{ eseries_nvme_ib_daemon_path }}{{ eseries_nvme_ib_daemon_name }}"
-  become: true
-
-- name: Remove NVMe over InfiniBand daemon.
-  ansible.builtin.file:
-    state: absent
-    path: "{{ eseries_nvme_ib_daemon_path }}eseries_nvme_ib_connections.conf"
-  become: true
+- name: Uninstall IP over InfiniBand.
+  import_role:
+    name: netapp_eseries.host.ipoib
+    tasks_from: uninstall.yml
