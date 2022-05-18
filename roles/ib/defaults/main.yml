@@ -9,20 +9,14 @@ eseries_ib_modules_d: /etc/modprobe.d/
 
 eseries_ib_ubuntu_packages:
   - infiniband-diags
-  - libibverbs
-  - libibverbs-utils
   - rdma-core
   - mstflint
 eseries_ib_rhel_packages:
   - infiniband-diags
-  - libibverbs
-  - libibverbs-utils
   - rdma-core
   - mstflint
 eseries_ib_suse_packages:
   - infiniband-diags
-  - libibverbs
-  - libibverbs-utils
   - rdma-core
   - mstflint
 
