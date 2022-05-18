@@ -19,9 +19,9 @@
   block:
     - name: Determine NVMe storage target information.
       set_fact:
-        eseries_nvme_daemon_name: eseries_{{ eseries_nvme_protocol }}_deamon.sh
+        eseries_nvme_daemon_name: eseries_{{ eseries_nvme_protocol }}_deamon
         eseries_nvme_service_name: eseries_{{ eseries_nvme_protocol }}.service
-        eseries_nvme_connections_file: eseries_{{ eseries_nvme_protocol }}_connections
+        eseries_nvme_connections_file: eseries_{{ eseries_nvme_protocol }}_connections.conf
         targets: |-
           {%- set targets = {} -%}
           {%- for volume in initiator_volume_facts if volume["host_port_information"][eseries_nvme_protocol] is defined -%}
