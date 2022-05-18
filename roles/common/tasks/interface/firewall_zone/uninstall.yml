@@ -4,8 +4,8 @@
 
 - name: Unconfigure firewalld service.
   ansible.builtin.include_tasks: interface/firewall_zone/uninstall/firewalld.yml
-  when: ansible_facts["services"]["firewalld.service"] is defined
+  when: eseries_common_firewall_configure == True and ansible_facts["services"]["firewalld.service"] is defined
 
 - name: Unconfigure ufw service.
   ansible.builtin.include_tasks: interface/firewall_zone/uninstall/ufw.yml
-  when: ansible_facts["services"]["ufw.service"] is defined
+  when: eseries_common_firewall_configure == True and ansible_facts["services"]["ufw.service"] is defined
