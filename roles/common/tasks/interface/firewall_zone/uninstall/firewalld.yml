@@ -9,12 +9,14 @@
   ansible.builtin.command: "firewall-cmd --get-zones"
   changed_when: false
   register: zones
+  become: true
 
 - name: Get info for each zone
   ansible.builtin.command: "firewall-cmd --info-zone={{ item }}"
   changed_when: false
   register: zones_info
   loop: '{{ zones["stdout"].split(" ") }}'
+  become: true
 
 - name: Determine zones without interfaces.
   ansible.builtin.set_fact:
@@ -36,9 +38,11 @@
   register: firewall_zone
   when: item['zone'] | default(eseries_common_firewall_zone | default(False)) and item["zone"] | default(eseries_common_firewall_zone) in zones_without_interfaces
   loop: "{{ eseries_common_interfaces }}"
+  become: true
 
 - name: Reload firewall to recognize the zone changes.
   ansible.builtin.systemd:
     state: reloaded
     name: firewalld.service
   when: 'firewall_zone["changed"] and ansible_facts["services"]["firewalld.service"]["state"] == "running"'
+  become: true
