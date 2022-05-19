@@ -16,8 +16,7 @@ eseries_nvme_roce_controller_loss_timeout: 3600
 eseries_nvme_roce_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
 
 eseries_nvme_roce_interface_common: {}
-eseries_nvme_roce_interface_defaults:
-  mtu: 65520
+eseries_nvme_roce_interface_defaults: {}
 
 # eseries_nvme_roce_firewall_zone:  # Determined at runtime.
 eseries_nvme_roce_default_hook_templates: []
