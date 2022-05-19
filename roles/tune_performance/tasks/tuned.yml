@@ -35,3 +35,4 @@
   ansible.builtin.systemd:
     name: tuned
     state: "{%- if tuned_verify_result.rc != 0 %}restarted{%- else %}started{%- endif %}"
+    enabled: yes
