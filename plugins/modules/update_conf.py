@@ -322,7 +322,6 @@ class UpdateConfigFile(object):
 
                     # Comment out any expected options that have already been set previously to prevent duplicates
                     elif option in options_applied:
-                        self.module.warn("options_applied: [%s], %s, %s" % (",".join(options_applied), comment, option))
                         if not comment:
                             self.copy_lines_cached[index] = "%s %s" % (self.comment_character, line)
 
