@@ -40,3 +40,6 @@ eseries_common_target_scan_paths:
 eseries_common_discovery_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser", "nvme_ib", "nvme_fc", "nvme_roce"]
 eseries_common_discovery_rescan_iscsi_session_protocol_list: ["iscsi", "ib_iser"]
 eseries_common_discovery_rescan_scsi_bus_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser"]
+
+# Set to false to skip attempting to configure the firewall even if firewalld or ufw are installed.
+eseries_common_firewall_configure: true
