@@ -2,6 +2,9 @@ netapp_eseries.host.ib_base
 =========
     Install and configure base packages for InfiniBand.
 
+    * Note that this role has been deprecated and will be removed in a future release. Please update to use the netapp_eseries.host.ib and netapp_eseries.host.nvme roles instead.
+    * Do not configure any nodes with both netapp_eseries.host.ib_base and netapp_eseries.host.ib roles.
+
 Variables (Values specified are the defaults)
 ---------
 eseries_ib_base_skip:                    # Whether we should skip configuring InfiniBand entirely (Default: false). Useful to just use functionality provided by other roles that inherit this one when IB is already setup.
