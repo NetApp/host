@@ -1,3 +1,0 @@
-# Use this file to get git to recognize the empty folder 
-# as it is used by Ansible to determine the path to start from
-# when doing specifying an "ansible.builtin.include_vars".
