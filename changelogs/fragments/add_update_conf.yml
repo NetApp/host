@@ -1,0 +1,2 @@
+minor_changes:
+  - update_conf - Add module for setting configuration files based on a dictionary.

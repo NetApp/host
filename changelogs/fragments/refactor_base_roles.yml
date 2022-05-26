@@ -1,0 +1,12 @@
+minor_changes:
+  - ip - New base role to configure IP addresses, names, and implement hooks for network interfaces.
+  - ib - New base role to install and configure packages required for InfiniBand.
+  - nvme - New base role to install and configure required packages for NVMe.
+  - iscsi - Update to utilize the new ip base for all interface configurations.
+  - iscsi - Improve configuration via role dictionaries to configure various iSCSI options.
+  - ipoib - Replace ib_base dependency with new ip and ib roles.
+  - ib_iser - Update to utilize iscsi role for all iSCSI specific tasks.
+  - nvme_ib - Update to utilize the new ib and nvme roles.
+
+deprecated_features:
+  - ib_base - Did more than just configure InfiniBand (iSER, SRP, NVMe) so tasks have been logically grouped into other roles (ib, nvme, ib_iser, etc) to simplify and improve code maintainability.

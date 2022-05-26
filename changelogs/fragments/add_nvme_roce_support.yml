@@ -1,0 +1,3 @@
+minor_changes:
+  - roce - Role to configure RDMA over Converged Ethernet (RoCE) communications with NetApp E-Series storage systems.
+  - nvme_roce - Role to configure NVMe over RDMA over Converged Ethernet (RoCE) communications with NetApp E-Series storage systems.

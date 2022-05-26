@@ -1,0 +1,2 @@
+minor_changes:
+  - Require Ansible 2.10 or later.
