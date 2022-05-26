@@ -6,7 +6,7 @@ The purpose of this example project is to provide a starting framework for an en
 
 Project Requirements
 --------------------
-Ansible control node with Ansible version 2.9 or later installed
+Ansible control node with Ansible version 2.10 or later installed
     $ pip install ansible netaddr ipaddr
 
 NetApp E-Series automation ecosystem
