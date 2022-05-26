@@ -32,7 +32,7 @@ NetApp E-Series Host Collection
 
 Requirements
 ------------
-    - Ansible 2.9 or later
+    - Ansible 2.10 or later
     - NetApp E-Series E2800 platform or newer or NetApp E-Series SANtricity Web Services Proxy configured for older E-Series Storage arrays.
     - Python packages: netaddr, ipaddr
 
