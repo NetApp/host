@@ -15,3 +15,6 @@ eseries_ib_opensm_rhel_packages:
   - opensm
 
 eseries_ib_opensm_log_path: /var/log/
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false

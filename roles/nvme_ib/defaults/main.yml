@@ -21,3 +21,6 @@ eseries_nvme_ib_interface_ignore_keys:
   - hook_template
   - configure
   - mstconfig
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false

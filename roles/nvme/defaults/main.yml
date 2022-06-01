@@ -42,3 +42,6 @@ eseries_nvme_uninstall_kernel_modules:
   - nvme-fabrics
   - nvme-rdma
   - nvme-core
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false

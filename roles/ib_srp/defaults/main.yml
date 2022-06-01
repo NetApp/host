@@ -1,1 +1,4 @@
 eseries_ib_srp_daemon_service: /etc/systemd/system/srp_daemon.service
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false

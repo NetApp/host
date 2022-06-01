@@ -42,3 +42,6 @@ eseries_nvme_roce_ubuntu_packages:
 eseries_nvme_roce_kernel_modules:
   - name: nvme-rdma
     parameters:
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false
