@@ -1,22 +1,3 @@
-- name: Determine facts required for removing InfiniBand iSER.
-  ansible.builtin.set_fact:
-    eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
-    eseries_iscsi_iscsid_conf_options: "{{ eseries_ib_iser_iscsid_conf_options }}"
-    eseries_iscsi_iscsid_conf_group_options: "{{ eseries_ib_iser_iscsid_conf_group_options }}"
-    eseries_iscsi_iscsid_conf_default_options: "{{ eseries_ib_iser_iscsid_conf_default_options }}"
-    eseries_ipoib_configure_network: "{{ eseries_ib_iser_configure_network }}"
-    eseries_ipoib_configure_firewall: "{{ eseries_ib_iser_configure_firewall }}"
-    eseries_ipoib_interfaces: "{{ eseries_ib_iser_interfaces }}"
-    eseries_ipoib_interface_required_keys: "{{ eseries_ib_iser_interface_required_keys }}"
-    eseries_ipoib_interface_ignore_keys: "{{ eseries_ib_iser_interface_ignore_keys }}"
-    eseries_ipoib_interface_common: "{{ eseries_ib_iser_interface_common }}"
-    eseries_ipoib_interface_defaults: "{{ eseries_ib_iser_interface_defaults }}"
-    eseries_ipoib_firewall_zone: "{{ eseries_ib_iser_interface_common['zone'] | default(eseries_ib_iser_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
-    eseries_ipoib_default_hook_templates: "{{ eseries_ib_iser_default_hook_templates }}"
-    eseries_ipoib_udev_name: "{{ eseries_ib_iser_udev_name }}"
-    eseries_ipoib_udev_rules: "{{ eseries_ib_iser_udev_rules }}"
-    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
-
 - name: Ensure iSCSI packages are uninstalled.
   ansible.builtin.include_role:
     name: netapp_eseries.host.iscsi
@@ -26,13 +7,35 @@
   ansible.builtin.include_role:
     name: netapp_eseries.host.iscsi
     tasks_from: uninstall/configure.yml
+    apply:
+      vars:
+        eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
+        eseries_iscsi_iscsid_conf_options: "{{ eseries_ib_iser_iscsid_conf_options }}"
+        eseries_iscsi_iscsid_conf_group_options: "{{ eseries_ib_iser_iscsid_conf_group_options }}"
+        eseries_iscsi_iscsid_conf_default_options: "{{ eseries_ib_iser_iscsid_conf_default_options }}"
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ib_opensm
     tasks_from: uninstall.yml
+    apply:
+      vars:
+        eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
 
 - name: Ensure InfiniBand IPoIB is uninstalled.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ipoib
     tasks_from: uninstall.yml
+    apply:
+      vars:
+        eseries_ipoib_configure_network: "{{ eseries_ib_iser_configure_network }}"
+        eseries_ipoib_configure_firewall: "{{ eseries_ib_iser_configure_firewall }}"
+        eseries_ipoib_interfaces: "{{ eseries_ib_iser_interfaces }}"
+        eseries_ipoib_interface_required_keys: "{{ eseries_ib_iser_interface_required_keys }}"
+        eseries_ipoib_interface_ignore_keys: "{{ eseries_ib_iser_interface_ignore_keys }}"
+        eseries_ipoib_interface_common: "{{ eseries_ib_iser_interface_common }}"
+        eseries_ipoib_interface_defaults: "{{ eseries_ib_iser_interface_defaults }}"
+        eseries_ipoib_firewall_zone: "{{ eseries_ib_iser_interface_common['zone'] | default(eseries_ib_iser_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+        eseries_ipoib_default_hook_templates: "{{ eseries_ib_iser_default_hook_templates }}"
+        eseries_ipoib_udev_name: "{{ eseries_ib_iser_udev_name }}"
+        eseries_ipoib_udev_rules: "{{ eseries_ib_iser_udev_rules }}"
