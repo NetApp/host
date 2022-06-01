@@ -12,6 +12,9 @@ eseries_iscsi_udev_rules: {}
 eseries_iscsi_default_hook_templates: []
 eseries_iscsi_interface_common: {}
 eseries_iscsi_interface_defaults: {}
+eseries_iscsi_interface_required_keys:
+  - name
+  - address
 eseries_iscsi_interface_ignore_keys:
   - hook_template
   - iface
