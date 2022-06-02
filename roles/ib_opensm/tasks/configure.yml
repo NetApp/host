@@ -58,32 +58,3 @@
   delay: 2
   until: command_result['rc'] == 0
   when: opensm_service['changed']
-
-- name: Discover mapped-volume information from associated storage systems.
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.common
-    tasks_from: volume_facts.yml
-  when: initiator_volume_facts is not defined
-
-- name: Determine whether all expected storage systems have been discovered.
-  ansible.builtin.command: saquery GUIDInfoRecord
-  register: opensm_storage_discovery
-  changed_when: false
-  until: opensm_storage_discovery["stdout"] | regex_search(guids_pattern, ignorecase=True)
-  retries: 12
-  delay: 5
-  vars:
-    guids_pattern: |-
-      {#- Determine all E-Series storage system HIC GUIDs and return regex pattern. -#}
-      {%- set guids = [] -%}
-      {%- for volume in initiator_volume_facts -%}
-        {%- for protocol in volume["host_port_protocols"] -%}
-          {%- for host_port_info in volume["host_port_information"][protocol] if host_port_info["guid"] | default(False) and host_port_info["guid"] | length == 32 -%}
-            {%- set guid = "0x" ~ host_port_info["guid"][16:] | lower -%}
-            {%- if guid not in guids -%}
-              {%- if guids.append(guid) -%}{%- endif -%}
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endfor -%}
-      {%- endfor -%}
-      {{- "(" ~ guids | join("|") ~ ")" -}}

@@ -1,8 +1,3 @@
-- name: Discover mapped-volume information from associated storage systems.
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.common
-    tasks_from: volume_facts.yml
-
 - name: Ensure InfiniBand iSER iSCSI sessions are configured.
   ansible.builtin.include_role:
     name: netapp_eseries.host.iscsi

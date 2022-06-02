@@ -1,6 +1,16 @@
 - name: Include operating specific variables.
   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/configure/session.yml"
 
+- name: Update storage system facts.
+  ansible.builtin.import_role:
+    name: netapp_eseries.host.common
+    tasks_from: gather_storage_facts.yml
+
+- name: Update mapped-volume information for each host.
+  ansible.builtin.import_role:
+    name: netapp_eseries.host.common
+    tasks_from: volume_facts.yml
+
 - name: Determine iSCSI target nodes.
   ansible.builtin.set_fact:
     targets: |-
