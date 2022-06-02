@@ -28,10 +28,14 @@
           {%- if ifupdown["rc"] == 0 -%}
             {%- if managers.append("ifupdown") -%}{%- endif -%}
           {%- endif -%}
-          {%- if ansible_facts["services"]["NetworkManager.service"] is defined -%}
+          {%- if ansible_facts["services"]["NetworkManager.service"] is defined and
+                 (ansible_facts["services"]["NetworkManager.service"]["state"] == "running" or
+                  ansible_facts["services"]["NetworkManager.service"]["status"] == "enabled") -%}
             {%- if managers.append("network_manager") -%}{%- endif -%}
           {%- endif -%}
-          {%- if ansible_facts["services"]["systemd-networkd.service"] is defined -%}
+          {%- if ansible_facts["services"]["systemd-networkd.service"] is defined and
+                 (ansible_facts["services"]["systemd-networkd.service"]["state"] == "running" or
+                  ansible_facts["services"]["systemd-networkd.service"]["status"] == "enabled") -%}
             {%- if managers.append("networkd") -%}{%- endif -%}
           {%- endif -%}
           {{- managers -}}
