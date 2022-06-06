@@ -43,7 +43,7 @@
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
 
 ## Uninstall
-    To uninstall, add '--tags ib_iser_uninstall' to the ansible-playbook command or import uninstall.yml task directly
+    To uninstall, add '--tags ib_iser_uninstall' to the ansible-playbook command or include uninstall.yml task directly
     from role.
 
 ## License

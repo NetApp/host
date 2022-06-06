@@ -23,3 +23,6 @@ eseries_multipath_ubuntu_packages:
 
 eseries_multipath_nvme_protocols: ["nvme_ib", "nvme_fc", "nvme_roce"]
 eseries_multipath_foreign_library: nvme  # enables foreign library when multipath enable_foreign option is available
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false

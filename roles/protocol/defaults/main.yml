@@ -1,2 +1,5 @@
 eseries_protocol: auto
 eseries_protocol_log_path: /var/log/
+
+# Do not use! Internal use only
+eseries_common_force_skip_uninstall: false
