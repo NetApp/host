@@ -16,6 +16,7 @@ eseries_iscsi_interface_required_keys:
   - name
   - address
 eseries_iscsi_interface_ignore_keys:
+  - address
   - hook_template
   - iface
   - node
