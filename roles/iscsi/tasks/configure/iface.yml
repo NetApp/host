@@ -14,7 +14,7 @@
 
 - name: Ensure iSCSI binding exist for each interface.
   ansible.builtin.shell:
-    cmd: "iscsiadm -m iface -I {{ item['name'] }} > {{ eseries_iscsi_iface_path }}{{ item['name'] }}"
+    cmd: "iscsiadm -m iface -I {{ item['name'] }} -o new"
     creates: "{{ eseries_iscsi_iface_path }}{{ item['name'] }}"
   register: create_iscsi_bindings
   loop: "{{ eseries_iscsi_interfaces }}"
@@ -41,6 +41,7 @@
     insert_block_comments: false
     insert_pattern: "# END RECORD"
     insert: before
+    padding: both # required for iscsi iface files otherwise there are parsing errors.
   register: ifaces
   loop: "{{ eseries_iscsi_interfaces }}"
   become: true
