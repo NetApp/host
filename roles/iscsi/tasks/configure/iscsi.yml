@@ -12,10 +12,14 @@
   become: true
   when: eseries_iscsi_iqn is defined and eseries_iscsi_iqn
 
+# Note: eseries_iscsi_node_settings is retained for backwards compatibility.
 - name: Configure iSCSI settings.
   netapp_eseries.host.update_conf:
     path: "{{ eseries_iscsi_conf_path }}iscsid.conf"
-    options: "{{ eseries_iscsi_iscsid_conf_default_options | combine(eseries_iscsi_node_settings | default({})) | combine(eseries_iscsi_iscsid_conf_group_options) | combine(eseries_iscsi_iscsid_conf_options) }}"
+    options: "{{ eseries_iscsi_iscsid_conf_default_options
+                 | combine(eseries_iscsi_node_settings | default({}))
+                 | combine(eseries_iscsi_iscsid_conf_group_options)
+                 | combine(eseries_iscsi_iscsid_conf_options) }}"
     mode: "0600"
   register: iscsid_conf
 
