@@ -1,0 +1,22 @@
+- name: Check whether SELinux is installed and required variables are defined.
+  ansible.builtin.include_tasks: prompt.yml
+
+- name: Configure SELinux and reboot nodes to apply changes.
+  block:
+    - name: Update SELinux configuration.
+      ansible.posix.selinux:
+        state: "{{ eseries_selinux_state }}"
+        policy: "{{ eseries_selinux_policy | default(omit) }}"
+        configfile: "{{ eseries_selinux_config }}"
+      register: selinux_config
+
+    - name: Reboot host to apply SELinux configuration changes.
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
+        tasks_from: reboot.yml
+        apply:
+          vars:
+            eseries_common_allow_host_reboot_reason: "SELinux configuration changed and a reboot is required."
+      when: selinux_config["reboot_required"]
+  when: selinux_getenforce["rc"] == 0
+  become: true
