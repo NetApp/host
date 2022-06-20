@@ -15,7 +15,8 @@ eseries_roce_udev_rules: {}  # Dictionary of PCI device-name key-value pairs (ex
 # eseries_roce_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
 
 eseries_roce_interface_common: {}
-eseries_roce_interface_defaults: {}
+eseries_roce_interface_defaults:
+  mtu: 4200
 
 # eseries_roce_firewall_zone:  # Determined at runtime
 eseries_roce_default_hook_templates: []
