@@ -43,8 +43,8 @@
                                              #   the interface variable within the hook templates.
                                              #   See 99-multihoming.j2 in role's templates directory for an example.
     eseries_nvme_ib_udev_name:               # Filename for applying eseries_nvme_ib_udev_rules
-    eseries_nvme_ib_udev_rules:              # Dictionary containing interface PCI slots to interface names for ensuring
-                                             #   persistent interface names.
+    eseries_nvme_ib_udev_rules:              # Dictionary containing interface PCI slots names or MAC addresses to interface names
+                                             #   for ensuring persistent interface names.
                                              #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
     eseries_nvme_ib_uninstall:               # Whether to uninstall the nvme_ib role. (Default: false)

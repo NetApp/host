@@ -1,10 +1,29 @@
-- name: Ensure udev rules exist for network interface mappings.
-  ansible.builtin.template:
-    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'interface/rename_rules.j2') }}"
-    dest: "{{ eseries_common_udev_rules_d }}{{ udev_name }}"
-  register: interface_rename_rules
-  when: udev_name and udev_rules
+- name: Get information for all net devices.
+  ansible.builtin.shell: |
+    for device in $(ls /sys/class/net/); do
+      echo "$device" \
+           "$(cat /sys/class/net/$device/address)" \
+           "$(grep -s PCI_SLOT_NAME=.* /sys/class/net/$device/device/uevent | cut -d '=' -f 2)"
+    done
+  changed_when: false
+  register: net_devices
   become: true
+
+- name: Apply udev rules and update interface names.
+  block:
+    - name: Ensure udev rules exist for network interface mappings.
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'interface/rename_rules.j2') }}"
+        dest: "{{ eseries_common_udev_rules_d }}{{ udev_name }}"
+      register: interface_rename_rules
+      when: udev_name and udev_rules
+      become: true
+
+    - name: Update interface names.
+      ansible.builtin.include_tasks: interface/rename_rules/apply/update_interface.yml
+      loop: "{{ udev_rules | dict2items }}"
+      loop_control:
+        loop_var: interface_rule
   vars:
     udev_name: |-
       {%- if _common_udev_name is defined and _common_udev_name -%}
@@ -18,11 +37,14 @@
       {%- else %}
         {{- eseries_common_udev_rules -}}
       {%- endif -%}
-
-- name: Reboot hosts to update interface name(s).
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: reboot.yml
-  when: interface_rename_rules['changed']
-  vars:
-    eseries_common_allow_host_reboot_reason: "Updated interface name(s).  Reboot is required."
+    interface_device_by_identifier: |-
+      {%- set info = {} -%}
+      {%- for net_device in net_devices["stdout_lines"] -%}
+        {%- set net_device_info = net_device.split(" ") -%}
+        {#- Create a dictionary entry for both the interface mac address and pci slot name -#}
+        {%- if net_device_info | length == 3 -%}
+          {%- if info.update({net_device_info[1]: {"type": "mac_address", "name": net_device_info[0]}}) -%}{%- endif -%}
+          {%- if info.update({net_device_info[2]: {"type": "pci_slot_name", "name": net_device_info[0]}}) -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- info -}}

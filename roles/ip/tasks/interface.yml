@@ -31,7 +31,7 @@
     - name: Clear facts required for configuring persistent network interface names.
       ansible.builtin.set_fact:
         _common_udev_name: ""
-        _common_udev_rules: ""
+        _common_udev_rules: {}
 
 - name: Configure interfaces using ifupdown configuration.
   ansible.builtin.include_tasks: interface/ifupdown.yml
