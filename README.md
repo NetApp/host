@@ -18,13 +18,13 @@ specifications, and assign persistent mount points to them.
     - [Requirements for E-Series Hosts](#requirements-for-e-series-hosts)
   - [Feature Roles](#feature-roles)
     - [Storage Setup](#storage-setup)
-    - [Protocol](#protocol)
     - [Mount](#mount)
     - [Unmount](#unmount)
     - [Snapshot](#snapshot)
-    - [SELinux](#selinux)
   - [Support Roles](#support-roles)
+    - [Protocol](#protocol)
     - [Multipath](#multipath)
+    - [SELinux](#selinux)
     - [IB OpenSM](#ib-opensm)
     - [IP over IB](#ip-over-ib)
     - [IB iSER](#ib-iser)
@@ -74,13 +74,6 @@ communications based on E-Series mapped volumes. The support roles include multi
 
 See [netapp_eseries.host.storage_setup documentation](roles/storage_setup/README.md) for more details.
 
-<a name="protocol"></a>
-### Protocol
-
-The protocol role installs and configures any supported protocols required for host-storage communications based 
-on E-Series mapped volumes. See [netapp_eseries.host.protocol documentation](roles/protocol/README.md) for more 
-details.
-
 <a name="mount"></a>
 ### Mount
 
@@ -96,25 +89,32 @@ The unmount role will unmount E-Series volumes from hosts. See
 <a name="snapshot"></a>
 ### Snapshot
 
-The snapshop role attempts to create filesystem safe point-in-time snapshot images. See 
+The snapshot role attempts to create filesystem safe point-in-time snapshot images. See 
 [netapp_eseries.host.snapshot documentation](roles/snapshot/README.md) for more details.
-
-<a name="selinux"></a>
-### SELinux
-
-The selinux role configures SELinux. See [netapp_eseries.host.selinux documentation](roles/selinux/README.md) for more 
-details.
 
 <a name="support-roles"></a>
 ## Support Roles
 
 Support Role are intended to aid the feature roles but may be called directly in unique situations.
 
+<a name="protocol"></a>
+### Protocol
+
+The protocol role installs and configures any supported protocols required for host-storage communications based 
+on E-Series mapped volumes. See [netapp_eseries.host.protocol documentation](roles/protocol/README.md) for more 
+details.
+
 <a name="multipath"></a>
 ### Multipath
 
 The multipath role configures multipathing for SCSI and NVMe devices. See 
 [netapp_eseries.host.multipath documentation](roles/multipath/README.md) for more details.
+
+<a name="selinux"></a>
+### SELinux
+
+The selinux role configures SELinux. See [netapp_eseries.host.selinux documentation](roles/selinux/README.md) for more 
+details.
 
 <a name="ib-opensm"></a>
 ### IB OpenSM
