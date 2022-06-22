@@ -55,7 +55,6 @@ NetApp E-Series E2800 platform or newer (For older platforms, use NetApp E-Serie
 ### Requirements for E-Series Hosts.
 
 - Python3.6 or later
-- libselinux-python3
 
 <a name="feature-roles"></a>
 ## Feature Roles
