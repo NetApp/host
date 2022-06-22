@@ -60,7 +60,7 @@
           {%- endif -%}
           {{- options -}}
 
-    - name: Update SELinux state to either enforcing or permissive.
+    - name: Update SELinux state (switching between enforcing and permissive does not require a reboot).
       ansible.builtin.command: "setenforce {{ eseries_selinux_state | capitalize }}"
       when: update_required
       vars:
