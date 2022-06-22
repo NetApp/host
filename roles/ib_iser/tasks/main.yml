@@ -5,7 +5,7 @@
         eseries_selinux_prompt_reason: |
           The role ib_iser has a known issue with SELinux that prevents InfiniBand
           interfaces from functioning properly. If SELinux is required then select permissive and
-          resolved any issues prior to re-enforcing the SELinux policy.
+          resolve any issues prior to re-enforcing the SELinux policy.
 
 - name: Ensure iSCSI packages are installed.
   ansible.builtin.include_role:

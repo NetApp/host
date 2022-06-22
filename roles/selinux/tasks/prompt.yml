@@ -38,11 +38,11 @@
         eseries_selinux_state: |-
           {%- for selinux_prompt_host in ansible_play_hosts_all if hostvars[selinux_prompt_host]["selinux_prompt"]["results"] is defined -%}
             {%- for result in hostvars[selinux_prompt_host]["selinux_prompt"]["results"] if inventory_hostname == result["item"] -%}
-            {%- if result["user_input"] is defined -%}
-              {{- result["user_input"] | lower -}}
-            {%- else -%}
-              {{- hostvars[inventory_hostname]["eseries_selinux_state"] | lower -}}
-            {%- endif -%}
+              {%- if result["user_input"] is defined -%}
+                {{- result["user_input"] | lower -}}
+              {%- else -%}
+                {{- hostvars[inventory_hostname]["eseries_selinux_state"] | lower -}}
+              {%- endif -%}
             {%- endfor -%}
           {%- endfor -%}
   when: selinux_getenforce["rc"] == 0

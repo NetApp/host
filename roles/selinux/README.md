@@ -17,8 +17,8 @@
                                      #   when SELinux results in issues that need to be resolved manually.
 
 ## General Note
-    - Note that this role will not install SELinux only configure the existing package.
-    - This role requires `eseries_selinux_enforce` to be defined and will provide a prompt should one not be provided.
+    - This role will not install SELinux packages and will only configure SELinux when installed.
+    - This role requires `eseries_selinux_state` to be defined and will provide a prompt should one not be provided.
 
 ## License
     BSD-3-Clause
