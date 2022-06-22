@@ -32,7 +32,7 @@ eseries_iscsi_iface_group_options: {}
 eseries_iscsi_iface_default_options:
   iface.transport_name: tcp
   iface.port: 3260
-  iface.mtu: 1500
+  iface.mtu: 9000
 
 # Configuration dictionaries for node files  (<iscsi_dir>/nodes/<target_iqn>/<address>,<port>,[0-9]+/<interface>).
 eseries_iscsi_node_options: {}
