@@ -299,31 +299,33 @@ class UpdateConfigFile(object):
 
             # Update the copy with the options provided.
             comment_section = False
-            for index, line in enumerate(self.copy_lines_cached):
+            for ignore_comment_lines in [True, False]:
+                for index, line in enumerate(self.copy_lines_cached):
 
-                # Skip comment section to address any options that are not expected later.
-                if line == comment_begin:
-                    comment_section = True
-                    comment_block_begin_index = index
-                    continue
-                elif line == comment_end:
-                    comment_section = False
-                    comment_block_end_index = index
-                    continue
-                elif comment_section:
-                    continue
+                    # Skip comment section to address any options that are not expected later.
+                    if line == comment_begin:
+                        comment_section = True
+                        comment_block_begin_index = index
+                        continue
+                    elif line == comment_end:
+                        comment_section = False
+                        comment_block_end_index = index
+                        continue
+                    elif comment_section:
+                        continue
 
-                result = re.search(self.pattern, line)
-                if result:
-                    comment, option, equivalence, value = list(result.groups())
-                    if option in options:
-                        options_applied.append(option)
-                        self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence, str(self.options.pop(option)))
+                    result = re.search(self.pattern, line)
+                    if result:
+                        comment, option, equivalence, value = list(result.groups())
+                        if option in options:
+                            if ignore_comment_lines and not comment:
+                                options_applied.append(option)
+                                self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence, str(self.options.pop(option)))
 
-                    # Comment out any expected options that have already been set previously to prevent duplicates
-                    elif option in options_applied:
-                        if not comment:
-                            self.copy_lines_cached[index] = "%s %s" % (self.comment_character, line)
+                        # Comment out any expected options that have already been set previously to prevent duplicates
+                        elif ignore_comment_lines and option in options_applied:
+                            if not comment:
+                                self.copy_lines_cached[index] = "%s %s" % (self.comment_character, line)
 
 
             # Remove all options within existing comment block.
