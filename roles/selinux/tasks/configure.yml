@@ -59,7 +59,7 @@
             {%- if options.update({"SELINUXTYPE": eseries_selinux_policy}) -%}{%- endif -%}
           {%- endif -%}
           {{- options -}}
-    - pause:
+
     - name: Update SELinux state to either enforcing or permissive.
       ansible.builtin.command: "setenforce {{ eseries_selinux_state | capitalize }}"
       when: update_required
