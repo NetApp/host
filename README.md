@@ -49,8 +49,7 @@ Ansible 2.10 or later
 <a name="requirements-for-eseries-storage-systems"></a>
 ### Requirements for E-Series Storage Systems
 
-NetApp E-Series E2800 platform or newer
-For older E-Series storage systems use NetApp E-Series SANtricity Web Services Proxy.
+NetApp E-Series E2800 platform or newer (For older platforms, use NetApp E-Series SANtricity Web Services Proxy.)
 
 <a name="requirements-for-e-series-hosts"></a>
 ### Requirements for E-Series Hosts.
