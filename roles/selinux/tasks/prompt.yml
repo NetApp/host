@@ -14,7 +14,7 @@
             {% set permissive_reboot_required = selinux_mode == "disabled" %}
             {% set disabled_reboot_required = selinux_mode in ["enforcing", "permissive"] %}
 
-            The variable eseries_selinux_state has not been defined for {{ item }} and can be added to it's inventory to
+            The variable eseries_selinux_state has not been defined for {{ item }} and can be added to its inventory to
             avoid this message in the future. {{ eseries_selinux_prompt_reason }}
             Options are as follows:
                 enforcing {%- if selinux_mode == "enforcing" %} (current){% endif %} - SELinux security policy is enforced. {%- if enforcing_reboot_required %} (Reboot required){% endif %}
