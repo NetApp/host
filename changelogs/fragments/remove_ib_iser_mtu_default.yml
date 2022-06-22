@@ -1,0 +1,2 @@
+minor_changes:
+  - ib_iser - Remove ib_iser role's MTU default.

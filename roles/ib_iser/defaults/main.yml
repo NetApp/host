@@ -31,7 +31,6 @@ eseries_ib_iser_iface_default_options:
   # iface.iscsi_ifacename: iser
   iface.transport_name: iser
   iface.port: 3260
-  iface.mtu: 2044
 
 # Configuration dictionaries for node files  (<iscsi_dir>/nodes/<target_iqn>/<address>,<port>,[0-9]+/<interface>).
 eseries_ib_iser_node_options: {}
