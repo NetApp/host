@@ -156,13 +156,13 @@ See [netapp_eseries.host.nvme_ib documentation](roles/nvme_ib/README.md) for mor
 <a name="#nvme-over-fc"></a>
 ### NVMe over FC
 
-The nvme_fc role installs and configures the required kernel modules and packages for InfiniBand over Fibre Channel 
+The nvme_fc role installs and configures the required kernel modules and packages for NVMe over Fibre Channel 
 protocol. See [netapp_eseries.host.nvme_fc documentation](roles/nvme_fc/README.md) for more details.
 
 <a name="nvme-over-roce"></a>
 ### NVMe over RoCE
 
-The nvme_roce role installs and configures the required kernel modules and packages for InfiniBand over RoCE protocol. 
+The nvme_roce role installs and configures the required kernel modules and packages for NVMe over RoCE protocol. 
 See [netapp_eseries.host.nvme_roce documentation](roles/nvme_roce/README.md) for more details.
 
 <a name="roce"></a>
