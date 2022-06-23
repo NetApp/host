@@ -65,6 +65,7 @@
       when: update_required
       vars:
         update_required: |-
+          {#- Switching between enforcing and permissive does not require a reboot and can be updated with setenforce -#}
           {%- set current_state = selinux_getenforce["stdout"] | lower -%}
           {%- if current_state != eseries_selinux_state and current_state in ['enforcing', 'permissive']
                  and eseries_selinux_state in ['enforcing', 'permissive'] -%}
@@ -83,13 +84,13 @@
       when: reboot_required
       vars:
         reboot_required: |-
-          {%- set scratch = {"reboot_required": False} -%}
           {%- set current_state = selinux_getenforce["stdout"] | lower -%}
           {%- if (current_state == "enforcing" and eseries_selinux_state == "disabled")
                  or (current_state == "permissive" and eseries_selinux_state == "disabled")
                  or (current_state == "disabled" and eseries_selinux_state in ["enforcing", "permissive"]) -%}
-            {%- if scratch.update({"reboot_required": True}) -%}{%- endif -%}
+            True
+          {%- else -%}
+            False
           {%- endif -%}
-          {{- scratch["reboot_required"] -}}
   when: selinux_getenforce["rc"] == 0
   become: true

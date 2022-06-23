@@ -283,8 +283,7 @@ class UpdateConfigFile(object):
     @property
     def updated_copy(self):
         """Create a copy of the source configuration file in memory and update the options."""
-        options = self.options.keys()
-        options_applied = []
+        options_applied = {}  # option-index pairs for applied options which are used to comment duplicates.
 
         if self.copy_lines_cached is None:
             comment_begin = "%s BEGIN %s\n" % (self.comment_character, self.block_message)
@@ -315,17 +314,18 @@ class UpdateConfigFile(object):
                     elif comment_section:
                         continue
 
+                    # Search and update option pattern matches
                     result = re.search(self.pattern, line)
                     if result:
                         comment, option, equivalence, value = list(result.groups())
-                        if option in options:
+                        if option in self.options.keys():
                             if not ignore_comment_lines or not comment:
-                                self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence, self.options[option])
-                                options_applied.append(option)
-                                self.options.remove(option)
+                                options_applied.update({option: index})
+                                value = self.options.pop(option)
+                                self.copy_lines_cached[index] = "%s%s%s\n" % (option, equivalence, value)
 
                         # Comment out any expected options that have already been set previously to prevent duplicates
-                        elif option in options_applied:
+                        elif option in options_applied.keys() and index != options_applied[option]:
                             if not comment:
                                 self.copy_lines_cached[index] = "%s %s" % (self.comment_character, line)
 
