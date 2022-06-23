@@ -16,6 +16,7 @@ specifications, and assign persistent mount points to them.
     - [Requirements for the Ansible Control Node](#requirements-for-the-ansible-control-node)
     - [Requirements for E-Series Storage Systems](#requirements-for-eseries-storage-systems)
     - [Requirements for E-Series Hosts](#requirements-for-e-series-hosts)
+  - [Tested Platforms](#tested-platforms)
   - [Feature Roles](#feature-roles)
     - [Storage Setup](#storage-setup)
     - [Mount](#mount)
@@ -32,6 +33,7 @@ specifications, and assign persistent mount points to them.
     - [NVMe over IB](#nvme-over-ib)
     - [NVMe over FC](#nvme-over-fc)
     - [NVMe over RoCE](#nvme-over-roce)
+    - [RoCE](#roce)
     - [iSCSI](#iscsi)
     - [FC](#fc)
     - [SAS](#sas)
@@ -56,6 +58,11 @@ NetApp E-Series E2800 platform or newer (For older platforms, use NetApp E-Serie
 
 - Python3.6 or later
 - libselinux-python3
+
+<a name="tested-platforms"></a>
+## Tested Platforms
+
+- RHEL 8.4
 
 <a name="feature-roles"></a>
 ## Feature Roles
@@ -157,6 +164,12 @@ protocol. See [netapp_eseries.host.nvme_fc documentation](roles/nvme_fc/README.m
 
 The nvme_roce role installs and configures the required kernel modules and packages for InfiniBand over RoCE protocol. 
 See [netapp_eseries.host.nvme_roce documentation](roles/nvme_roce/README.md) for more details.
+
+<a name="roce"></a>
+### RoCE
+
+The RoCE role configures ethernet interfaces for the RoCE protocol (IB over Ethernet). See 
+[netapp_eseries.host.roce documentation](roles/roce/README.md) for more details.
 
 <a name="iscsi"></a>
 ### iSCSI
