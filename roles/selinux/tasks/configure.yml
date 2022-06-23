@@ -1,0 +1,96 @@
+- name: Check whether SELinux is installed.
+  ansible.builtin.shell: getenforce
+  register: selinux_getenforce
+  changed_when: false
+  failed_when: selinux_getenforce["rc"] not in [0, 127]
+
+- name: Prompt user for SELinux security state.
+  block:
+    - name: Ensure eseries_selinux_state has been set before continuing.
+      ansible.builtin.pause:
+        prompt: |-
+            {% set selinux_mode = hostvars[item]["selinux_getenforce"]["stdout"] | lower %}
+            {% set enforcing_reboot_required = selinux_mode == "disabled" %}
+            {% set permissive_reboot_required = selinux_mode == "disabled" %}
+            {% set disabled_reboot_required = selinux_mode in ["enforcing", "permissive"] %}
+
+            The variable eseries_selinux_state has not been defined for {{ item }} and can be added to its inventory to
+            avoid this message in the future. {{ eseries_selinux_prompt_reason }}
+            Options are as follows:
+                enforcing {%- if selinux_mode == "enforcing" %} (current){% endif %} - SELinux security policy is enforced. {%- if enforcing_reboot_required %} (Reboot required){% endif %}
+
+                permissive {%- if selinux_mode == "permissive" %} (current){% endif %} - SELinux prints warnings instead of enforcing. {%- if permissive_reboot_required %} (Reboot required){% endif %}
+
+                disabled {%- if selinux_mode == "disabled" %} (current){% endif %} - No SELinux policy is loaded. {%- if disabled_reboot_required %} (Reboot required){% endif %}
+
+            What security would you like [enforcing, permissive, disabled, ctrl-c to stop automation]?
+      loop: "{{ ansible_play_hosts }}"
+      register: selinux_prompt
+      delay: 0
+      retries: 10
+      until: selinux_prompt['user_input'] | lower in ["enforcing", "permissive", "disabled"]
+      when: hostvars[item]["selinux_getenforce"] is defined
+            and (hostvars[item]["eseries_selinux_state"] is not defined
+                 or hostvars[item]["eseries_selinux_state"] not in ["enforcing", "permissive", "disabled"])
+
+    - name: Set variables based on user responses.
+      ansible.builtin.set_fact:
+        eseries_selinux_state: |-
+          {%- for selinux_prompt_host in ansible_play_hosts_all if hostvars[selinux_prompt_host]["selinux_prompt"]["results"] is defined -%}
+            {%- for result in hostvars[selinux_prompt_host]["selinux_prompt"]["results"] if inventory_hostname == result["item"] -%}
+              {%- if result["user_input"] is defined -%}
+                {{- result["user_input"] | lower -}}
+              {%- else -%}
+                {{- hostvars[inventory_hostname]["eseries_selinux_state"] | lower -}}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+  when: selinux_getenforce["rc"] == 0
+  become: true
+
+- name: Configure SELinux and reboot nodes to apply changes.
+  block:
+    - name: Update SELinux configuration
+      netapp_eseries.host.update_conf:
+        path: "{{ eseries_selinux_config }}"
+        options: |-
+          {%- set options = {"SELINUX": eseries_selinux_state} -%}
+          {%- if eseries_selinux_policy is defined -%}
+            {%- if options.update({"SELINUXTYPE": eseries_selinux_policy}) -%}{%- endif -%}
+          {%- endif -%}
+          {{- options -}}
+
+    - name: Update SELinux state (switching between enforcing and permissive does not require a reboot).
+      ansible.builtin.command: "setenforce {{ eseries_selinux_state | capitalize }}"
+      when: update_required
+      vars:
+        update_required: |-
+          {#- Switching between enforcing and permissive does not require a reboot and can be updated with setenforce -#}
+          {%- set current_state = selinux_getenforce["stdout"] | lower -%}
+          {%- if current_state != eseries_selinux_state and current_state in ['enforcing', 'permissive']
+                 and eseries_selinux_state in ['enforcing', 'permissive'] -%}
+            True
+          {%- else -%}
+            False
+          {%- endif -%}
+
+    - name: Reboot host to apply SELinux configuration changes.
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
+        tasks_from: reboot.yml
+        apply:
+          vars:
+            eseries_common_allow_host_reboot_reason: "SELinux configuration changed and a reboot is required."
+      when: reboot_required
+      vars:
+        reboot_required: |-
+          {%- set current_state = selinux_getenforce["stdout"] | lower -%}
+          {%- if (current_state == "enforcing" and eseries_selinux_state == "disabled")
+                 or (current_state == "permissive" and eseries_selinux_state == "disabled")
+                 or (current_state == "disabled" and eseries_selinux_state in ["enforcing", "permissive"]) -%}
+            True
+          {%- else -%}
+            False
+          {%- endif -%}
+  when: selinux_getenforce["rc"] == 0
+  become: true
