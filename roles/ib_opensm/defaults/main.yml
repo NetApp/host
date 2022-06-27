@@ -5,6 +5,20 @@ eseries_ib_opensm_interfaces: []
 eseries_ib_opensm_options: {}      # opensm.conf file key, value pairs
 eseries_ib_opensm_allow_upgrades: false
 eseries_ib_opensm_skip_package_validation: false
+
+eseries_ib_opensm_custom_packages: {}
+#  files:
+#    "<source>": "<destination>"
+#    ...
+#  install:
+#    add_packages: []
+#    remove_packages: []
+#    commands: []
+#  uninstall:
+#    packages: []
+#    commands: []
+
+
 eseries_ib_opensm_ubuntu_packages:
   - opensm
 

@@ -1,10 +1,3 @@
-- name: Set facts required for ib_opensm role.
-  ansible.builtin.set_fact:
-    eseries_common_package_group: "InfiniBand OpenSM"
-    eseries_common_custom_packages: "{{ eseries_ib_opensm_custom_packages | default({}) }}"
-    eseries_common_allow_upgrades: "{{ eseries_ib_opensm_allow_upgrades | default(false) }}"
-    eseries_common_skip_package_validation: "{{ eseries_ib_opensm_skip_package_validation | default(false) }}"
-
 - name: Install InfiniBand OpenSM subnet managers.
   ansible.builtin.include_tasks: install.yml
   when: not (eseries_common_uninstall | default(eseries_ib_opensm_uninstall))
