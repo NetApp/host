@@ -12,8 +12,7 @@ Variables
     eseries_common_volume_workload_filter:   # Filters the volumes added to eseries_volumes.
     eseries_common_allow_host_reboot:        # Whether reboots will allowed in an attempt to discover E-Series volumes.
     eseries_common_docker_host:              # Docker host for SANtricity Web Services Proxy.
-    eseries_common_force_skip_uninstall:     # Forces to skip uninstallation when roles has been called dynamically with applied tags; otherwise the applied
-                                             #    tags are also applied to uninstallation (Default: False).
+    eseries_common_uninstall:                # Whether to uninstall all netapp_eseries.host roles included in playbook.
 
 Notes
 ----------

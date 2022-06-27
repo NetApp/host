@@ -1,0 +1,14 @@
+- name: Determine variable values required for ib_base role.
+  ansible.builtin.set_fact:
+    eseries_ib_base_srp_enabled: true
+
+- name: Ensure InfiniBand base has been installed and configured.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib_base
+
+- name: Ensure InfiniBand SRP is configured.
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Ensure InfiniBand IPoIB is installed and configured.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib_opensm

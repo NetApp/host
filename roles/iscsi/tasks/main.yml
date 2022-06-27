@@ -1,14 +1,7 @@
-- name: Ensure iSCSI packages are installed.
-  ansible.builtin.import_tasks: package.yml
-
-- name: Ensure iSCSI is configured.
-  ansible.builtin.import_tasks: configure.yml
+- name: Install iSCSI.
+  ansible.builtin.include_tasks: install.yml
+  when: not (eseries_common_uninstall | default(eseries_iscsi_uninstall))
 
 - name: Uninstall iSCSI.
-  block:
-    - name: Uninstall iSCSI.
-      ansible.builtin.include_tasks: uninstall.yml
-      when: eseries_common_force_skip_uninstall == False
-  tags:
-    - never
-    - iscsi_uninstall
+  ansible.builtin.include_tasks: uninstall.yml
+  when: eseries_common_uninstall | default(eseries_iscsi_uninstall)

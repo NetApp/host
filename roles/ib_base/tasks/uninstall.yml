@@ -1,5 +1,11 @@
+- name: Install InfiniBand base custom packages.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: installer/uninstall.yml
+  when: '"uninstall" in (eseries_common_custom_packages.keys() | list)'
+
 - name: Ensure InfiniBand packages are uninstalled.
-  include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"
 
 - name: Ensure InfiniBand base kernel modules are removed.
-  include_tasks: "uninstall/configure/module.yml"
+  ansible.builtin.include_tasks: "uninstall/configure/module.yml"

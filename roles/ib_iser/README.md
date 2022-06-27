@@ -42,10 +42,8 @@
                                              #   persistent interface names.
                                              #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+    eseries_ib_iser_uninstall:               # Whether to uninstall the ib_iser role. (Default: false)
 
-## Uninstall
-    To uninstall, add '--tags ib_iser_uninstall' to the ansible-playbook command or include uninstall.yml task directly
-    from role.
 
 ## Known Issues
 ### Enforcing SELinux security causes InfiniBand interfaces to not be available

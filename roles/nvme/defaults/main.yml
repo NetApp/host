@@ -43,5 +43,4 @@ eseries_nvme_uninstall_kernel_modules:
   - nvme-rdma
   - nvme-core
 
-# Do not use! Internal use only
-eseries_common_force_skip_uninstall: false
+eseries_nvme_uninstall: false  # Whether to uninstall nvme role.

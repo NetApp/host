@@ -15,6 +15,7 @@ Role Variables
         parameters: lpfc_enable_fc4_type=3          #   3 enables both NVMe and SCSI
       - name: qla2xxx                               # QLogic driver (if driver not present the modprobe option will just fail)
         parameters: ql2xnvmeenable=1                #   1 enables both NVMe and SCSI
+    eseries_nvme_fc_uninstall:                      # Whether to uninstall nvme_fc role. (Default: false)
 
 License
 -------

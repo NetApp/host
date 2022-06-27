@@ -37,14 +37,11 @@
                                              #   persistent interface names.
                                              #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+    eseries_iscsi_uninstall:               # Whether to uninstall the iscsi role. (Default: false)
 
 ## Notes
     WARNING! Role will configure the specified iSCSI network interfaces unless eseries_iscsi_configure_network is set to false.
     Note: Reduction in session will only be configured but not applied.
-
-## Uninstall
-    To uninstall, add '--tags iscsi_uninstall' to the ansible-playbook command or import uninstall.yml task directly
-    from role.
 
 ## License
     BSD-3-Clause

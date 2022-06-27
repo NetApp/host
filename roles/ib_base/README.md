@@ -24,11 +24,7 @@ eseries_ib_base_ipoib_kernel_modules:    # InfiniBand base kernel modules for In
 eseries_ib_base_srp_kernel_modules:      # InfiniBand base kernel modules for InfiniBand SRP (Default: [ib_srp]).
 eseries_ib_base_iser_kernel_modules:     # InfiniBand base kernel modules for InfiniBand iSER (Default: [ib_ipoib, ib_iser]).
 eseries_ib_base_nvme_kernel_modules      # InfiniBand base kernel modules for NVMe over InfiniBand (Default [ib_ipoib, nvme, nvme_fabrics, nvme_core])
-
-Uninstall
----------
-To uninstall, add '--tags ib_base_uninstall' to the ansible-playbook command or import uninstall.yml task directly from role.
-    ansible-playbook -i inventory.yml playbook --tags ib_base_uninstall
+eseries_ib_base_uninstall:               # Whether to uninstall the ib_base role. (Default: false)
 
 License
 -------

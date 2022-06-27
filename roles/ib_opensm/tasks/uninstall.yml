@@ -1,8 +1,14 @@
+- name: Install InfiniBand base custom packages.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: installer/uninstall.yml
+  when: '"uninstall" in (eseries_common_custom_packages.keys() | list)'
+
 - name: Include operating specific variables.
-  include_vars: "{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
 
 - name: Collect facts about systemd services.
-  service_facts:
+  ansible.builtin.service_facts:
   become: true
 
 - name: Ensure InfiniBand OpenSM service loader for E-Series is stopped and disabled.
@@ -15,7 +21,7 @@
   become: true
 
 - name: Ensure InfiniBand packages are uninstalled.
-  include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
 
 - name: Create InfiniBand OpenSM service loader daemon for E-Series.
   ansible.builtin.file:
@@ -30,7 +36,7 @@
   become: true
 
 - name: Determine existing OpenSM configuration files.
-  find:
+  ansible.builtin.find:
     path: "{{ eseries_ib_opensm_config_path }}"
     pattern: "opensm.conf(.[0-9]+)?$"
     use_regex: true

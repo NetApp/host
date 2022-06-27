@@ -1,17 +1,7 @@
-- name: Discover mapped-volume information from associated storage systems.
-  include_role:
-    name: common
-    tasks_from: volume_facts.yml
-  when: netapp_volumes_by_initiators is not defined
-
-- name: Setup expected host protocol.
-  include_tasks: protocol.yml
+- name: Install protocols.
+  ansible.builtin.include_tasks: install.yml
+  when: not (eseries_common_uninstall | default(eseries_protocol_uninstall))
 
 - name: Uninstall protocols.
-  block:
-    - name: Uninstall protocols.
-      include_tasks: uninstall.yml
-      when: eseries_common_force_skip_uninstall == False
-  tags:
-    - never
-    - protocol_uninstall
+  ansible.builtin.include_tasks: uninstall.yml
+  when: eseries_common_uninstall | default(eseries_protocol_uninstall)

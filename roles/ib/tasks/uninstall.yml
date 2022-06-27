@@ -1,8 +1,14 @@
+- name: Install InfiniBand custom packages.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: installer/uninstall.yml
+  when: '"uninstall" in (eseries_common_custom_packages.keys() | list)'
+
 - name: Ensure InfiniBand kernel modules are removed.
-  include_tasks: "uninstall/configure/module.yml"
+  ansible.builtin.include_tasks: "uninstall/configure/module.yml"
 
 - name: Ensure RDMA is unconfigured.
-  include_tasks: "uninstall/configure/rdma.yml"
+  ansible.builtin.include_tasks: "uninstall/configure/rdma.yml"
 
 - name: Set facts required for unconfiguring persistent network interface names.
   ansible.builtin.set_fact:
@@ -15,4 +21,4 @@
     tasks_from: interface/map_name/uninstall.yml
 
 - name: Ensure InfiniBand packages are uninstalled.
-  include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"
+  ansible.builtin.include_tasks: "uninstall/package/{{ ansible_os_family | lower }}.yml"

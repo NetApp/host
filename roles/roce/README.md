@@ -32,10 +32,7 @@
     eseries_roce_udev_rules:                # Dictionary containing interface PCI slots to interface names for ensuring persistent interface names.
                                                  #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                                  #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
-
-## Uninstall
-    To uninstall, add '--tags roce_uninstall' to the ansible-playbook command or import uninstall.yml task directly
-    from role.
+    eseries_roce_uninstall:               # Whether to uninstall the roce role. (Default: false)
 
 ## Notes
     WARNING! Role will configure the specified network interfaces unless eseries_roce_configure_network is set to false.

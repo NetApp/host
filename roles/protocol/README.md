@@ -7,7 +7,7 @@ Variables
 --------------
 eseries_protocol: auto                                # Protocol to setup on host. Choices: auto, iscsi, fc, sas, ib_srp, ib_iser, nvme_ib, nvme_fc, nvme_roce (Default: auto)
 eseries_protocol_log_path: /var/log/                  # Host log path for protocols installed (Do not delete this file as its necessary for protocol removals).
-
+eseries_protocol_uninstall:                           # Whether to uninstall protocol role. (Default: false)
 
 License
 -------

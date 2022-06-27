@@ -27,3 +27,5 @@ eseries_ipoib_kernel_modules:
 
 eseries_ipoib_uninstall_kernel_modules:
   - ib_ipoib
+
+eseries_ipoib_uninstall: false  # Whether to uninstall ipoib role.

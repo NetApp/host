@@ -1,0 +1,11 @@
+- name: Install InfiniBand custom packages.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: installer/install.yml
+  when: '"install" in (eseries_common_custom_packages.keys() | list)'
+
+- name: Ensure InfiniBand packages are installed.
+  ansible.builtin.include_tasks: package.yml
+
+- name: Ensure InfiniBand is configured.
+  ansible.builtin.include_tasks: configure.yml
