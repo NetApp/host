@@ -1,4 +1,4 @@
-- name: Install InfiniBand base custom packages.
+- name: Uninstall InfiniBand base custom packages.
   ansible.builtin.include_role:
     name: netapp_eseries.host.common
     tasks_from: installer/uninstall.yml

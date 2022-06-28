@@ -14,4 +14,4 @@
     - name: Uninstall InfiniBand base.
       ansible.builtin.include_tasks: uninstall.yml
       when: eseries_common_uninstall | default(eseries_ib_base_uninstall)
-  when: eseries_ib_base_skip
+  when: not eseries_ib_base_skip
