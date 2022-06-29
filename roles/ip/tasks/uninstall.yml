@@ -16,23 +16,26 @@
       when: '"netplan" in eseries_ip_manager_tools'
   when: eseries_ip_configure_network
 
-- name: Set facts required for unconfiguring persistent network interface names.
-  ansible.builtin.set_fact:
-    eseries_common_udev_name: "{{ eseries_ip_udev_name }}"
-    eseries_common_udev_rules: "{{ eseries_ip_udev_rules }}"
-
+# Ansible has a hard limitation where only the parent and the parent-parent role defaults are available to a role's
+#   tasks. As a temporary workaround, the _common_udev_X variables are set then cleared to prevent overriding user-defined
+#   inventory.
 - name: Unconfigure persistent network interface names.
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.common
-    tasks_from: interface/map_name/uninstall.yml
+  block:
+    - name: Set facts required for unconfiguring persistent network interface names.
+      ansible.builtin.set_fact:
+        _common_udev_name: "{{ eseries_ip_udev_name }}"
+        _common_udev_rules: "{{ eseries_ip_udev_rules }}"
 
-- name: Determine facts for removing any firewall configuration.
-  ansible.builtin.set_fact:
-    eseries_common_interfaces: "{{ eseries_ip_interfaces }}"
-    eseries_common_firewall_zone: "{{ eseries_ip_interface_common['zone'] | default(eseries_ip_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+    - name: Unconfigure persistent network interface names.
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
+        tasks_from: interface/rename_rules/remove.yml
+
+    - name: Clear facts required for unconfiguring persistent network interface names.
+      ansible.builtin.set_fact:
+        _common_udev_name: "{{ eseries_ip_udev_name }}"
+        _common_udev_rules: "{{ eseries_ip_udev_rules }}"
 
 - name: Remove any firewall configuration.
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: interface/firewall_zone/uninstall.yml
+  ansible.builtin.include_tasks: interface/firewall_zone/remove.yml
   when: eseries_ip_configure_firewall

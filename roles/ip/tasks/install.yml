@@ -4,7 +4,3 @@
 - name: Ensure interface(s) are configured.
   ansible.builtin.include_tasks: interface.yml
   when: eseries_ip_configure_network
-
-- name: Ensure firewall is configured.
-  ansible.builtin.include_tasks: firewall.yml
-  when: eseries_ip_configure_firewall

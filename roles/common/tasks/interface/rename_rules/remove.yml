@@ -1,0 +1,19 @@
+- name: Remove udev rules for network interface mappings.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_common_udev_rules_d }}{{ udev_name }}"
+  when: udev_name and udev_rules
+  become: true
+  vars:
+    udev_name: |-
+      {%- if _common_udev_name is defined and _common_udev_name -%}
+        {{- _common_udev_name -}}
+      {%- else %}
+        {{- eseries_common_udev_name -}}
+      {%- endif -%}
+    udev_rules: |-
+      {%- if _common_udev_rules is defined and _common_udev_rules -%}
+        {{- _common_udev_rules -}}
+      {%- else %}
+        {{- eseries_common_udev_rules -}}
+      {%- endif -%}

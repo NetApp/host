@@ -32,12 +32,13 @@
 - name: Ensure installed firewall zones that are no longer used are removed.
   ansible.posix.firewalld:
     state: absent
-    zone: "{{ item['zone'] | default(eseries_common_firewall_zone) }}"
+    zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
     permanent: true
     offline: true
   register: firewall_zone
-  when: item['zone'] | default(eseries_common_firewall_zone | default(False)) and item["zone"] | default(eseries_common_firewall_zone) in zones_without_interfaces
-  loop: "{{ eseries_common_interfaces }}"
+  when: 'item["zone"] | default(eseries_ip_firewall_zone | default(False))
+         and item["zone"] | default(eseries_ip_firewall_zone) in zones_without_interfaces'
+  loop: "{{ eseries_ip_interfaces }}"
   become: true
 
 - name: Reload firewall to recognize the zone changes.
