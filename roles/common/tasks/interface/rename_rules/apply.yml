@@ -23,7 +23,6 @@
   ansible.builtin.include_role:
     name: common
     tasks_from: reboot.yml
-    apply:
-      vars:
-        eseries_common_allow_host_reboot_reason: "Updated interface name(s).  Reboot is required."
   when: interface_rename_rules['changed']
+  vars:
+    eseries_common_allow_host_reboot_reason: "Updated interface name(s).  Reboot is required."

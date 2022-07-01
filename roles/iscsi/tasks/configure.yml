@@ -4,20 +4,20 @@
 - name: Configure ethernet interfaces.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ip
-    apply:
-      vars:
-        eseries_ip_configure_network: "{{ eseries_iscsi_configure_network }}"
-        eseries_ip_configure_firewall: "{{ eseries_iscsi_configure_firewall }}"
-        eseries_ip_interface_type: "{{ eseries_iscsi_interface_type }}"
-        eseries_ip_interface_required_keys: "{{ eseries_iscsi_interface_required_keys }}"
-        eseries_ip_interface_ignore_keys: "{{ eseries_iscsi_interface_ignore_keys }}"
-        eseries_ip_interfaces: "{{ eseries_iscsi_interfaces }}"
-        eseries_ip_interface_common: "{{ eseries_iscsi_interface_common }}"
-        eseries_ip_interface_defaults: "{{ eseries_iscsi_interface_defaults }}"
-        eseries_ip_firewall_zone: "{{ eseries_iscsi_interface_common['zone'] | default(eseries_iscsi_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
-        eseries_ip_default_hook_templates: "{{ eseries_iscsi_default_hook_templates }}"
-        eseries_ip_udev_name: "{{ eseries_iscsi_udev_name }}"
-        eseries_ip_udev_rules: "{{ eseries_iscsi_udev_rules }}"
+  vars:
+    eseries_ip_configure_network: "{{ eseries_iscsi_configure_network }}"
+    eseries_ip_configure_firewall: "{{ eseries_iscsi_configure_firewall }}"
+    eseries_ip_interface_type: "{{ eseries_iscsi_interface_type }}"
+    eseries_ip_interface_required_keys: "{{ eseries_iscsi_interface_required_keys }}"
+    eseries_ip_interface_ignore_keys: "{{ eseries_iscsi_interface_ignore_keys }}"
+    eseries_ip_interfaces: "{{ eseries_iscsi_interfaces }}"
+    eseries_ip_interface_common: "{{ eseries_iscsi_interface_common }}"
+    eseries_ip_interface_defaults: "{{ eseries_iscsi_interface_defaults }}"
+    eseries_ip_firewall_zone: "{{ eseries_iscsi_interface_common['zone'] | default(eseries_iscsi_firewall_zone
+                                  | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_ip_default_hook_templates: "{{ eseries_iscsi_default_hook_templates }}"
+    eseries_ip_udev_name: "{{ eseries_iscsi_udev_name }}"
+    eseries_ip_udev_rules: "{{ eseries_iscsi_udev_rules }}"
 
 - name: Configure iSCSI interface bindings.
   ansible.builtin.include_tasks: configure/iface.yml

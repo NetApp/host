@@ -1,10 +1,9 @@
 - ansible.builtin.include_role:
     name: netapp_eseries.host.selinux
-    apply:
-      vars:
-        eseries_selinux_prompt_reason: |
-          The role ib_iser has a known issue with enforcing SELinux security that causes InfiniBand
-          interfaces to not be available.
+  vars:
+    eseries_selinux_prompt_reason: |
+      The role ib_iser has a known issue with enforcing SELinux security that causes InfiniBand
+      interfaces to not be available.
 
 - name: Ensure iSCSI packages are installed.
   ansible.builtin.include_role:
@@ -15,31 +14,28 @@
   ansible.builtin.include_role:
     name: netapp_eseries.host.iscsi
     tasks_from: configure/iscsi.yml
-    apply:
-      vars:
-        eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
-        eseries_iscsi_iscsid_conf_options: "{{ eseries_ib_iser_iscsid_conf_options }}"
-        eseries_iscsi_iscsid_conf_group_options: "{{ eseries_ib_iser_iscsid_conf_group_options }}"
-        eseries_iscsi_iscsid_conf_default_options: "{{ eseries_ib_iser_iscsid_conf_default_options }}"
+  vars:
+    eseries_iscsi_interfaces: "{{ eseries_ib_iser_interfaces }}"
+    eseries_iscsi_iscsid_conf_options: "{{ eseries_ib_iser_iscsid_conf_options }}"
+    eseries_iscsi_iscsid_conf_group_options: "{{ eseries_ib_iser_iscsid_conf_group_options }}"
+    eseries_iscsi_iscsid_conf_default_options: "{{ eseries_ib_iser_iscsid_conf_default_options }}"
 
 - name: Ensure InfiniBand IPoIB is installed and configured.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ipoib
-    apply:
-      vars:
-        eseries_ipoib_configure_network: "{{ eseries_ib_iser_configure_network }}"
-        eseries_ipoib_configure_firewall: "{{ eseries_ib_iser_configure_firewall }}"
-        eseries_ipoib_interfaces: "{{ eseries_ib_iser_interfaces }}"
-        eseries_ipoib_interface_required_keys: "{{ eseries_ib_iser_interface_required_keys }}"
-        eseries_ipoib_interface_ignore_keys: "{{ eseries_ib_iser_interface_ignore_keys }}"
-        eseries_ipoib_interface_common: "{{ eseries_ib_iser_interface_common }}"
-        eseries_ipoib_interface_defaults: "{{ eseries_ib_iser_interface_defaults }}"
-        eseries_ipoib_firewall_zone: "{{ eseries_ib_iser_interface_common['zone']
-                                          | default(eseries_ib_iser_firewall_zone
-                                          | default(eseries_common_firewall_zone | default(''))) }}"
-        eseries_ipoib_default_hook_templates: "{{ eseries_ib_iser_default_hook_templates }}"
-        eseries_ipoib_udev_name: "{{ eseries_ib_iser_udev_name }}"
-        eseries_ipoib_udev_rules: "{{ eseries_ib_iser_udev_rules }}"
+  vars:
+    eseries_ipoib_configure_network: "{{ eseries_ib_iser_configure_network }}"
+    eseries_ipoib_configure_firewall: "{{ eseries_ib_iser_configure_firewall }}"
+    eseries_ipoib_interfaces: "{{ eseries_ib_iser_interfaces }}"
+    eseries_ipoib_interface_required_keys: "{{ eseries_ib_iser_interface_required_keys }}"
+    eseries_ipoib_interface_ignore_keys: "{{ eseries_ib_iser_interface_ignore_keys }}"
+    eseries_ipoib_interface_common: "{{ eseries_ib_iser_interface_common }}"
+    eseries_ipoib_interface_defaults: "{{ eseries_ib_iser_interface_defaults }}"
+    eseries_ipoib_firewall_zone: "{{ eseries_ib_iser_interface_common['zone'] | default(eseries_ib_iser_firewall_zone
+                                      | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_ipoib_default_hook_templates: "{{ eseries_ib_iser_default_hook_templates }}"
+    eseries_ipoib_udev_name: "{{ eseries_ib_iser_udev_name }}"
+    eseries_ipoib_udev_rules: "{{ eseries_ib_iser_udev_rules }}"
 
 - name: Configure iSCSI interface bindings for InfiniBand iSER.
   ansible.builtin.include_tasks: configure/iface.yml
@@ -47,9 +43,8 @@
 - name: Ensure InfiniBand IPoIB is installed and configured.
   ansible.builtin.include_role:
     name: netapp_eseries.host.ib_opensm
-    apply:
-      vars:
-        eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
+  vars:
+    eseries_ib_opensm_interfaces: "{{ eseries_ib_iser_interfaces }}"
 
 - name: Configure iSCSI sessions for InfiniBand iSER.
   ansible.builtin.include_tasks: configure/session.yml

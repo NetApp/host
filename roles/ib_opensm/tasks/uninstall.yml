@@ -2,13 +2,12 @@
   ansible.builtin.include_role:
     name: netapp_eseries.host.common
     tasks_from: installer/uninstall.yml
-    apply:
-      vars:
-        eseries_common_package_group: "InfiniBand OpenSM"
-        eseries_common_custom_packages: "{{ eseries_ib_opensm_custom_packages | default({}) }}"
-        eseries_common_allow_upgrades: "{{ eseries_ib_opensm_allow_upgrades | default(false) }}"
-        eseries_common_skip_package_validation: "{{ eseries_ib_opensm_skip_package_validation | default(false) }}"
   when: '"uninstall" in (eseries_ib_opensm_custom_packages.keys() | list)'
+  vars:
+    eseries_common_package_group: "InfiniBand OpenSM"
+    eseries_common_custom_packages: "{{ eseries_ib_opensm_custom_packages | default({}) }}"
+    eseries_common_allow_upgrades: "{{ eseries_ib_opensm_allow_upgrades | default(false) }}"
+    eseries_common_skip_package_validation: "{{ eseries_ib_opensm_skip_package_validation | default(false) }}"
 
 - name: Include operating specific variables.
   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
