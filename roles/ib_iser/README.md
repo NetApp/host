@@ -44,6 +44,17 @@
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
     eseries_ib_iser_uninstall:               # Whether to uninstall the ib_iser role. (Default: false)
 
+## General Notes
+    It is recommended to call netapp_eseries.host.storage_setup instead of calling supporting roles directly
+    which will configure all related protocols based on storage mapped to the targeted host. However, if you
+    need to call this role directly, be sure to set the include_role public option to true. This is important
+    to ensure role defaults are available when passed to other supporting roles. All defaults are prefixed with
+    eseries_ib_iser_* to prevent variable conflicts with other roles.
+
+    - name: Ensure InfiniBand iSER protocol has been setup
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.ib_iser
+        public: true
 
 ## Known Issues
 ### Enforcing SELinux security causes InfiniBand interfaces to not be available

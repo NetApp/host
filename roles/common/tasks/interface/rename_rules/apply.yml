@@ -14,29 +14,17 @@
     - name: Ensure udev rules exist for network interface mappings.
       ansible.builtin.template:
         src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'interface/rename_rules.j2') }}"
-        dest: "{{ eseries_common_udev_rules_d }}{{ udev_name }}"
+        dest: "{{ eseries_common_udev_rules_d }}{{ eseries_common_udev_name }}"
       register: interface_rename_rules
-      when: udev_name and udev_rules
-      become: true
 
     - name: Update interface names.
       ansible.builtin.include_tasks: interface/rename_rules/apply/update_interface.yml
-      loop: "{{ udev_rules | dict2items }}"
+      loop: "{{ eseries_common_udev_rules | dict2items }}"
       loop_control:
         loop_var: interface_rule
+  when: eseries_common_udev_name and eseries_common_udev_rules
+  become: true
   vars:
-    udev_name: |-
-      {%- if _common_udev_name is defined and _common_udev_name -%}
-        {{- _common_udev_name -}}
-      {%- else %}
-        {{- eseries_common_udev_name -}}
-      {%- endif -%}
-    udev_rules: |-
-      {%- if _common_udev_rules is defined and _common_udev_rules -%}
-        {{- _common_udev_rules -}}
-      {%- else %}
-        {{- eseries_common_udev_rules -}}
-      {%- endif -%}
     interface_device_by_identifier: |-
       {%- set info = {} -%}
       {%- for net_device in net_devices["stdout_lines"] -%}

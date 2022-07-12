@@ -1,5 +1,5 @@
 - name: Get the contents of installed protocol log.
-  file_list:
+  netapp_eseries.host.file_list:
     file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
     mode: content
   become: true
@@ -8,11 +8,12 @@
 - name: Remove setup for FC protocol.
   block:
     - name: Remove setup for FC protocol.
-      include_role:
-        name: fc
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.fc
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["fc"]
@@ -22,11 +23,12 @@
 - name: Remove setup for InfiniBand iSER protocol.
   block:
     - name: Remove setup for InfiniBand iSER protocol.
-      include_role:
-        name: ib_iser
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.ib_iser
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["ib_iser"]
@@ -36,11 +38,12 @@
 - name: Remove setup for InfiniBand SRP protocol.
   block:
     - name: Remove setup for InfiniBand SRP protocol.
-      include_role:
-        name: ib_srp
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.ib_srp
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["ib_srp"]
@@ -50,11 +53,12 @@
 - name: Remove setup for iSCSI protocol.
   block:
     - name: Uninstall iSCSI protocol.
-      include_role:
-        name: iscsi
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.iscsi
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["iscsi"]
@@ -64,11 +68,12 @@
 - name: Remove setup for NVMe over FC protocol.
   block:
     - name: Remove setup for NVMe over FC protocol.
-      include_role:
-        name: nvme_fc
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.nvme_fc
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["nvme_fc"]
@@ -78,11 +83,12 @@
 - name: Remove setup for NVMe over Infiniband protocol.
   block:
     - name: Remove setup for NVMe over Infiniband protocol.
-      include_role:
-        name: nvme_ib
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.nvme_ib
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["nvme_ib"]
@@ -92,11 +98,12 @@
 - name: Remove setup for NVMe over RoCE protocol.
   block:
     - name: Remove setup for NVMe over RoCE protocol.
-      include_role:
-        name: nvme_roce
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.nvme_roce
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["nvme_roce"]
@@ -106,11 +113,12 @@
 - name: Remove setup for SAS protocol.
   block:
     - name: Remove setup for SAS protocol.
-      include_role:
-        name: sas
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.sas
         tasks_from: uninstall.yml
+        public: true
     - name: Update eseries_protocol_log
-      file_list:
+      netapp_eseries.host.file_list:
         file: "{{ eseries_protocol_log_path }}eseries_protocol_log"
         mode: remove
         items: ["sas"]

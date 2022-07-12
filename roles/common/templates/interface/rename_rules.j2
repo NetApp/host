@@ -1,4 +1,4 @@
-{% for identifier, name in (udev_rules.items() | list)  if identifier in interface_device_by_identifier %}
+{% for identifier, name in (eseries_common_udev_rules.items() | list) if identifier in interface_device_by_identifier %}
 {%   set type = interface_device_by_identifier[identifier]["type"] %}
 {%   if type == "pci_slot_name" %}
 ACTION=="add", SUBSYSTEM=="net", KERNELS=="{{ identifier }}", NAME:="{{ name }}"

@@ -49,7 +49,19 @@
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
     eseries_nvme_ib_uninstall:               # Whether to uninstall the nvme_ib role. (Default: false)
 
+
 ## General Notes
+    It is recommended to call netapp_eseries.host.storage_setup instead of calling supporting roles directly
+    which will configure all related protocols based on storage mapped to the targeted host. However, if you
+    need to call this role directly, be sure to set the include_role public option to true. This is important
+    to ensure role defaults are available when passed to other supporting roles. All defaults are prefixed with
+    eseries_nvme_ib_* to prevent variable conflicts with other roles.
+
+    - name: Ensure NVMe over InfiniBand protocol has been setup
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.nvme_ib
+        public: true
+
     A customized systemd service daemon will be generated based on the required targets needed for existing storage system mappings. You can view the generated daemon at /etc/nvme/eseries_nvme_ib_daemon. The daemon is controlled with the systemd service eseries_nvme_ib.service which will ensure connectivity during boot.
 
 ## License
