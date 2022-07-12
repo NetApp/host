@@ -39,5 +39,5 @@
       when: "'rescan' in rescan_actions"
 
     - name: Add volume paths to volumes
-      ansible.builtin.import_tasks: host_facts/add_path.yml
+      ansible.builtin.include_tasks: host_facts/add_path.yml
   when: multipathd_status["rc"] == 0

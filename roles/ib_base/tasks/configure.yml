@@ -1,6 +1,6 @@
 - name: Ensure RDMA is configured.
-  import_tasks: configure/rdma.yml
+  ansible.builtin.include_tasks: configure/rdma.yml
 
 - name: Ensure required InfiniBand kernel modules are loaded.
-  import_tasks: configure/module.yml
+  ansible.builtin.include_tasks: configure/module.yml
 

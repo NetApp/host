@@ -14,10 +14,10 @@
     eseries_ip_udev_rules: "{{ eseries_iscsi_udev_rules }}"
 
 - name: Ensure iSCSI packages are uninstalled.
-  ansible.builtin.import_tasks: uninstall/package.yml
+  ansible.builtin.include_tasks: uninstall/package.yml
 
 - name: Ensure iSCSI is unconfigured.
-  ansible.builtin.import_tasks: uninstall/configure.yml
+  ansible.builtin.include_tasks: uninstall/configure.yml
 
 - name: Unconfigure IPoIB interfaces, hooks and firewall configuration.
   ansible.builtin.include_role:

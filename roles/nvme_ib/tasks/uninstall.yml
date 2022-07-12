@@ -23,11 +23,11 @@
     tasks_from: uninstall.yml
 
 - name: Uninstall OpenSM.
-  import_role:
+  ansible.builtin.include_role:
     name: netapp_eseries.host.ib_opensm
     tasks_from: uninstall.yml
 
 - name: Uninstall IP over InfiniBand.
-  import_role:
+  ansible.builtin.include_role:
     name: netapp_eseries.host.ipoib
     tasks_from: uninstall.yml
