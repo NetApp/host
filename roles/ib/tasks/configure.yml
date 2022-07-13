@@ -1,8 +1,8 @@
 - name: Ensure RDMA is configured.
-  import_tasks: configure/rdma.yml
+  ansible.builtin.include_tasks: configure/rdma.yml
 
 - name: Ensure required InfiniBand kernel modules are loaded.
-  import_tasks: configure/module.yml
+  ansible.builtin.include_tasks: configure/module.yml
 
 - name: Set facts required for configuring persistent network interface names.
   ansible.builtin.set_fact:
@@ -15,4 +15,4 @@
     tasks_from: interface/map_name/install.yml
 
 - name: Ensure Mellanox firmware is configured.
-  import_tasks: configure/firmware.yml
+  ansible.builtin.include_tasks: configure/firmware.yml

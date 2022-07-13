@@ -24,7 +24,7 @@
   ansible.builtin.include_tasks: configure/iface.yml
 
 - name: Discover mapped-volume information from associated storage systems.
-  ansible.builtin.import_role:
+  ansible.builtin.include_role:
     name: netapp_eseries.host.common
     tasks_from: volume_facts.yml
 

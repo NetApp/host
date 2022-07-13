@@ -1,0 +1,5 @@
+- name: Ensure multipath packages are installed.
+  ansible.builtin.include_tasks: package.yml
+
+- name: Ensure multipath is configured.
+  ansible.builtin.include_tasks: configure.yml

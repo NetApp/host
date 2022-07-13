@@ -4,10 +4,10 @@
     tasks_from: volume_facts.yml
 
 - name: Collect host mount information for E-Series volumes.
-  import_tasks: collect_info.yml
+  ansible.builtin.include_tasks: collect_info.yml
 
 - name: Unmount E-Series volumes from host.
-  import_tasks: unmount.yml
+  ansible.builtin.include_tasks: unmount.yml
 
 - name: Unmap E-Series volume from host.
   include_tasks: unmap.yml

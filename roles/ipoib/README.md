@@ -43,10 +43,8 @@
                                            #   persistent interface names.
                                            #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                            #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+    eseries_ipoib_uninstall:             # Whether to uninstall the ipoib role. (Default: false)
 
-## Uninstall
-    To uninstall InfiniBand IPoIB, add '--tags ipoib_uninstall' to the ansible-playbook command or import uninstall.yml task directly
-    from role.
 
 ## License
     BSD-3-Clause

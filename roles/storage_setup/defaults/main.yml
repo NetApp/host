@@ -1,4 +1,3 @@
-eseries_storage_setup_uninstall_multipath: false  # Uninstalling multipath can result in boot failures.
-
-# Do not use! Internal use only
-eseries_common_force_skip_uninstall: false
+eseries_storage_setup_uninstall: false  # Whether to uninstall storage_setup role.
+eseries_storage_setup_uninstall_multipath: false  # Whether the storage_setup role will also uninstall multipath when
+                                                  #   eseries_storage_setup_uninstall==true.

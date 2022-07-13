@@ -6,12 +6,12 @@
 
 # IMPORTANT: Refresh storage facts must be done in order to get the latest interface link statuses.
 - name: Discover mapped-volume information from associated storage systems.
-  ansible.builtin.import_role:
+  ansible.builtin.include_role:
     name: netapp_eseries.host.common
     tasks_from: gather_storage_facts.yml
 
 - name: Discover mapped-volume information from associated storage systems.
-  ansible.builtin.import_role:
+  ansible.builtin.include_role:
     name: netapp_eseries.host.common
     tasks_from: volume_facts.yml
 

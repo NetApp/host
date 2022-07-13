@@ -106,5 +106,4 @@ eseries_ib_base_uninstall_kernel_modules:
   - ib_uverbs
   - ib_core
 
-# Do not use! Internal use only
-eseries_common_force_skip_uninstall: false
+eseries_ib_base_uninstall: false  # Whether to uninstall ib_base role.

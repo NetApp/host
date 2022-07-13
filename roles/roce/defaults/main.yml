@@ -29,5 +29,4 @@ eseries_roce_interface_ignore_keys:
   - configure
   - mstconfig
 
-# Do not use! Internal use only
-eseries_common_force_skip_uninstall: false
+eseries_roce_uninstall: false  # Whether to uninstall roce role.

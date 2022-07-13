@@ -47,13 +47,10 @@
                                              #   persistent interface names.
                                              #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+    eseries_nvme_ib_uninstall:               # Whether to uninstall the nvme_ib role. (Default: false)
 
 ## General Notes
     A customized systemd service daemon will be generated based on the required targets needed for existing storage system mappings. You can view the generated daemon at /etc/nvme/eseries_nvme_ib_daemon. The daemon is controlled with the systemd service eseries_nvme_ib.service which will ensure connectivity during boot.
-
-## Uninstall
-    To uninstall NVMe over InfiniBand, add '--tags nvme_ib_uninstall' to the ansible-playbook command or import uninstall.yml task directly
-    from role.
 
 ## License
     BSD-3-Clause

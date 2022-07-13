@@ -1,5 +1,5 @@
 - name: Scan for all mapped volumes.
-  import_tasks: host_facts/find_path.yml
+  ansible.builtin.include_tasks: host_facts/find_path.yml
 
 - name: Add volume paths to information.
   set_fact:

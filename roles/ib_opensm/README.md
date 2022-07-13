@@ -44,12 +44,7 @@ eseries_ib_opensm_rhel_packages:               # Default package list for ubuntu
 eseries_ib_opensm_kernel_modules:              # Default loaded kernel modules (Default: [rdma_cm, mlx5_core, ib_ipoib]).
 eseries_ib_opensm_log_path: /var/log/          # Default log path. Individual logs will be produced for each interface defined (opensm.conf.X.log); otherwise,
                                                #    all logging will be issued to opensm.log.
-
-Uninstall
----------
-To uninstall InfiniBand IPoIB, add '--tags ib_opensm_uninstall' to the ansible-playbook command.
-
-    ansible-playbook -i inventory.yml playbook --tags ib_opensm_uninstall
+eseries_ib_opensm_uninstall:                   # Whether to uninstall the ib_opensm role. (Default: false)
 
 License
 -------

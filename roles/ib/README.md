@@ -23,10 +23,7 @@
                                   #   persistent interface names.
                                   #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                   #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
-
-## Uninstall
-    To uninstall, add '--tags ib_base_uninstall' to the ansible-playbook command or import uninstall.yml task directly
-    from role. `ansible-playbook -i inventory.yml playbook --tags ib_base_uninstall`
+    eseries_ib_uninstall:          # Whether to uninstall the ib role. (Default: false)
 
 ## License
     BSD-3-Clause
