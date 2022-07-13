@@ -20,6 +20,9 @@
   ansible.builtin.include_role:
     name: netapp_eseries.host.common
     tasks_from: interface/rename_rules/remove.yml
+  vars:
+    eseries_common_udev_name: "{{ eseries_ip_udev_name }}"
+    eseries_common_udev_rules: "{{ eseries_ip_udev_rules }}"
 
 - name: Remove any firewall configuration.
   ansible.builtin.include_tasks: interface/firewall_zone/remove.yml

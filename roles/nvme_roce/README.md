@@ -44,7 +44,7 @@
 
     - name: Ensure NVMe over RoCE protocol has been setup
       ansible.builtin.include_role:
-        name: netapp_eseries.host.nvme_fc
+        name: netapp_eseries.host.nvme_roce
         public: true
 
     WARNING! Role will configure the specified network interfaces unless eseries_nvme_roce_configure_network is set to false.
