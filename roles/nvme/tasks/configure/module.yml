@@ -1,11 +1,3 @@
-- name: Ensure required NVMe modules are loaded.
-  community.general.modprobe:
-    state: present
-    name: "{{ item['name'] }}"
-    params: "{{ item['parameters'] }}"
-  become: true
-  loop: "{{ eseries_nvme_kernel_modules }}"
-
 - name: Ensure required NVMe kernel modules have been added to boot process.
   ansible.builtin.template:
     src: configure/module/module_conf.j2
@@ -15,5 +7,14 @@
 - name: Ensure required NVMe kernel module parameters have been added to boot process.
   ansible.builtin.template:
     src: configure/module/module_options_conf.j2
-    dest: "{{ eseries_nvme_modules_d }}eseries_{{ eseries_nvme_protocol }}.conf"
+    dest: "{{ eseries_nvme_modules_d }}50-eseries_{{ eseries_nvme_protocol }}.conf"
   become: true
+
+- name: Ensure required NVMe modules are loaded.
+  community.general.modprobe:
+    state: present
+    name: "{{ item['name'] }}"
+    params: "{{ item['parameters'] }}"
+  become: true
+  loop: "{{ eseries_nvme_kernel_modules }}"
+

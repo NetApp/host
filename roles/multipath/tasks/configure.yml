@@ -51,3 +51,13 @@
 # Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot. 
 - name: Ensure initramfs includes multipath support.
   include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
+
+- name: Reboot host for intitramfs update
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: reboot.yml
+    apply:
+      vars:
+        eseries_common_allow_host_reboot_reason: "Updated initramfs. Reboot is required."
+  when: initramfs_update['changed']
+
