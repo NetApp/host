@@ -1,5 +1,27 @@
-- name: Determine required facts for installing NVMe over InfiniBand.
-  ansible.builtin.set_fact:
+- name: Uninstall NVMe.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.nvme
+    tasks_from: uninstall.yml
+  vars:
+    eseries_nvme_protocol: nvme_ib
+    eseries_nvme_interfaces: "{{ eseries_nvme_ib_interfaces }}"
+    eseries_nvme_port: "{{ eseries_nvme_ib_port }}"
+    eseries_nvme_queue_depth: "{{ eseries_nvme_ib_queue_depth }}"
+    eseries_nvme_controller_loss_timeout: "{{ eseries_nvme_ib_controller_loss_timeout }}"
+
+- name: Uninstall OpenSM.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib_opensm
+    tasks_from: uninstall.yml
+  vars:
+    eseries_ib_opensm_interfaces: "{{ eseries_nvme_ib_interfaces }}"
+
+
+- name: Uninstall IP over InfiniBand.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ipoib
+    tasks_from: uninstall.yml
+  vars:
     eseries_ipoib_configure_network: "{{ eseries_nvme_ib_configure_network }}"
     eseries_ipoib_configure_firewall: "{{ eseries_nvme_ib_configure_firewall }}"
     eseries_ipoib_interfaces: "{{ eseries_nvme_ib_interfaces }}"
@@ -7,27 +29,7 @@
     eseries_ipoib_interface_ignore_keys: "{{ eseries_nvme_ib_interface_ignore_keys }}"
     eseries_ipoib_interface_common: "{{ eseries_nvme_ib_interface_common }}"
     eseries_ipoib_interface_defaults: "{{ eseries_nvme_ib_interface_defaults }}"
-    eseries_ipoib_firewall_zone: "{{ eseries_nvme_ib_interface_common['zone'] | default(eseries_nvme_ib_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_ipoib_firewall_zone: "{{ eseries_nvme_ib_interface_common['zone'] | default(eseries_nvme_ib_firewall_zone
+                                     | default(eseries_common_firewall_zone | default(''))) }}"
     eseries_ipoib_default_hook_templates: "{{ eseries_nvme_ib_default_hook_templates }}"
     eseries_ipoib_mtu: "{{ eseries_ipoib_mtu | default(eseries_nvme_ib_mtu | default(omit)) }}"
-    eseries_ib_opensm_interfaces: "{{ eseries_nvme_ib_interfaces }}"
-    eseries_nvme_protocol: nvme_ib
-    eseries_nvme_interfaces: "{{ eseries_nvme_ib_interfaces }}"
-    eseries_nvme_port: "{{ eseries_nvme_ib_port }}"
-    eseries_nvme_queue_depth: "{{ eseries_nvme_ib_queue_depth }}"
-    eseries_nvme_controller_loss_timeout: "{{ eseries_nvme_ib_controller_loss_timeout }}"
-
-- name: Uninstall NVMe.
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.nvme
-    tasks_from: uninstall.yml
-
-- name: Uninstall OpenSM.
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.ib_opensm
-    tasks_from: uninstall.yml
-
-- name: Uninstall IP over InfiniBand.
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.ipoib
-    tasks_from: uninstall.yml

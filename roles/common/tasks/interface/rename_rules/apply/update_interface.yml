@@ -1,0 +1,20 @@
+- name: "Check whether expected device for {{ interface_rule['value'] }} exists."
+  ansible.builtin.fail:
+    msg: "Failed to discover the device for {{ expected_interface_name }}! Please check provided identifier."
+  when: interface_rule["key"] not in interface_device_by_identifier.keys()
+
+- name: Update interface name.
+  block:
+    - name: Set interface down.
+      ansible.builtin.command: "ip link set {{ current_interface_name }} down"
+
+    - name: Change interface name.
+      ansible.builtin.command: "ip link set {{ current_interface_name }} name {{ expected_interface_name }}"
+
+    - name: Set interface up.
+      ansible.builtin.command: "ip link set {{ expected_interface_name }} up"
+  when: expected_interface_name != current_interface_name
+  become: true
+  vars:
+    expected_interface_name: "{{ interface_rule['value'] }}"
+    current_interface_name: "{{ interface_device_by_identifier[interface_rule['key']]['name'] }}"

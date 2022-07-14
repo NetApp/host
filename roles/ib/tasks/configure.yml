@@ -4,15 +4,13 @@
 - name: Ensure required InfiniBand kernel modules are loaded.
   ansible.builtin.include_tasks: configure/module.yml
 
-- name: Set facts required for configuring persistent network interface names.
-  ansible.builtin.set_fact:
-    eseries_common_udev_name: "{{ eseries_ib_base_udev_name | default(eseries_ib_udev_name) }}"
-    eseries_common_udev_rules: "{{ eseries_ib_base_udev_rules | default(eseries_ib_udev_rules) }}"
-
 - name: Configure persistent network interface names.
   ansible.builtin.include_role:
     name: netapp_eseries.host.common
-    tasks_from: interface/map_name/install.yml
+    tasks_from: interface/rename_rules/apply.yml
+  vars:
+    eseries_common_udev_name: "{{ eseries_ib_base_udev_name | default(eseries_ib_udev_name) }}"
+    eseries_common_udev_rules: "{{ eseries_ib_base_udev_rules | default(eseries_ib_udev_rules) }}"
 
 - name: Ensure Mellanox firmware is configured.
   ansible.builtin.include_tasks: configure/firmware.yml

@@ -4,7 +4,7 @@ eseries_common_allow_host_reboot_reason: "Reboot is required."
 eseries_common_package_group: common  # This variable can be used to override the task name package group description.
 eseries_common_allow_upgrades: false
 eseries_common_skip_package_validation: false
-eseries_common_custom_packages:
+eseries_common_custom_packages: {}
 #  files:
 #    "<source>": "<destination>"
 #    ...

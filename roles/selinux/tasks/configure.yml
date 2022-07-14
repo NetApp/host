@@ -78,11 +78,9 @@
       ansible.builtin.include_role:
         name: netapp_eseries.host.common
         tasks_from: reboot.yml
-        apply:
-          vars:
-            eseries_common_allow_host_reboot_reason: "SELinux configuration changed and a reboot is required."
       when: reboot_required
       vars:
+        eseries_common_allow_host_reboot_reason: "SELinux configuration changed and a reboot is required."
         reboot_required: |-
           {%- set current_state = selinux_getenforce["stdout"] | lower -%}
           {%- if (current_state == "enforcing" and eseries_selinux_state == "disabled")
