@@ -1,6 +1,6 @@
 - name: Discover mapped-volume information from associated storage systems.
-  include_role:
-    name: common
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
     tasks_from: volume_facts.yml
 
 - name: Collect host mount information for E-Series volumes.
@@ -10,32 +10,32 @@
   ansible.builtin.include_tasks: unmount.yml
 
 - name: Unmap E-Series volume from host.
-  include_tasks: unmap.yml
+  ansible.builtin.include_tasks: unmap.yml
   when: eseries_unmount_unmap == True
 
 - name: Delete E-Series volumes from host.
-  include_tasks: delete.yml
+  ansible.builtin.include_tasks: delete.yml
   when: eseries_unmount_delete == True
 
 - name: Ensure multipath user friendly name aliases are updated.
   block:
     - name: Discover mapped-volume information from associated storage systems.
-      include_role:
-        name: common
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
         tasks_from: gather_storage_facts.yml
 
     - name: Scan for all mapped volumes.
-      include_role:
-        name: common
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
         tasks_from: volume_facts.yml
 
     - name: Discover mapped-volume information from associated storage systems.
-      include_role:
-        name: common
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
         tasks_from: host_facts.yml
 
     - name: Ensure multipath user friendly names are configured.
-      include_role:
-        name: multipath
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.multipath
         tasks_from: configure/configure_eseries_multipath.yml
   when: eseries_unmount_unmap == True or eseries_unmount_delete == True
