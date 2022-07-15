@@ -10,3 +10,11 @@
   become: true
   when: dracut_modules['changed'] == True
   register: initramfs_update
+
+- name: Reboot host for intitramfs update
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: reboot.yml
+  vars:
+    eseries_common_allow_host_reboot_reason: "Updated initramfs. Reboot is required."
+  when: initramfs_update['changed']
