@@ -1,0 +1,26 @@
+- name: Ensure InfiniBand has been installed and configured.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib
+  vars:
+    eseries_ib_interfaces: "{{ eseries_ipoib_interfaces }}"
+    eseries_ib_udev_name: "{{ eseries_ipoib_udev_name }}"
+    eseries_ib_udev_rules: "{{ eseries_ipoib_udev_rules }}"
+
+- name: Ensure IP over InfiniBand is configured.
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Configure IP over InfiniBand interfaces.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ip
+  vars:
+    eseries_ip_configure_network: "{{ eseries_ipoib_configure_network }}"
+    eseries_ip_configure_firewall: "{{ eseries_ipoib_configure_firewall }}"
+    eseries_ip_interface_type: InfiniBand
+    eseries_ip_interface_required_keys: "{{ eseries_ipoib_interface_required_keys }}"
+    eseries_ip_interface_ignore_keys: "{{ eseries_ipoib_interface_ignore_keys }}"
+    eseries_ip_interfaces: "{{ eseries_ipoib_interfaces }}"
+    eseries_ip_interface_common: "{{ eseries_ipoib_interface_common }}"
+    eseries_ip_interface_defaults: "{{ eseries_ipoib_interface_defaults }}"
+    eseries_ip_firewall_zone: "{{ eseries_ipoib_interface_common['zone'] | default(eseries_ipoib_firewall_zone
+                                  | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_ip_default_hook_templates: "{{ eseries_ipoib_default_hook_templates }}"

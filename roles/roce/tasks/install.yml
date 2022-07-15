@@ -1,0 +1,23 @@
+- name: Configure InfiniBand.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib
+  vars:
+    eseries_ib_interfaces: "{{ eseries_roce_interfaces }}"
+    eseries_ib_udev_name: "{{ eseries_roce_udev_name }}"
+    eseries_ib_udev_rules: "{{ eseries_roce_udev_rules }}"
+
+- name: Configure network interfaces.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ip
+  vars:
+    eseries_ip_configure_network: "{{ eseries_roce_configure_network }}"
+    eseries_ip_configure_firewall: "{{ eseries_roce_configure_firewall }}"
+    eseries_ip_interface_type: Ethernet
+    eseries_ip_interface_required_keys: "{{ eseries_roce_interface_required_keys }}"
+    eseries_ip_interface_ignore_keys: "{{ eseries_roce_interface_ignore_keys }}"
+    eseries_ip_interfaces: "{{ eseries_roce_interfaces }}"
+    eseries_ip_interface_common: "{{ eseries_roce_interface_common }}"
+    eseries_ip_interface_defaults: "{{ eseries_roce_interface_defaults }}"
+    eseries_ip_firewall_zone: "{{ eseries_roce_interface_common['zone'] | default(eseries_roce_firewall_zone
+                                  | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_ip_default_hook_templates: "{{ eseries_roce_default_hook_templates }}"

@@ -13,15 +13,13 @@
       {%- endfor -%}
       {{- interfaces -}}
 
-- name: Set facts required for configuring persistent network interface names.
-  ansible.builtin.set_fact:
-    eseries_common_udev_name: "{{ eseries_ip_udev_name }}"
-    eseries_common_udev_rules: "{{ eseries_ip_udev_rules }}"
-
 - name: Configure persistent network interface names.
   ansible.builtin.include_role:
     name: netapp_eseries.host.common
-    tasks_from: interface/map_name/install.yml
+    tasks_from: interface/rename_rules/apply.yml
+  vars:
+    eseries_common_udev_name: "{{ eseries_ip_udev_name }}"
+    eseries_common_udev_rules: "{{ eseries_ip_udev_rules }}"
 
 - name: Configure interfaces using ifupdown configuration.
   ansible.builtin.include_tasks: interface/ifupdown.yml
@@ -34,3 +32,7 @@
 - name: Install any Network Manager dispatcher hooks.
   ansible.builtin.include_tasks: interface/hook/network_manager.yml
   when: '"network_manager" in eseries_ip_manager_tools'
+
+- name: Apply any interface firewall changes.
+  ansible.builtin.include_tasks: interface/firewall_zone/apply.yml
+  when: eseries_ip_configure_firewall

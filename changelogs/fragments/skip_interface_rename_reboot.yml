@@ -1,0 +1,2 @@
+minor_changes:
+  - common - Use ip command to rename interfaces rather than rebooting.

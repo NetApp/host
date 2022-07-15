@@ -1,12 +1,10 @@
 eseries_common_group: eseries_storage_systems
 eseries_common_allow_host_reboot: true
 eseries_common_allow_host_reboot_reason: "Reboot is required."
-eseries_common_force_skip_uninstall: false              # Forces to skip uninstallation when roles has been called dynamically with applied tags;
-                                                        #   otherwise the applied tags are also applied to uninstallation.
-eseries_common_package_group: common                    # This variable can be used to override the task name package group description.
+eseries_common_package_group: common  # This variable can be used to override the task name package group description.
 eseries_common_allow_upgrades: false
 eseries_common_skip_package_validation: false
-eseries_common_custom_packages:
+eseries_common_custom_packages: {}
 #  files:
 #    "<source>": "<destination>"
 #    ...
@@ -43,3 +41,5 @@ eseries_common_discovery_rescan_scsi_bus_protocol_list: ["iscsi", "fc", "sas", "
 
 # Set to false to skip attempting to configure the firewall even if firewalld or ufw are installed.
 eseries_common_firewall_configure: true
+
+eseries_common_uninstall: false     # Common uninstall variable which can be used to uninstall any netapp_eseries.host role.

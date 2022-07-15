@@ -83,5 +83,4 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
       netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
     default: *ubuntu20
 
-# Do not use! Internal use only
-eseries_common_force_skip_uninstall: false
+eseries_ip_uninstall: false  # Whether to uninstall ip role.

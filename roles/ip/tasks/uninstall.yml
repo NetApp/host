@@ -16,23 +16,14 @@
       when: '"netplan" in eseries_ip_manager_tools'
   when: eseries_ip_configure_network
 
-- name: Set facts required for unconfiguring persistent network interface names.
-  ansible.builtin.set_fact:
-    eseries_common_udev_name: "{{ eseries_ip_udev_name }}"
-    eseries_common_udev_rules: "{{ eseries_ip_udev_rules }}"
-
 - name: Unconfigure persistent network interface names.
   ansible.builtin.include_role:
     name: netapp_eseries.host.common
-    tasks_from: interface/map_name/uninstall.yml
-
-- name: Determine facts for removing any firewall configuration.
-  ansible.builtin.set_fact:
-    eseries_common_interfaces: "{{ eseries_ip_interfaces }}"
-    eseries_common_firewall_zone: "{{ eseries_ip_interface_common['zone'] | default(eseries_ip_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+    tasks_from: interface/rename_rules/remove.yml
+  vars:
+    eseries_common_udev_name: "{{ eseries_ip_udev_name }}"
+    eseries_common_udev_rules: "{{ eseries_ip_udev_rules }}"
 
 - name: Remove any firewall configuration.
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: interface/firewall_zone/uninstall.yml
+  ansible.builtin.include_tasks: interface/firewall_zone/remove.yml
   when: eseries_ip_configure_firewall

@@ -1,0 +1,6 @@
+- name: Determine the network manager (netplan, ifupdown, network_manager, networkd)
+  ansible.builtin.include_tasks: get_manager.yml
+
+- name: Ensure interface(s) are configured.
+  ansible.builtin.include_tasks: interface.yml
+  when: eseries_ip_configure_network

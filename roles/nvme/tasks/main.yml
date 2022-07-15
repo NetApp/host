@@ -1,17 +1,7 @@
-- name: Ensure NVMe base packages are installed.
-  ansible.builtin.include_tasks: package.yml
+- name: Install NVMe.
+  ansible.builtin.include_tasks: install.yml
+  when: not (eseries_common_uninstall | default(eseries_nvme_uninstall))
 
-- name: Ensure InfiniBand base is configured.
-  ansible.builtin.include_tasks: configure.yml
-
-- name: Ensure required NVMe systemd service is configured.
-  ansible.builtin.include_tasks: service.yml
-
-- name: Uninstall NVMe base.
-  block:
-    - name: Uninstall NVMe base.
-      ansible.builtin.include_tasks: uninstall.yml
-  when: not eseries_common_force_skip_uninstall
-  tags:
-    - never
-    - nvme_uninstall
+- name: Uninstall NVMe.
+  ansible.builtin.include_tasks: uninstall.yml
+  when: eseries_common_uninstall | default(eseries_nvme_uninstall)

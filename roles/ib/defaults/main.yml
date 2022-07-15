@@ -7,6 +7,19 @@ eseries_ib_rdma_memory_conf: /etc/security/limits.d/eseries_rdma.conf
 eseries_ib_modules_load_d: /etc/modules-load.d/
 eseries_ib_modules_d: /etc/modprobe.d/
 
+eseries_ib_custom_packages: {}
+#  files:
+#    "<source>": "<destination>"
+#    ...
+#  install:
+#    add_packages: []
+#    remove_packages: []
+#    commands: []
+#  uninstall:
+#    packages: []
+#    commands: []
+
+
 eseries_ib_ubuntu_packages:
   - infiniband-diags
   - rdma-core
@@ -41,5 +54,4 @@ eseries_ib_uninstall_kernel_modules:
   - ib_uverbs
   - ib_core
 
-# Do not use! Internal use only
-eseries_common_force_skip_uninstall: false
+eseries_ib_uninstall: false  # Whether to uninstall ib role.

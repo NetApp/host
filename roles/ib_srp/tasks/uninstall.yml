@@ -16,12 +16,12 @@
     path: "{{ eseries_ib_srp_daemon_service }}"
   become: true
 
-- name: Ensure InfiniBand IPoIB is installed and configured.
-  import_role:
-    name: ib_opensm
+- name: Ensure InfiniBand IPoIB is uninstalled.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib_opensm
     tasks_from: uninstall.yml
 
-- name: Ensure InfiniBand base has been installed and configured.
-  import_role:
-    name: ib_base
+- name: Ensure InfiniBand base is uninstalled.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.ib_base
     tasks_from: uninstall.yml

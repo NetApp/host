@@ -1,5 +1,5 @@
 - name: Ensure host NVMe qualified name (NQN) is configured.
-  ansible.builtin.import_tasks: configure/nqn.yml
+  ansible.builtin.include_tasks: configure/nqn.yml
 
 - name: Ensure required NVMe kernel modules are loaded.
-  ansible.builtin.import_tasks: configure/module.yml
+  ansible.builtin.include_tasks: configure/module.yml

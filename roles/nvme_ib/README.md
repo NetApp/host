@@ -43,17 +43,26 @@
                                              #   the interface variable within the hook templates.
                                              #   See 99-multihoming.j2 in role's templates directory for an example.
     eseries_nvme_ib_udev_name:               # Filename for applying eseries_nvme_ib_udev_rules
-    eseries_nvme_ib_udev_rules:              # Dictionary containing interface PCI slots to interface names for ensuring
-                                             #   persistent interface names.
+    eseries_nvme_ib_udev_rules:              # Dictionary containing interface PCI slots names or MAC addresses to interface names
+                                             #   for ensuring persistent interface names.
                                              #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+    eseries_nvme_ib_uninstall:               # Whether to uninstall the nvme_ib role. (Default: false)
+
 
 ## General Notes
-    A customized systemd service daemon will be generated based on the required targets needed for existing storage system mappings. You can view the generated daemon at /etc/nvme/eseries_nvme_ib_daemon. The daemon is controlled with the systemd service eseries_nvme_ib.service which will ensure connectivity during boot.
+    It is recommended to call netapp_eseries.host.storage_setup instead of calling supporting roles directly
+    which will configure all related protocols based on storage mapped to the targeted host. However, if you
+    need to call this role directly, be sure to set the include_role public option to true. This is important
+    to ensure role defaults are available when passed to other supporting roles. All defaults are prefixed with
+    eseries_nvme_ib_* to prevent variable conflicts with other roles.
 
-## Uninstall
-    To uninstall NVMe over InfiniBand, add '--tags nvme_ib_uninstall' to the ansible-playbook command or import uninstall.yml task directly
-    from role.
+    - name: Ensure NVMe over InfiniBand protocol has been setup
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.nvme_ib
+        public: true
+
+    A customized systemd service daemon will be generated based on the required targets needed for existing storage system mappings. You can view the generated daemon at /etc/nvme/eseries_nvme_ib_daemon. The daemon is controlled with the systemd service eseries_nvme_ib.service which will ensure connectivity during boot.
 
 ## License
     BSD-3-Clause

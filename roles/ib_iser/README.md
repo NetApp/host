@@ -38,14 +38,23 @@
                                              #   See 99-multihoming.j2 in role's templates directory for an example.
     eseries_ib_iser_firewall_zone:           # Default firewall zone. (Note: Only implemented for firewalld)
     eseries_ib_iser_udev_name:               # Filename for applying eseries_ib_iser_udev_rules
-    eseries_ib_iser_udev_rules:              # Dictionary containing interface PCI slots to interface names for ensuring
-                                             #   persistent interface names.
+    eseries_ib_iser_udev_rules:              # Dictionary containing interface PCI slots names or MAC addresses to interface names
+                                             #    for ensuring persistent interface names.
                                              #   Example: {"0000:2f:00.0": i1a, "0000:2f:00.1": i1b,
                                              #             "0000:86:00.0": i2a, "0000:86:00.1": i2b}
+    eseries_ib_iser_uninstall:               # Whether to uninstall the ib_iser role. (Default: false)
 
-## Uninstall
-    To uninstall, add '--tags ib_iser_uninstall' to the ansible-playbook command or include uninstall.yml task directly
-    from role.
+## General Notes
+    It is recommended to call netapp_eseries.host.storage_setup instead of calling supporting roles directly
+    which will configure all related protocols based on storage mapped to the targeted host. However, if you
+    need to call this role directly, be sure to set the include_role public option to true. This is important
+    to ensure role defaults are available when passed to other supporting roles. All defaults are prefixed with
+    eseries_ib_iser_* to prevent variable conflicts with other roles.
+
+    - name: Ensure InfiniBand iSER protocol has been setup
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.ib_iser
+        public: true
 
 ## Known Issues
 ### Enforcing SELinux security causes InfiniBand interfaces to not be available

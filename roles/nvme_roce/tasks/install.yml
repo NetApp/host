@@ -1,0 +1,27 @@
+- name: Install and configure RoCE.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.roce
+  vars:
+    eseries_roce_configure_network: "{{ eseries_nvme_roce_configure_network }}"
+    eseries_roce_configure_firewall: "{{ eseries_nvme_roce_configure_firewall }}"
+    eseries_roce_interface_type: Ethernet
+    eseries_roce_interface_required_keys: "{{ eseries_nvme_roce_interface_required_keys }}"
+    eseries_roce_interface_ignore_keys: "{{ eseries_nvme_roce_interface_ignore_keys }}"
+    eseries_roce_interfaces: "{{ eseries_nvme_roce_interfaces }}"
+    eseries_roce_interface_common: "{{ eseries_nvme_roce_interface_common }}"
+    eseries_roce_interface_defaults: "{{ eseries_nvme_roce_interface_defaults }}"
+    eseries_roce_firewall_zone: "{{ eseries_nvme_roce_interface_common['zone'] | default(eseries_nvme_roce_firewall_zone
+                                    | default(eseries_common_firewall_zone | default(''))) }}"
+    eseries_roce_default_hook_templates: "{{ eseries_nvme_roce_default_hook_templates }}"
+    eseries_roce_udev_name: "{{ eseries_nvme_roce_udev_name }}"
+    eseries_roce_udev_rules: "{{ eseries_nvme_roce_udev_rules }}"
+
+- name: Ensure required NVMe packages are installed and configured
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.nvme
+  vars:
+    eseries_nvme_protocol: nvme_roce
+    eseries_nvme_interfaces: "{{ eseries_nvme_roce_interfaces }}"
+    eseries_nvme_port: "{{ eseries_nvme_roce_port }}"
+    eseries_nvme_queue_depth: "{{ eseries_nvme_roce_queue_depth }}"
+    eseries_nvme_controller_loss_timeout: "{{ eseries_nvme_roce_controller_loss_timeout }}"
