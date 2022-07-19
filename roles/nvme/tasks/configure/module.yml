@@ -17,10 +17,9 @@
     params: "{{ item['parameters'] }}"
   become: true
   loop: "{{ eseries_nvme_kernel_modules }}"
-  
-# There are some cases where nvme_core will already be loaded and by default, native multipath is disabled.  We need to
-#   check for this and reboot, so that the native nvme driver will claim nvme devices (and not device mapper).
 
+# There are some cases where nvme_core will already be loaded and by default, native multipath is disabled.  We need to
+#   check for this and reboot, so that the native nvme multipath driver will claim nvme devices (and not device mapper).
 - name: Read value of nvme_core multipath
   ansible.builtin.command: cat /sys/module/nvme_core/parameters/multipath
   become: true
@@ -35,7 +34,7 @@
   vars:
     eseries_common_allow_host_reboot_reason: "nvme multipath is disabled. Reboot is required."
     nvme_native_multipath_default: |-
-      {%- for module in eseries_nvme_kernel_modules 
+      {%- for module in eseries_nvme_kernel_modules
           if module["name"] == "nvme_core" and module["parameters"] | regex_search("multipath=Y", ignorecase=true) -%}
         True
       {%- else -%}
