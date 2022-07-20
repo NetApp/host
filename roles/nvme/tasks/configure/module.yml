@@ -27,20 +27,22 @@
   changed_when: false
   failed_when: false
 
-- name: Update initramfs image (RHEL/SUSE).
-  ansible.builtin.command: dracut --force
-  when: ansible_os_family | lower in ["suse", "redhat"]
-  become: true
-
-- name: Update initramfs image (Ubuntu).
-  ansible.builtin.command: update-initramfs -u
-  when: ansible_os_family | lower in ["debian"]
-  become: true
-
-- name: Reboot host to enable nvme multipath
-  ansible.builtin.include_role:
-    name: netapp_eseries.host.common
-    tasks_from: reboot.yml
+- name: Update initramfs and reboot host to enable nvme multipath
+  block:
+    - name: Update initramfs image (RHEL/SUSE).
+      ansible.builtin.command: dracut --force
+      when: ansible_os_family | lower in ["suse", "redhat"]
+      become: true
+    
+    - name: Update initramfs image (Ubuntu).
+      ansible.builtin.command: update-initramfs -u
+      when: ansible_os_family | lower in ["debian"]
+      become: true
+    
+    - name: Reboot host to enable nvme multipath
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
+        tasks_from: reboot.yml
   vars:
     eseries_common_allow_host_reboot_reason: "nvme multipath is disabled. Reboot is required."
     nvme_native_multipath_default: |-
