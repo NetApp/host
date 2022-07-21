@@ -17,6 +17,7 @@
   loop:
     - "{{ eseries_ib_modules_load_d }}eseries_ib_base.conf"
     - "{{ eseries_ib_modules_d }}eseries_ib_base_options.conf"
+  become: true
 
 - name: Ensure required InfiniBand modules are loaded.
   community.general.modprobe:
