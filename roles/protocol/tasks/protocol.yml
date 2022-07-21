@@ -47,7 +47,7 @@
         public: true
   when: "'ib_iser' in protocol_list and eseries_ib_iser_interfaces is defined"
 
-- name: Ensure host has been setup for protocol.
+- name: Ensure host has been setup for InfiniBand SRP protocol.
   block:
     - name: Update eseries_protocol_log
       netapp_eseries.host.file_list:
