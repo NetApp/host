@@ -1,11 +1,3 @@
-- name: Ensure required NVMe modules are loaded.
-  community.general.modprobe:
-    state: present
-    name: "{{ item['name'] }}"
-    params: "{{ item['parameters'] }}"
-  become: true
-  loop: "{{ eseries_nvme_kernel_modules }}"
-
 - name: Ensure required NVMe kernel modules have been added to boot process.
   ansible.builtin.template:
     src: configure/module/module_conf.j2
@@ -15,5 +7,49 @@
 - name: Ensure required NVMe kernel module parameters have been added to boot process.
   ansible.builtin.template:
     src: configure/module/module_options_conf.j2
-    dest: "{{ eseries_nvme_modules_d }}eseries_{{ eseries_nvme_protocol }}.conf"
+    dest: "{{ eseries_nvme_modules_d }}50-eseries_{{ eseries_nvme_protocol }}.conf"
   become: true
+
+- name: Ensure required NVMe modules are loaded.
+  community.general.modprobe:
+    state: present
+    name: "{{ item['name'] }}"
+    params: "{{ item['parameters'] }}"
+  become: true
+  loop: "{{ eseries_nvme_kernel_modules }}"
+
+# There are some cases where nvme_core will already be loaded and by default, native multipath is disabled.  We need to
+#   check for this and reboot, so that the native nvme multipath driver will claim nvme devices (and not device mapper).
+- name: Read value of nvme_core multipath
+  ansible.builtin.command: cat /sys/module/nvme_core/parameters/multipath
+  become: true
+  register: nvme_multipath_setting
+  changed_when: false
+  failed_when: false
+
+- name: Update initramfs and reboot host to enable nvme multipath
+  block:
+    - name: Update initramfs image (RHEL/SUSE).
+      ansible.builtin.command: dracut --force
+      when: ansible_os_family | lower in ["suse", "redhat"]
+      become: true
+    
+    - name: Update initramfs image (Ubuntu).
+      ansible.builtin.command: update-initramfs -u
+      when: ansible_os_family | lower in ["debian"]
+      become: true
+    
+    - name: Reboot host to enable nvme multipath
+      ansible.builtin.include_role:
+        name: netapp_eseries.host.common
+        tasks_from: reboot.yml
+  vars:
+    eseries_common_allow_host_reboot_reason: "nvme multipath is disabled. Reboot is required."
+    nvme_native_multipath_default: |-
+      {%- for module in eseries_nvme_kernel_modules
+          if module["name"] == "nvme_core" and module["parameters"] | regex_search("multipath=Y", ignorecase=true) -%}
+        True
+      {%- else -%}
+        False
+      {%- endfor -%}
+  when: nvme_multipath_setting.stdout | default('') == 'N' and nvme_native_multipath_default

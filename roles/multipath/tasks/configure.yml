@@ -48,6 +48,6 @@
   become: true
 
 # Based on testing we have to rebuild initramfs after running the above tasks.
-# Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot. 
+# Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot.
 - name: Ensure initramfs includes multipath support.
   include_tasks: "configure/{{ ansible_os_family | lower }}.yml"
