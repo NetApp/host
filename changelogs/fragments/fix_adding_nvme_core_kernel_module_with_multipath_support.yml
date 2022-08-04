@@ -1,0 +1,2 @@
+bugfixes:
+  - nvme - Fix loading nvme-core with multipath=Y when previously loaded with multipath=N.
