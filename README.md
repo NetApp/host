@@ -13,7 +13,7 @@ specifications, and assign persistent mount points to them.
 - [NetApp E-Series Host Collection](#netapp-e-series-host-collection)
   - [Table of Contents](#table-of-contents)
   - [Requirements](#requirements)
-    - [Requirements for the Ansible Control Node](#requirements-for-the-ansible-control-node)
+    - [Tested Ansible Versions](#tested-ansible-versions)
     - [Requirements for E-Series Storage Systems](#requirements-for-eseries-storage-systems)
     - [Requirements for E-Series Hosts](#requirements-for-e-series-hosts)
   - [Tested Platforms](#tested-platforms)
@@ -43,10 +43,10 @@ specifications, and assign persistent mount points to them.
 <a name="requirements"></a>
 ## Requirements
 
-<a name="requirements-for-the-ansible-control-node"></a>
-### Requirements for the Ansible Control Node
+<a name="tested-ansible-versions"></a>
+### Tested Ansible Versions
 
-Ansible 2.10 or later
+Ansible 5.x (ansible-core 2.12)
 
 <a name="requirements-for-eseries-storage-systems"></a>
 ### Requirements for E-Series Storage Systems
