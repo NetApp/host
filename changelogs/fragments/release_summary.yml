@@ -1,4 +1,0 @@
-release_summary: |
-    This release focused primarily on improving the code base for maintainability by relegating tasks to appropriate roles
-    which significantly improved code reuse. While many of the role changes introduce improvements to inventory configuration
-    options, backwards compatibility has been retained. Note that this release will now require Ansible 2.10 or later.

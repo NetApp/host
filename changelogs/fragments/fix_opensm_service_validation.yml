@@ -1,2 +1,0 @@
-bugfixes:
-  - ib_opensm - Ensure opensm.service is started and it's validation task succeeds.

@@ -1,5 +1,0 @@
-minor_changes:
-  - ib - add support for configuring options for Mellanox HCAs.
-  - ib_iser - add support for configuring options for Mellanox HCAs.
-  - ipoib - add support for configuring options for Mellanox HCAs.
-  - nvme_ib - add support for configuring options for Mellanox HCAs.

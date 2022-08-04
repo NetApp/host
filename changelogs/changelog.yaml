@@ -87,3 +87,66 @@ releases:
     - fix_opensm_autostart.yml
     - fix_opensm_service.yml
     release_date: '2022-04-05'
+  1.2.0:
+    changes:
+      bugfixes:
+      - ib_opensm - Ensure opensm.service is started and it's validation task succeeds.
+      - nvme - Fix loading nvme-core with multipath=Y when previously loaded with
+        multipath=N.
+      deprecated_features:
+      - ib_base - Did more than just configure InfiniBand (iSER, SRP, NVMe) so tasks
+        have been logically grouped into other roles (ib, nvme, ib_iser, etc) to simplify
+        and improve code maintainability.
+      minor_changes:
+      - Require Ansible 2.10 or later.
+      - common - Remove the uninstall tags with the eseries_common_force_skip_uninstall
+        variable and replace them with uninstall variables.
+      - common - Use ip command to rename interfaces rather than rebooting.
+      - ib - New base role to install and configure packages required for InfiniBand.
+      - ib - add support for configuring options for Mellanox HCAs.
+      - ib_iser - Remove ib_iser role's MTU default.
+      - ib_iser - Update to utilize iscsi role for all iSCSI specific tasks.
+      - ib_iser - add support for configuring options for Mellanox HCAs.
+      - ip - New base role to configure IP addresses, names, and implement hooks for
+        network interfaces.
+      - ipoib - Replace ib_base dependency with new ip and ib roles.
+      - ipoib - add support for configuring options for Mellanox HCAs.
+      - iscsi - Improve configuration via role dictionaries to configure various iSCSI
+        options.
+      - iscsi - Update to utilize the new ip base for all interface configurations.
+      - nar_santricity_common - Add common reboot tasks with a prompt when eseries_common_allow_host_reboot
+        is false.
+      - nar_santricity_common - Add interface naming udev rule tasks.
+      - nvme - New base role to install and configure required packages for NVMe.
+      - nvme_ib - Update to utilize the new ib and nvme roles.
+      - nvme_ib - add support for configuring options for Mellanox HCAs.
+      - nvme_roce - Role to configure NVMe over RDMA over Converged Ethernet (RoCE)
+        communications with NetApp E-Series storage systems.
+      - roce - Role to configure RDMA over Converged Ethernet (RoCE) communications
+        with NetApp E-Series storage systems.
+      - selinux - Add role to configure SELinux.
+      - tune_performance - New role to apply performance configuration related to
+        NetApp E-Series storage systems.
+      - update_conf - Add module for setting configuration files based on a dictionary.
+      release_summary: 'This release focused primarily on improving the code base
+        for maintainability by relegating tasks to appropriate roles which significantly
+        improved code reuse. While many of the role changes introduce improvements
+        to inventory configuration options, backwards compatibility has been retained.
+        Note that this release will now require Ansible 2.10 or later.'
+    fragments:
+    - add_common_tasks.yml
+    - add_mellanox_hca_configuration_support.yml
+    - add_nvme_roce_support.yml
+    - add_performance_tuning.yml
+    - add_selinux_role.yml
+    - add_update_conf.yml
+    - fix_adding_nvme_core_kernel_module_with_multipath_support.yml
+    - fix_opensm_service_validation.yml
+    - increase_ansible_version.yml
+    - refactor_base_roles.yml
+    - release_summary.yml
+    - remove_ib_iser_mtu_default.yml
+    - remove_uninstall_tags.yml
+    - require_ansible_2.10_or_later.yml
+    - skip_interface_rename_reboot.yml
+    release_date: '2022-08-08'

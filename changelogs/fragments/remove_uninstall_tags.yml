@@ -1,2 +1,0 @@
-minor_changes:
-  - common - Remove the uninstall tags with the eseries_common_force_skip_uninstall variable and replace them with uninstall variables.
