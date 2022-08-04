@@ -13,9 +13,9 @@ specifications, and assign persistent mount points to them.
 - [NetApp E-Series Host Collection](#netapp-e-series-host-collection)
   - [Table of Contents](#table-of-contents)
   - [Requirements](#requirements)
-    - [Requirements for the Ansible Control Node](#requirements-for-the-ansible-control-node)
     - [Requirements for E-Series Storage Systems](#requirements-for-eseries-storage-systems)
     - [Requirements for E-Series Hosts](#requirements-for-e-series-hosts)
+  - [Tested Ansible Versions](#tested-ansible-versions)
   - [Tested Platforms](#tested-platforms)
   - [Feature Roles](#feature-roles)
     - [Storage Setup](#storage-setup)
@@ -43,11 +43,6 @@ specifications, and assign persistent mount points to them.
 <a name="requirements"></a>
 ## Requirements
 
-<a name="requirements-for-the-ansible-control-node"></a>
-### Requirements for the Ansible Control Node
-
-Ansible 2.10 or later
-
 <a name="requirements-for-eseries-storage-systems"></a>
 ### Requirements for E-Series Storage Systems
 
@@ -57,6 +52,11 @@ NetApp E-Series E2800 platform or newer (For older platforms, use NetApp E-Serie
 ### Requirements for E-Series Hosts.
 
 - Python3.6 or later
+
+<a name="tested-ansible-versions"></a>
+## Tested Ansible Versions
+
+Ansible 5.x (ansible-core 2.12)
 
 <a name="tested-platforms"></a>
 ## Tested Platforms
