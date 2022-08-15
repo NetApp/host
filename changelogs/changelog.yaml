@@ -149,4 +149,4 @@ releases:
     - remove_uninstall_tags.yml
     - require_ansible_2.10_or_later.yml
     - skip_interface_rename_reboot.yml
-    release_date: '2022-08-08'
+    release_date: '2022-08-15'
