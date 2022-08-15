@@ -5,6 +5,53 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v1.2.0
+======
+
+Release Summary
+---------------
+
+This release focused primarily on improving the code base for maintainability by relegating tasks to appropriate roles which significantly improved code reuse. While many of the role changes introduce improvements to inventory configuration options, backwards compatibility has been retained. Note that this release will now require Ansible 2.10 or later.
+
+
+Minor Changes
+-------------
+
+- Require Ansible 2.10 or later.
+- common - Remove the uninstall tags with the eseries_common_force_skip_uninstall variable and replace them with uninstall variables.
+- common - Use ip command to rename interfaces rather than rebooting.
+- ib - New base role to install and configure packages required for InfiniBand.
+- ib - add support for configuring options for Mellanox HCAs.
+- ib_iser - Remove ib_iser role's MTU default.
+- ib_iser - Update to utilize iscsi role for all iSCSI specific tasks.
+- ib_iser - add support for configuring options for Mellanox HCAs.
+- ip - New base role to configure IP addresses, names, and implement hooks for network interfaces.
+- ipoib - Replace ib_base dependency with new ip and ib roles.
+- ipoib - add support for configuring options for Mellanox HCAs.
+- iscsi - Improve configuration via role dictionaries to configure various iSCSI options.
+- iscsi - Update to utilize the new ip base for all interface configurations.
+- nar_santricity_common - Add common reboot tasks with a prompt when eseries_common_allow_host_reboot is false.
+- nar_santricity_common - Add interface naming udev rule tasks.
+- nvme - New base role to install and configure required packages for NVMe.
+- nvme_ib - Update to utilize the new ib and nvme roles.
+- nvme_ib - add support for configuring options for Mellanox HCAs.
+- nvme_roce - Role to configure NVMe over RDMA over Converged Ethernet (RoCE) communications with NetApp E-Series storage systems.
+- roce - Role to configure RDMA over Converged Ethernet (RoCE) communications with NetApp E-Series storage systems.
+- selinux - Add role to configure SELinux.
+- tune_performance - New role to apply performance configuration related to NetApp E-Series storage systems.
+- update_conf - Add module for setting configuration files based on a dictionary.
+
+Deprecated Features
+-------------------
+
+- ib_base - Did more than just configure InfiniBand (iSER, SRP, NVMe) so tasks have been logically grouped into other roles (ib, nvme, ib_iser, etc) to simplify and improve code maintainability.
+
+Bugfixes
+--------
+
+- ib_opensm - Ensure opensm.service is started and it's validation task succeeds.
+- nvme - Fix loading nvme-core with multipath=Y when previously loaded with multipath=N.
+
 v1.1.0
 ======
 
