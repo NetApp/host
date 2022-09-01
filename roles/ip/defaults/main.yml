@@ -31,8 +31,8 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
-      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      prefix: "{{ item['address'] | ansible.netcommon.ipaddr('prefix') }}"
+      ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      prefix: "{{ item['address'] | ansible.utils.ipaddr('prefix') }}"
       zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
     redhat8: &redhat8
       type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
@@ -40,8 +40,8 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
-      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      prefix: "{{ item['address'] | ansible.netcommon.ipaddr('prefix') }}"
+      ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      prefix: "{{ item['address'] | ansible.utils.ipaddr('prefix') }}"
       zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
     centos7: *redhat7
     centos8: *redhat8
@@ -53,8 +53,8 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
-      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
       zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
     suse15: &suse15
       type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
@@ -62,8 +62,8 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
-      ipaddr: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
       zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
     opensuse12: *suse12
     opensuse15: *suse15
@@ -71,16 +71,16 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
   debian:
     ubuntu16:
       iface: "{{ item['name'] }} inet static"
-      address: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      address: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
     ubuntu18:
       iface: "{{ item['name'] }} inet static"
-      address: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      address: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
     ubuntu20: &ubuntu20
       iface: "{{ item['name'] }} inet static"
-      address: "{{ item['address'] | ansible.netcommon.ipaddr('address') }}"
-      netmask: "{{ item['address'] | ansible.netcommon.ipaddr('netmask') }}"
+      address: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
+      netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
     default: *ubuntu20
 
 eseries_ip_uninstall: false  # Whether to uninstall ip role.
