@@ -98,8 +98,8 @@ interface_up_rp_filter=1
 interface=$1
 action=$2
 table=multihoming-{{ item['interface']['name'] }}
-address={{ item['interface']['address'] | ansible.netcommon.ipaddr("address") }}
-network={{ item['interface']['address'] | ansible.netcommon.ipaddr("network/prefix") }}
+address={{ item['interface']['address'] | ansible.utils.ipaddr("address") }}
+network={{ item['interface']['address'] | ansible.utils.ipaddr("network/prefix") }}
 
 routes="default via $address dev $interface
 $network dev $interface scope link src $address"

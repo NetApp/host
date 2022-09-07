@@ -50,7 +50,7 @@
 
         {%- for volume in initiator_volume_facts if volume["host_port_information"][eseries_iscsi_protocol] is defined -%}
           {%- for host_port_information in volume["host_port_information"][eseries_iscsi_protocol] if host_port_information["link_status"] in ["up", "active"] and
-                                                                                                      host_port_information["ipv4"]["address"] | default("") | ansible.netcommon.ipaddr(interface["address"]) -%}
+                                                                                                      host_port_information["ipv4"]["address"] | default("") | ansible.utils.ipaddr(interface["address"]) -%}
             {%- set target = interface["name"] ~ "_" ~ host_port_information["iqn"] ~ "_" ~ host_port_information["interface_reference"] -%}
             {%- set target_node_directory = eseries_iscsi_node_path ~ host_port_information["iqn"] ~ "/" -%}
             {%- set target_portal = host_port_information["ipv4"]["address"] ~ ":" ~ iface["iface.port"] ~ "," ~ scratch["target_portal_index"] -%}
