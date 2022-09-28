@@ -18,12 +18,22 @@
       failed_when: false
       become: true
 
+    - name: Determine whether nmcli is installed.
+      ansible.builtin.shell: command -v nmcli
+      register: nmcli
+      changed_when: false
+      failed_when: false
+      become: true
+
     - name: Populate eseries_ip_manager list.
       ansible.builtin.set_fact:
         eseries_ip_manager_tools: |-
           {%- set managers = [] -%}
           {%- if netplan["rc"] == 0 -%}
             {%- if managers.append("netplan") -%}{%- endif -%}
+          {%- endif -%}
+          {%- if nmcli["rc"] == 0 -%}
+            {%- if managers.append("nmcli") -%}{%- endif -%}
           {%- endif -%}
           {%- if ifupdown["rc"] == 0 -%}
             {%- if managers.append("ifupdown") -%}{%- endif -%}
