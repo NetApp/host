@@ -1,8 +1,15 @@
+# Tasks are only executed if mstconfig is present for the interface:
+# eseries_ib_interfaces:
+#   - name: <name>
+#     ...
+#     mstconfig:
+#        <key>: <value>
 - name: Get InfiniBand device PCI slot name.
   ansible.builtin.command: "grep -o '[0-9a-f]*:[0-9a-f]*:[0-9a-f]*.[0-9]*' /sys/class/net/{{ item['name'] }}/device/uevent"
   register: pci_slot_names
   changed_when: false
   loop: "{{ eseries_ib_interfaces }}"
+  when: item["mstconfig"] is defined
   become: true
 
 - name: Get current Infiniband device configuration.
@@ -10,13 +17,14 @@
   register: ib_devices_info
   changed_when: false
   loop: "{{ pci_slot_names['results'] }}"
+  when: item['stdout'] is defined
   become: true
 
 - name: Determine any required InfiniBand device changes.
   ansible.builtin.set_fact:
     mstconfig_change_info: |-
       {%- set mstconfig_change_info = [] -%}
-      {%- for ib_device_info in ib_devices_info["results"] -%}
+      {%- for ib_device_info in ib_devices_info["results"] if item["stdout"] is defined -%}
 
         {#- Determine current configuration for InfiniBand device -#}
         {%- set scratch = {"config_section": False, "configuration": {}} -%}
