@@ -51,9 +51,9 @@
           {{- managers -}}
   when: eseries_ip_manager_tools is not defined
 
-- name: Determine whether Netplan or ifupdown are installed.
+- name: Determine whether Netplan or ifupdown or nmcli are installed.
   ansible.builtin.fail:
-    msg: "Netplan and ifupdown compatible tool are both installed or not installed! Remove the one you are not using or define eseries_ip_manager_tools in your inventory."
+    msg: "Netplan and ifupdown and nmcli compatible tool are installed or not installed! Remove the one you are not using or define eseries_ip_manager_tools in your inventory."
   when: '("netplan" in eseries_ip_manager_tools and "ifupdown" in eseries_ip_manager_tools) or ("netplan" not in eseries_ip_manager_tools and "ifupdown" not in eseries_ip_manager_tools))'
 
 - name: Determine whether NetworkManager or systemd-networkd are installed.
