@@ -51,11 +51,11 @@
           {{- managers -}}
   when: eseries_ip_manager_tools is not defined
 
-- name: Verify Netplan and ifupdown are not both installed.
+- name: Determine whether Netplan or ifupdown are installed.
   ansible.builtin.fail:
-    msg: "Netplan and ifupdown compatible tool are both installed! Remove the one you are not using or define eseries_ip_manager_tools to your inventory."
-  when: '"netplan" in eseries_ip_manager_tools and "ifupdown" in eseries_ip_manager_tools'
-
+    msg: "Netplan and ifupdown compatible tool are both installed or not installed! Remove the one you are not using or define eseries_ip_manager_tools in you inventory."
+  when: '("netplan" in eseries_ip_manager_tools and "ifupdown" in eseries_ip_manager_tools) or ("netplan" not in eseries_ip_manager_tools and "ifupdown" not in eseries_ip_manager_tools))'
+  
 - name: Verify NetworkManager and systemd-networkd are not both installed.
   ansible.builtin.fail:
     msg: "NetworkManager and systemd-networkd are both installed! Remove the one you are not using or define eseries_ip_manager_tools in you inventory."
