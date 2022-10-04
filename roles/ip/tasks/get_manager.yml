@@ -51,12 +51,32 @@
           {{- managers -}}
   when: eseries_ip_manager_tools is not defined
 
-- name: Determine whether Netplan or ifupdown or nmcli are installed.
+- name: Determine if Netplan or ifupdown or nmcli are installed.
   ansible.builtin.fail:
-    msg: "Only one of the compatible tools should be installed. Remove the one you are not using or define eseries_ip_manager_tools in your inventory with a desired tool."
-  when: '("netplan" in eseries_ip_manager_tools and "ifupdown" in eseries_ip_manager_tools) or ("netplan" not in eseries_ip_manager_tools and "ifupdown" not in eseries_ip_manager_tools))'
+    msg: "There should only be one compatible tool installed.
+          Remove the one you are not using or define eseries_ip_manager_tools in your
+            inventory with the desired tool."
+  when: current_ip_tools | length != 1
+  vars:
+    current_ip_tools: |-
+      {%- set ip_tools = [] -%}
+      {%- for ip_tool in eseries_ip_manager_tools 
+      if ip_tool in ["netplan", "ifupdown", "nmcli"] -%}
+      {%- if ip_tools.append(ip_tool) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- ip_tools -}}
 
-- name: Determine whether NetworkManager or systemd-networkd are installed.
+- name: Determine if NetworkManager or systemd-networkd are installed.
   ansible.builtin.fail:
-    msg: "NetworkManager and systemd-networkd are both installed or none are installed! Remove the one you are not using or define eseries_ip_manager_tools in your inventory with the desired manager."
-  when: '("network_manager" in eseries_ip_manager_tools and "networkd" in eseries_ip_manager_tools) or ("network_manager" not in eseries_ip_manager_tools and "networkd" not in eseries_ip_manager_tools))'
+    msg: "NetworkManager and systemd-networkd are both installed or none are installed! 
+          Remove the one you are not using or define eseries_ip_manager_tools 
+            in your inventory with the desired manager."
+  when: current_ip_tools | length != 1
+  vars:
+    current_ip_tools: |-
+      {%- set ip_tools = [] -%}
+      {%- for ip_tool in eseries_ip_manager_tools 
+        if ip_tool in ["NetworkManager", "systemd-networkd"] -%}
+      {%- if ip_tools.append(ip_tool) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- ip_tools -}}
