@@ -1,5 +1,4 @@
 - name: Include operating specific variables.
-  # Share the same variables as nmcli
   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/nmcli.yml"    
 
 - name: Determine facts for configuring firewall configuration.
