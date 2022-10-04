@@ -31,7 +31,7 @@
 
 - name: Configure interfaces using ifupdown configuration.
   ansible.builtin.include_tasks: interface/ifupdown.yml
-  when: '"ifupdown" in eseries_ip_manager_tools  and "nmcli" not in eseries_ip_manager_tools'
+  when: '"ifupdown" in eseries_ip_manager_tools'
 
 - name: Install any Network Manager dispatcher hooks.
   ansible.builtin.include_tasks: interface/hook/network_manager.yml
