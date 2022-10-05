@@ -76,7 +76,7 @@
     current_ip_tools: |-
       {%- set ip_tools = [] -%}
       {%- for ip_tool in eseries_ip_manager_tools 
-        if ip_tool in ["NetworkManager", "systemd-networkd"] -%}
+        if ip_tool in ["network_manager", "networkd"] -%}
       {%- if ip_tools.append(ip_tool) -%}{%- endif -%}
       {%- endfor -%}
       {{- ip_tools -}}
