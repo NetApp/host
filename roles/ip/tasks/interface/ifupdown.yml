@@ -16,7 +16,6 @@
 
 - name: Get link status for interfaces.
   ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
-  failed when: false
   changed_when: false
   register: link_info
   loop: "{{ eseries_ip_interfaces }}"
