@@ -1,4 +1,4 @@
-# Tasks are only executed if mstconfig is present for the interface:
+# Execute the tasks when mstconfig is present for the interface:
 # eseries_ib_interfaces:
 #   - name: <name>
 #     ...
@@ -24,8 +24,8 @@
   ansible.builtin.set_fact:
     mstconfig_change_info: |-
       {%- set mstconfig_change_info = [] -%}
-      {%- for ib_device_info in ib_devices_info["results"] if item["stdout"] is defined -%}
-
+      {%- for ib_device_info in (ib_devices_info["results"] | default([])) 
+          if ib_device_info["item"]["stdout"] is defined -%}
         {#- Determine current configuration for InfiniBand device -#}
         {%- set scratch = {"config_section": False, "configuration": {}} -%}
         {%- set pci_slot_name = ib_device_info["item"]["stdout"] -%}
