@@ -23,7 +23,6 @@
 
 - name: Reload changed interfaces.
   ansible.builtin.command: "nmcli connection reload"
-  register: nmcli_connection_reload
   when: update_interfaces | length > 0
   become: true
   vars:
@@ -36,7 +35,6 @@
 
 - name: Bring reloaded interfaces up.
   ansible.builtin.command: "nmcli connection up {{ item }}"
-  when: nmcli_connection_reload["changed"]
   loop: "{{ update_interfaces }}"
   vars:
     update_interfaces: |-
