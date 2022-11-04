@@ -44,6 +44,13 @@ options:
         type: str
         required: false
         default: ".~ansible-original"
+    timestamp_backup:
+        description:
+            - Create a timestamped backup of the file when changes are made in case it is needed later.
+            - Do not conflate this option with M(backup_original) that will be overridden when new changes are made.
+        type: str
+        required: false
+        default: false
     src:
         description:
             - Path to the source configuration file.
@@ -152,6 +159,11 @@ msg:
     returned: on success
     type: str
     sample: Configuration file changed.
+timestamp_backup:
+    description: Whether a timestamp backup was created of the source configuration file.
+    returned: on success
+    type: bool
+    sample: true
 source:
     description: Source of the configuration file.
     returned: on success
@@ -185,6 +197,7 @@ from ansible.module_utils.basic import AnsibleModule
 import re
 from os.path import exists, isfile, abspath, basename, dirname
 from os import chmod, stat
+import time
 
 class UpdateConfigFile(object):
     def __init__(self):
@@ -193,6 +206,7 @@ class UpdateConfigFile(object):
             backup_original=dict(type="bool", require=False, default=True),
             backup_path=dict(type="str", required=False),
             backup_extension=dict(type="str", required=False, default=".~ansible-original"),
+            timestamp_backup=dict(type=bool, required=False, default=False),
             src=dict(type="str", require=False),
             dest=dict(type="str", require=False),
             options=dict(type="dict", required=False, default={}),
@@ -235,6 +249,7 @@ class UpdateConfigFile(object):
             self.destination = args["dest"]
             self.backup_source = None
 
+        self.timestamp_backup = args["timestamp_backup"]
         self.options = args["options"]
 
         # Validate pattern and determine expected equivalence character.
@@ -413,19 +428,28 @@ class UpdateConfigFile(object):
 
     def backup_original_source(self):
         """Create a copy of the original configuration file."""
+        self.copy_original(self.backup_source)
+
+    def create_timestamp_backup(self):
+        """Create a timestamp backup of changed configuration file."""
+        timestamp = time.strftime("%Y-%m-%d@%H:%M:%S~", time.localtime(time.time()))
+        self.copy_original("%s.%s" % (self.source, timestamp))
+
+    def copy_original(self, destination):
+        """Create a copy of the original configuration file."""
         try:
             read_fh = open(self.source, "r")
             try:
-                write_fh = open(self.backup_source, "w")
+                write_fh = open(destination, "w")
                 write_fh.writelines(read_fh.readlines())
                 write_fh.close()
 
                 if self.mode:
-                    chmod(self.backup_source, int("0o%s" % self.mode, 8))
+                    chmod(destination, int("0o%s" % self.mode, 8))
             except Exception as error:
                 self.module.fail_json(msg="Failed to create default copy of the original configuration file!"
                                           " Source: [%s]. Destination: [%s]."
-                                          " Error [%s]." % (self.source, self.backup_source, error))
+                                          " Error [%s]." % (self.source, destination, error))
         except Exception as error:
             self.module.fail_json(msg="Failed to open source configuration file! Source [%s]."
                                       " Error [%s]." % (self.path, error))
@@ -467,9 +491,13 @@ class UpdateConfigFile(object):
 
         if changed_required and not self.module.check_mode:
             exit_message = ""
+            if self.timestamp_backup:
+                self.create_timestamp_backup()
+                exit_message = "Timestamp backup was created. "
+
             if self.backup_original_source_required:
                 self.backup_original_source()
-                exit_message = "Source backup was created. "
+                exit_message = exit_message + "Source backup was created. "
 
             if self.update_configuration_file_required:
                 self.update_configuration_file()
@@ -479,8 +507,8 @@ class UpdateConfigFile(object):
                 self.update_mode()
                 exit_message = exit_message + "Configuration file permissions were changed."
 
-        self.module.exit_json(msg=exit_message, source=self.source, backup=self.backup_source,
-                              destination=self.destination, changed=changed_required)
+        self.module.exit_json(msg=exit_message, timestamp_backup=self.timestamp_backup and changed_required, source=self.source,
+                              backup=self.backup_source, destination=self.destination, changed=changed_required)
 
 def main():
     update_conf = UpdateConfigFile()
