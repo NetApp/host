@@ -23,9 +23,9 @@
     eseries_ip_configure_firewall:      # Whether to configure firewall for network interfaces.
                                         #   Choices: true, false (Default: true)
     eseries_ip_manager_tools:           # List of network manager tools that are being used. Only required if Netplan
-                                        #   and an ifupdown compatible tool are both installed or NetworkManager and
+                                        #   and an ifupdown or nmcli compatible tool are both installed or NetworkManager and
                                         #   systemd-networkd are both installed.
-                                        #   Choices: [netplan/ifupdown, network_manager/networkd]
+                                        #   Choices: [netplan/ifupdown/nmcli, network_manager/networkd]
     eseries_ip_interface_type:          # Interface type as defined for ifupdown files.
                                         #   Choices: Ethernet, InfiniBand (Default: Ethernet)
     eseries_ip_default_hook_templates:  # Default list of hook templates for Network Manager dispatcher. Hooks will be
