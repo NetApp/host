@@ -32,11 +32,10 @@
           {%- if netplan["rc"] == 0 -%}
             {%- if managers.append("netplan") -%}{%- endif -%}
           {%- endif -%}
-          {%- if nmcli["rc"] == 0 -%}
-            {%- if managers.append("nmcli") -%}{%- endif -%}
-          {%- endif -%}
           {%- if ifupdown["rc"] == 0 -%}
             {%- if managers.append("ifupdown") -%}{%- endif -%}
+          {%- elif nmcli["rc"] == 0 -%}
+            {%- if managers.append("nmcli") -%}{%- endif -%}
           {%- endif -%}
           {%- if ansible_facts["services"]["NetworkManager.service"] is defined and
                  (ansible_facts["services"]["NetworkManager.service"]["state"] == "running" or
@@ -50,7 +49,7 @@
           {%- endif -%}
           {{- managers -}}
   when: eseries_ip_manager_tools is not defined
-
+  
 - name: Determine if Netplan or ifupdown or nmcli are installed.
   ansible.builtin.fail:
     msg: "There should only be one compatible tool installed.
