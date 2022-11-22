@@ -45,6 +45,7 @@ eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be c
       zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
     centos7: *redhat7
     centos8: *redhat8
+    rocky8: *redhat8
     default: *redhat8
   suse:
     suse12: &suse12
