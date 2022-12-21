@@ -9,7 +9,7 @@
 - name: Get current mount information.
   ansible.builtin.command:
     cmd: "mount"
-    warn: false
+    warn: "{{ omit if ansible_version.major >= 2 and ansible_version.minor >= 14 else false }}"
   register: mount_info
   changed_when: false
   failed_when: false

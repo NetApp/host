@@ -1,7 +1,7 @@
 - name: "Wait for all files to be closed for E-Series volume [{{ volumes['key'] }}]."
   shell:
     cmd: "lsof /dev/mapper/{{ volumes['key'] }}; if [ $? -eq 1 ]; then sync && umount /dev/mapper/{{ volumes['key'] }} && echo success; fi"
-    warn: false
+    warn: "{{ omit if ansible_version.major >= 2 and ansible_version.minor >= 14 else false }}"
   register: safe_unmount
   until: safe_unmount['stdout'] == "success"
   delay: 1
