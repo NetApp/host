@@ -72,7 +72,8 @@
           {%- set template = hook_templates_stats_result["item"]["template"] -%}
 
           {#- Determine whether the existing dispatch hooks require changes -#}
-          {%- for hooks_result in hooks["results"] if hooks_result["changed"] and hooks_result["item"]["template"] == template -%}
+          {%- for hooks_result in hooks["results"] if hooks_result["changed"] and
+                hooks_result["item"]["template"] == template and hooks_result["item"]["interface"]["name"] == interface -%}
             {%- set hook_path = eseries_ip_network_manager_dispatcher_d ~ hooks_result["item"]["filename"] -%}
 
             {#- Add down action command for existing hook on an UP interface -#}
@@ -81,7 +82,7 @@
             {%- endif -%}
 
             {#- Add up action command for hook on an UP interface -#}
-          {%- if hook_state_commands["after_hook_change"].append(hook_path ~ " " ~ interface ~ " up") -%}{%- endif -%}
+            {%- if hook_state_commands["after_hook_change"].append(hook_path ~ " " ~ interface ~ " up") -%}{%- endif -%}
           {%- endfor -%}
         {%- endfor -%}
       {%- endfor -%}
