@@ -1,19 +1,23 @@
 - name: Unconfigure network interfaces
   block:
-    - name: Determine the network manager (netplan, ifupdown, network_manager, networkd)
+    - name: Determine the network manager tools.
       ansible.builtin.include_tasks: get_manager.yml
 
     - name: Uninstall any Network Manager dispatcher hooks.
-      ansible.builtin.include_tasks: uninstall/interface/hook/network_manager.yml
-      when: '"network_manager" in eseries_ip_manager_tools'
-
-    - name: Remove network interfaces using ifupdown configuration.
-      ansible.builtin.include_tasks: uninstall/interface/ifupdown.yml
-      when: '"ifupdown" in eseries_ip_manager_tools'
+      ansible.builtin.include_tasks: uninstall/interface/hook/dispatcher.yml
+      when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
 
     - name: Remove network interfaces using netplan configuration.
       ansible.builtin.include_tasks: uninstall/interface/netplan.yml
       when: '"netplan" in eseries_ip_manager_tools'
+
+    - name: Remove network interfaces using nmcli configuration.
+      ansible.builtin.include_tasks: uninstall/interface/nmcli.yml
+      when: '"nmcli" in eseries_ip_manager_tools'
+
+    - name: Remove network interfaces using ifupdown configuration.
+      ansible.builtin.include_tasks: uninstall/interface/ifupdown.yml
+      when: '"ifupdown" in eseries_ip_manager_tools'
   when: eseries_ip_configure_network
 
 - name: Unconfigure persistent network interface names.

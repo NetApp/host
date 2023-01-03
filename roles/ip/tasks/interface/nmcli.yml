@@ -1,5 +1,5 @@
 - name: Include operating specific variables.
-  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/nmcli.yml"    
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/nmcli.yml"
 
 - name: Determine facts for configuring firewall configuration.
   ansible.builtin.set_fact:
@@ -10,7 +10,7 @@
     backup: true
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
     dest: "{{ eseries_ip_nmcli_path }}ifcfg-{{ item['name'] }}"
-  register: nmcli
+  register: ifcfg
   loop: "{{ eseries_ip_interfaces }}"
   become: true
 
@@ -28,7 +28,7 @@
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
-      {%- for result in nmcli["results"] if result["changed"] -%}
+      {%- for result in ifcfg["results"] if result["changed"] -%}
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {{- interfaces -}}
@@ -39,7 +39,7 @@
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
-      {%- for result in nmcli["results"] if result["changed"] -%}
+      {%- for result in ifcfg["results"] if result["changed"] -%}
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {%- for result in link_info["results"] if "state UP" not in result["stdout"] -%}
