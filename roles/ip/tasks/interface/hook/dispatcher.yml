@@ -1,4 +1,4 @@
-- name: Determine Network Manager dispatcher hooks.
+- name: Determine expected dispatcher hooks.
   ansible.builtin.set_fact:
     hook_templates: |-
       {%- set hook_templates = [] -%}
@@ -10,18 +10,7 @@
       {%- endfor -%}
       {{- hook_templates -}}
 
-# High level overview of the following tasks.
-#  If an existing hook needs to be updated for an interface that is already up:
-#    Run down function for the old hook.
-#    Update hook.
-#    Run up function for the new hook.
-#  If a new hook is created for an interface that is already up:
-#    Create hook.
-#    Run up function for the new hook
-#  If hook is not up:
-#    Create hook.
-
-# Determine whether Network Manager dispatcher hooks need to be changed.
+# Determine interface's up status.
 - name: Get link status for interfaces.
   ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
   changed_when: false
@@ -39,13 +28,14 @@
       {{- interfaces -}}
 
 # Determine whether existing Network Manager dispatcher hooks need to be changed.
-- name: Check for existing Network Manager dispatcher hooks.
+- name: Check for existing dispatcher hooks.
   ansible.builtin.stat:
     path: "{{ eseries_ip_network_manager_dispatcher_d }}{{ item['filename'] }}"
-  register: hook_templates_stats
+  register: hooks_stats
   loop: "{{ hook_templates }}"
+  become: true
 
-- name: Determine whether Network Manager dispatcher hooks need to change.
+- name: Determine whether dispatcher hooks need to changed.
   ansible.builtin.template:
     src: "{{ item['template'] }}"
     dest: "{{ eseries_ip_network_manager_dispatcher_d }}{{ item['filename'] }}"
@@ -54,46 +44,29 @@
     owner: root
   register: hooks
   check_mode: true
-  loop: '{{ hook_templates }}'
+  loop: "{{ hook_templates }}"
   become: true
 
-# Determine which actions need to be performed before and after hooks are created/updated.
-- name: Determine which actions need to be applied before and after Network Manager dispatcher hook changes.
-  ansible.builtin.set_fact:
-    hook_state_commands: |-
-      {%- set hook_state_commands = {"before_hook_change": [], "after_hook_change": []} -%}
+- name: Bring down any changed hooks.
+  ansible.builtin.command: "{{ item }}"
+  loop: "{{ hook_down_cmds }}"
+  become: true
+  vars:
+    hook_down_cmds: |-
+      {%- set hook_down_cmds = [] -%}
+      {%- for hooks_result in hooks["results"] if hooks_result["changed"] -%}
+        {%- set interface = hooks_result["item"]["interface"]["name"] -%}
 
-      {#- Determine any interfaces that are UP -#}
-      {%- for link_info_result in link_info["results"] if "state UP" in link_info_result["stdout"] -%}
-        {%- set interface = link_info_result["item"]["name"] -%}
-
-        {#- Determine which UP interfaces -#}
-        {%- for hook_templates_stats_result in hook_templates_stats["results"] if hook_templates_stats_result["item"]["interface"]["name"] == interface -%}
-          {%- set template = hook_templates_stats_result["item"]["template"] -%}
-
-          {#- Determine whether the existing dispatch hooks require changes -#}
-          {%- for hooks_result in hooks["results"] if hooks_result["changed"] and
-                hooks_result["item"]["template"] == template and hooks_result["item"]["interface"]["name"] == interface -%}
-            {%- set hook_path = eseries_ip_network_manager_dispatcher_d ~ hooks_result["item"]["filename"] -%}
-
-            {#- Add down action command for existing hook on an UP interface -#}
-            {%- if hook_templates_stats_result["stat"]["exists"] -%}
-              {%- if hook_state_commands["before_hook_change"].append(hook_path ~ " " ~ interface ~ " down") -%}{%- endif -%}
-            {%- endif -%}
-
-            {#- Add up action command for hook on an UP interface -#}
-            {%- if hook_state_commands["after_hook_change"].append(hook_path ~ " " ~ interface ~ " up") -%}{%- endif -%}
-          {%- endfor -%}
+        {%- for hooks_stats_result in hooks_stats["results"]
+              if hooks_stats_result["item"]["interface"]["name"] == interface and
+                 hooks_stats_result["stat"]["exists"] and interface in up_interfaces -%}
+          {%- set hook_path = eseries_ip_network_manager_dispatcher_d ~ hooks_result["item"]["filename"] -%}
+          {%- if hook_down_cmds.append(hook_path ~ " " ~ interface ~ " down") -%}{%- endif -%}
         {%- endfor -%}
       {%- endfor -%}
-      {{- hook_state_commands -}}
+      {{- hook_down_cmds -}}
 
-# Apply any required changes.
-- name: Send down action to existing Network Manager dispatcher hooks.
-  ansible.builtin.command: "{{ item }}"
-  loop: '{{ hook_state_commands["before_hook_change"] }}'
-
-- name: Create Network Manager dispatcher hooks.
+- name: Create expected dispatcher hooks.
   ansible.builtin.template:
     src: "{{ item['template'] }}"
     dest: "{{ eseries_ip_network_manager_dispatcher_d }}{{ item['filename'] }}"
@@ -104,6 +77,26 @@
   loop: "{{ hook_templates }}"
   become: true
 
-- name: Send up action to existing Network Manager dispatcher hooks.
+- name: Bring up any changed hooks when the interface configuration is unchanged.
   ansible.builtin.command: "{{ item }}"
-  loop: '{{ hook_state_commands["after_hook_change"] }}'
+  loop: "{{ hook_up_cmds }}"
+  become: true
+  vars:
+    hook_up_cmds: |-
+      {%- set changed_interfaces = [] -%}
+      {%- for result in interface_config_results if result["changed"] -%}
+        {%- if changed_interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+
+      {%- set hook_up_cmds = [] -%}
+      {%- for hooks_result in hooks["results"] if hooks_result["changed"] -%}
+        {%- set interface = hooks_result["item"]["interface"]["name"] -%}
+
+        {%- for hooks_stats_result in hooks_stats["results"]
+              if hooks_stats_result["item"]["interface"]["name"] == interface and interface not in changed_interfaces and
+                 hooks_stats_result["stat"]["exists"] and interface in up_interfaces -%}
+          {%- set hook_path = eseries_ip_network_manager_dispatcher_d ~ hooks_result["item"]["filename"] -%}
+          {%- if hook_up_cmds.append(hook_path ~ " " ~ interface ~ " up") -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- hook_up_cmds -}}

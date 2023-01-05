@@ -10,9 +10,15 @@
     backup: true
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
     dest: "{{ eseries_ip_nmcli_path }}ifcfg-{{ item['name'] }}"
-  register: ifcfg
+  register: nmcli
   loop: "{{ eseries_ip_interfaces }}"
   become: true
+
+- name: Install any network manager dispatcher hooks.
+  ansible.builtin.include_tasks: hook/dispatcher.yml
+  when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
+  vars:
+    interface_config_results: '{{ nmcli["results"] }}'
 
 - name: Get link status for interfaces.
   ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
@@ -28,7 +34,7 @@
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
-      {%- for result in ifcfg["results"] if result["changed"] -%}
+      {%- for result in nmcli["results"] if result["changed"] -%}
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {{- interfaces -}}
@@ -39,7 +45,7 @@
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
-      {%- for result in ifcfg["results"] if result["changed"] -%}
+      {%- for result in nmcli["results"] if result["changed"] -%}
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {%- for result in link_info["results"] if "state UP" not in result["stdout"] -%}

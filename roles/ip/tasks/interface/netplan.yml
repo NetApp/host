@@ -6,6 +6,12 @@
   loop: "{{ eseries_ip_interfaces }}"
   become: true
 
+- name: Install any network manager dispatcher hooks.
+  ansible.builtin.include_tasks: hook/dispatcher.yml
+  when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
+  vars:
+    interface_config_results: '{{ netplan["results"] }}'
+
 - name: Apply any changes to Netplan configuration.
   ansible.builtin.command: netplan apply
   become: true
