@@ -33,10 +33,6 @@
   ansible.builtin.include_tasks: interface/ifupdown.yml
   when: '"ifupdown" in eseries_ip_manager_tools'
 
-- name: Install any network manager dispatcher hooks.
-  ansible.builtin.include_tasks: interface/hook/network_manager.yml
-  when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
-
 - name: Apply any interface firewall changes.
   ansible.builtin.include_tasks: interface/firewall_zone/apply.yml
   when: eseries_ip_configure_firewall

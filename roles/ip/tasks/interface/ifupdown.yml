@@ -14,6 +14,17 @@
   loop: "{{ eseries_ip_interfaces }}"
   become: true
 
+# We tell dispatcher.yml if any interfaces changed so we can non-disruptively apply changes to dispatcher hooks if nothing else about the interface configuration changed.
+# If hooks configuration changed:
+# * If the interface configuration did not change, then dispatcher.yml will call the stop action on the old hook(s), configure any new hooks then call start action on the hook(s).
+# * If the interface configuration changed then it will only call the stop action on the old hook(s) and configure any new hook(s). The up action on the new hook will be called automatically when the interface is reloaded after it is reconfigured.
+# The ordering of these tasks is important to avoid scenarios where we try to stop or start a hook on an interface in an unconfigured or invalid state for the action.
+- name: Install any network manager dispatcher hooks.
+  ansible.builtin.include_tasks: hook/dispatcher.yml
+  when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
+  vars:
+    interface_config_results: '{{ ifupdown["results"] }}'
+
 - name: Get link status for interfaces.
   ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
   changed_when: false

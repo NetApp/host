@@ -68,7 +68,9 @@ add_rules() {
 delete_rules() {
   rules=$1
   while read line; do
-    ip rule del $line
+    if ip rule show all | grep -q "$line"; then
+      ip rule del $line
+    fi
   done <<< $rules
 }
 
