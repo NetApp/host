@@ -28,10 +28,13 @@
       {%- set info = {} -%}
       {%- for net_device in net_devices["stdout_lines"] -%}
         {%- set net_device_info = net_device.split(" ") -%}
-        {#- Create a dictionary entry for both the interface mac address and pci slot name -#}
+
+        {#- Create a dictionary entry for both the interface mac address and pci slot names -#}
         {%- if net_device_info | length == 3 -%}
           {%- if info.update({net_device_info[1]: {"type": "mac_address", "name": net_device_info[0]}}) -%}{%- endif -%}
           {%- if info.update({net_device_info[2]: {"type": "pci_slot_name", "name": net_device_info[0]}}) -%}{%- endif -%}
+          {%- set pci_bdf = net_device_info[2] | regex_replace("^0000:([0-9A-Fa-f]+:[0-9A-Fa-f]+\.[0-9A-Fa-f]+)$", "\\1") -%}
+          {%- if info.update({pci_bdf: {"type": "pci_bdf", "name": net_device_info[0]}}) -%}{%- endif -%}
         {%- endif -%}
       {%- endfor -%}
       {{- info -}}
