@@ -35,45 +35,29 @@
   loop: "{{ hook_templates }}"
   become: true
 
-- name: Determine whether dispatcher hooks need to changed.
-  ansible.builtin.template:
-    src: "{{ item['template'] }}"
-    dest: "{{ eseries_ip_networkd_dispatcher }}routable.d/{{ item['filename'] }}"
-    mode: "0755"
-    group: root
-    owner: root
-  register: hooks
-  check_mode: true
-  loop: "{{ hook_templates }}"
-  become: true
-
-- name: Bring down any changed hooks.
+- name: Bring down any hooks.
   ansible.builtin.shell: "{{ item }}"  # Shell is required since environment variables are required
   loop: "{{ hook_off_cmds }}"
   become: true
   vars:
     hook_off_cmds: |-
       {%- set hook_off_cmds = [] -%}
-      {%- for hooks_result in hooks["results"] if hooks_result["changed"] -%}
-        {%- set interface = hooks_result["item"]["interface"]["name"] -%}
+      {%- for template in hook_templates -%}
+        {%- set interface = template["interface"]["name"] -%}
 
         {%- for hooks_stats_result in hooks_stats["results"]
               if hooks_stats_result["item"]["interface"]["name"] == interface and
                  hooks_stats_result["stat"]["exists"] and interface in up_interfaces -%}
-          {%- set hook_path = eseries_ip_networkd_dispatcher ~ "routable.d/" ~ hooks_result["item"]["filename"] -%}
+          {%- set hook_path = eseries_ip_networkd_dispatcher ~ "routable.d/" ~ hooks_stats_result["item"]["filename"] -%}
           {%- if hook_off_cmds.append("IFACE=" ~ interface ~ " STATE=off " ~ hook_path) -%}{%- endif -%}
         {%- endfor -%}
       {%- endfor -%}
       {{- hook_off_cmds -}}
 
-- name: Create expected dispatcher hooks.
-  ansible.builtin.template:
-    src: "{{ item['template'] }}"
-    dest: "{{ eseries_ip_networkd_dispatcher }}/routable.d/{{ item['filename'] }}"
-    mode: "0755"
-    group: root
-    owner: root
-  register: hooks
+- name: Delete all dispatcher hooks.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ip_networkd_dispatcher }}/routable.d/{{ item['filename'] }}"
   loop: "{{ hook_templates }}"
   become: true
 
@@ -82,11 +66,10 @@
   changed_when: false
   register: dispatcher_action_dirs
 
-- name: Create symbolic links to expected networkd dispatcher hooks.
+- name: Delete all symbolic links to networkd dispatcher hooks.
   ansible.builtin.file:
-    state: link
-    src: "{{ item[0] }}"
-    path: "{{ item[1] }}"
+    state: absent
+    path: "{{ item }}"
   loop: "{{ link_paths }}"
   become: true
   vars:
@@ -102,33 +85,8 @@
       {%- set link_paths = [] -%}
       {%- for hook_template in hook_templates -%}
         {%- for action in ["off", "carrier", "degraded", "dormant", "no-carrier"] if action in action_dirs -%}
-          {%- set src = eseries_ip_networkd_dispatcher ~ "routable.d/" ~ hook_template["filename"] -%}
           {%- set path = eseries_ip_networkd_dispatcher ~ action ~ ".d/" ~ hook_template["filename"] -%}
-          {%- if link_paths.append([src, path]) -%}{%- endif -%}
+          {%- if link_paths.append(path) -%}{%- endif -%}
         {%- endfor -%}
       {%- endfor -%}
       {{- link_paths -}}
-
-- name: Bring up any changed hooks when the interface configuration is unchanged.
-  ansible.builtin.shell: "{{ item }}"  # Shell is required since environment variables are required
-  loop: "{{ hook_routable_cmds }}"
-  become: true
-  vars:
-    hook_routable_cmds: |-
-      {%- set changed_interfaces = [] -%}
-      {%- for result in interface_config_results if result["changed"] -%}
-        {%- if changed_interfaces.append(result["item"]["name"]) -%}{%- endif -%}
-      {%- endfor -%}
-
-      {%- set hook_routable_cmds = [] -%}
-      {%- for hooks_result in hooks["results"] if hooks_result["changed"] -%}
-        {%- set interface = hooks_result["item"]["interface"]["name"] -%}
-
-        {%- for hooks_stats_result in hooks_stats["results"]
-              if hooks_stats_result["item"]["interface"]["name"] == interface and interface not in changed_interfaces and
-                 hooks_stats_result["stat"]["exists"] and interface in up_interfaces -%}
-          {%- set hook_path = eseries_ip_networkd_dispatcher ~ hooks_result["item"]["filename"] -%}
-          {%- if hook_routable_cmds.append("IFACE=" ~ interface ~ " STATE=routable " ~ hook_path) -%}{%- endif -%}
-        {%- endfor -%}
-      {%- endfor -%}
-      {{- hook_routable_cmds -}}
