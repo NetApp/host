@@ -1,7 +1,7 @@
-- name: Install any network manager dispatcher hooks.
+- name: Uninstall any network manager dispatcher hooks.
   ansible.builtin.include_tasks: network_manager/dispatcher.yml
   when: '"network_manager" in eseries_ip_manager_tools'
 
-- name: Install any networkd dispatcher hooks.
+- name: Uninstall any networkd dispatcher hooks.
   ansible.builtin.include_tasks: networkd/dispatcher.yml
   when: '"networkd" in eseries_ip_manager_tools'
