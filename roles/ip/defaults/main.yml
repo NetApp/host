@@ -2,6 +2,15 @@ eseries_ip_configure_network: true
 eseries_ip_configure_firewall: true
 
 eseries_ip_network_manager_dispatcher_d: /etc/NetworkManager/dispatcher.d/
+eseries_ip_networkd_dispatcher: /etc/networkd-dispatcher/ # Hooks defined for networkd-dispatcher needs to
+                                                          #   explicitly handle any action (routable, off, carrier,
+                                                          #   degraded, dormant, no-carrier) that is relevant to the
+                                                          #   hook. The hook will be placed in
+                                                          #   /etc/NetworkManager/dispatcher.d/routable.d/ path and
+                                                          #   symbolic links to the other dispatcher action directories
+                                                          #   Networkd dispatcher actions include:
+                                                          #    routable, off, carrier, degraded, dormant, no-carrier
+
 eseries_ip_netplan_path: /etc/netplan/
 #eseries_ip_ifupdown_path:  # This path is different depending on the OS distribution so it is defined in var/<os_family>.yml
 
