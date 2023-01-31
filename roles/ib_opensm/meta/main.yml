@@ -3,7 +3,7 @@ galaxy_info:
   description: Setup and configure InfiniBand OpenSM subnet managers on host.
   company: NetApp
   license: BSD-3-Clause
-  min_ansible_version: 2.10
+  min_ansible_version: 2.13
   galaxy_tags:
     - netapp
     - eseries

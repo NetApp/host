@@ -3,7 +3,7 @@ galaxy_info:
   description: Setup up host for iSCSI, FC, SAS, InfiniBand SRP, InfiniBand iSER, NVMe over InfiniBand, NVMe over FC, or NVMe RoCE.
   company: NetApp
   license: BSD-3-Clause
-  min_ansible_version: 2.10
+  min_ansible_version: 2.13
   galaxy_tags:
     - netapp
     - eseries
