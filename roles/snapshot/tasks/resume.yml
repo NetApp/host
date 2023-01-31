@@ -9,7 +9,7 @@
 - name: "Wait for E-Series volume [{{ volumes['key'] }}] to be remounted."
   ansible.builtin.command:
     cmd: "mount /dev/mapper/{{ volumes['key'] }}"   # Options will be pulled from /etc/fstab
-    warn: false
+    warn: "{{ omit if ansible_version.major >= 2 and ansible_version.minor >= 14 else false }}"
   delegate_to: "{{ item['ansible_host_name'] }}"
   loop: "{{ volumes['value']['hosts'] }}"
   become: true

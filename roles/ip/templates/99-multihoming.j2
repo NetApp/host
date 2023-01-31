@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 update_rt_tables() {
   action=$1
@@ -68,7 +68,9 @@ add_rules() {
 delete_rules() {
   rules=$1
   while read line; do
-    ip rule del $line
+    if ip rule show all | grep -q "$line"; then
+      ip rule del $line
+    fi
   done <<< $rules
 }
 
@@ -95,11 +97,16 @@ interface_up_arp_filter=1
 interface_up_arp_ignore=2
 interface_up_rp_filter=1
 
+{% if "network_manager" in eseries_ip_manager_tools %}
 interface=$1
 action=$2
+{% elif "networkd" in eseries_ip_manager_tools %}
+interface=$IFACE
+action=$STATE
+{% endif %}
 table=multihoming-{{ item['interface']['name'] }}
-address={{ item['interface']['address'] | ansible.netcommon.ipaddr("address") }}
-network={{ item['interface']['address'] | ansible.netcommon.ipaddr("network/prefix") }}
+address={{ item['interface']['address'] | ansible.utils.ipaddr("address") }}
+network={{ item['interface']['address'] | ansible.utils.ipaddr("network/prefix") }}
 
 routes="default via $address dev $interface
 $network dev $interface scope link src $address"
@@ -107,15 +114,15 @@ $network dev $interface scope link src $address"
 rules="from $address lookup $table
 from all to $address lookup $table"
 
-if [ $# -ge 2 ] && [ "$interface" = "{{ item['interface']['name'] }}" ]; then
+if [ "$interface" = "{{ item['interface']['name'] }}" ]; then
   case $action in
-    up)
+    up|routable)
       update_rt_tables up $table
       add_routes "$routes" $table
       add_rules "$rules"
       configure_kernel $interface $interface_up_arp_announce $interface_up_arp_filter $interface_up_arp_ignore $interface_up_rp_filter
       ;;
-    down)
+    down|off)
       configure_kernel $interface $interface_down_arp_announce $interface_down_arp_filter $interface_down_arp_ignore $interface_down_rp_filter
       delete_rules "$rules"
       delete_routes "$routes" $table

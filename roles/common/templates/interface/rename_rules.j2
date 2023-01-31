@@ -2,6 +2,8 @@
 {%   set type = interface_device_by_identifier[identifier]["type"] %}
 {%   if type == "pci_slot_name" %}
 ACTION=="add", SUBSYSTEM=="net", KERNELS=="{{ identifier }}", NAME:="{{ name }}"
+{%   elif type == "pci_bdf" %}
+ACTION=="add", SUBSYSTEM=="net", KERNELS=="0000:{{ identifier }}", NAME:="{{ name }}"
 {%   elif type == "mac_address" %}
 ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="{{ identifier }}", NAME:="{{ name }}"
 {%   endif %}

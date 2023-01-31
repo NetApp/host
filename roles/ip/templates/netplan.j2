@@ -13,9 +13,9 @@ network:
 {%   set key = key | lower %}
 {%   if key not in eseries_ip_interface_ignore_keys and key not in eseries_ip_interface_required_keys %}
 {%     if key == "gateway" %}
-{%       if value | ansible.netcommon.ipv4 %}
+{%       if value | ansible.utils.ipv4 %}
       gateway4: {{ value }}
-{%       elif value | ansible.netcommon.ipv6 %}
+{%       elif value | ansible.utils.ipv6 %}
       gateway6: {{ value }}
 {%       endif %}
 {%     elif value and not value | regex_search("__omit_place_holder__") %}

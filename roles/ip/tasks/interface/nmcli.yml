@@ -1,5 +1,5 @@
 - name: Include operating specific variables.
-  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/ifupdown.yml"
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/nmcli.yml"
 
 - name: Determine facts for configuring firewall configuration.
   ansible.builtin.set_fact:
@@ -8,9 +8,9 @@
 - name: Configure expected interfaces.
   ansible.builtin.template:
     backup: true
-    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'ifupdown.j2') }}"
-    dest: "{{ eseries_ip_ifupdown_path }}ifcfg-{{ item['name'] }}"
-  register: ifupdown
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
+    dest: "{{ eseries_ip_nmcli_path }}ifcfg-{{ item['name'] }}"
+  register: nmcli
   loop: "{{ eseries_ip_interfaces }}"
   become: true
 
@@ -23,7 +23,7 @@
   ansible.builtin.include_tasks: hook/dispatcher.yml
   when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
   vars:
-    interface_config_results: '{{ ifupdown["results"] }}'
+    interface_config_results: '{{ nmcli["results"] }}'
 
 - name: Get link status for interfaces.
   ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
@@ -32,16 +32,25 @@
   loop: "{{ eseries_ip_interfaces }}"
   become: true
 
-# Wicked: ifup (wrapper for wicked ifup command which (re)reads from /etc/sysconfig/network/ifcfg-X)
-# NetworkManager: ifup (wrapper for nmcli commands which (re)reads from /etc/sysconfig/network-scripts/ifcfg-X)
 - name: Reload changed interfaces.
-  ansible.builtin.command: "ifup {{ item }}"
-  loop: "{{ update_interfaces }}"
+  ansible.builtin.command: "nmcli connection reload"
+  when: update_interfaces | length > 0
   become: true
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
-      {%- for result in ifupdown["results"] if result["changed"] -%}
+      {%- for result in nmcli["results"] if result["changed"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}
+
+- name: Bring reloaded interfaces up.
+  ansible.builtin.command: "nmcli connection up {{ item }}"
+  loop: "{{ update_interfaces }}"
+  vars:
+    update_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for result in nmcli["results"] if result["changed"] -%}
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {%- for result in link_info["results"] if "state UP" not in result["stdout"] -%}
