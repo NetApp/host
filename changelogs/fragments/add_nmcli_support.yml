@@ -1,0 +1,2 @@
+- minor_changes:
+    - netapp_eseries.host.ip - Add nmcli support for managing updating IP changes.
