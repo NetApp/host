@@ -1,2 +1,0 @@
-minor_changes:
-  - netapp_eseries.host.update_conf - Add timestamp to the update_conf module to avoid loosing previous changes by default.

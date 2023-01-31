@@ -5,6 +5,19 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v1.3.0
+======
+
+Minor Changes
+-------------
+
+- Add rocky 8 support to netapp_eseries.host collection.
+- netapp_eseries.host.ip - Add nmcli support for managing updating IP changes.
+- netapp_eseries.host.ip - Add support for systemd-networkd hook dispatcher.
+- netapp_eseries.host.ip - Add support for systemd-networkd in the 99-multihoming.j2 hook template.
+- netapp_eseries.host.ip - Fix bug in the 99-multihoming.j2 hook template that causes the hook to fail when routes and rules were not defined.
+- netapp_eseries.host.update_conf - Add timestamp to the update_conf module to avoid loosing previous changes by default.
+
 v1.2.0
 ======
 
@@ -12,7 +25,6 @@ Release Summary
 ---------------
 
 This release focused primarily on improving the code base for maintainability by relegating tasks to appropriate roles which significantly improved code reuse. While many of the role changes introduce improvements to inventory configuration options, backwards compatibility has been retained. Note that this release will now require Ansible 2.10 or later.
-
 
 Minor Changes
 -------------

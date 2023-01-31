@@ -1,2 +1,0 @@
-minor_changes:
-  - netapp_eseries.host.ip - Add support for systemd-networkd hook dispatcher.
