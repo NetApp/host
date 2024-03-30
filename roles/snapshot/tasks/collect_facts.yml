@@ -44,40 +44,6 @@
       {{- consistency_groups -}}
   run_once: true
 
-#{
-#        "consistency_groups": {
-#            "scg1": {
-#                "array_credentials": {
-#                    "api_password": "infiniti",
-#                    "api_url": "https://10.113.76.45:8443/devmgr/v2/",
-#                    "api_username": "admin",
-#                    "ssid": "1",
-#                    "validate_certs": false
-#                },
-#                "base_volumes": [
-#                    "vg1_1",
-#                    "vg1_0"
-#                ]
-#            },
-#            "scg2": {
-#                "array_credentials": {
-#                    "api_password": "infiniti",
-#                    "api_url": "https://10.113.76.45:8443/devmgr/v2/",
-#                    "api_username": "admin",
-#                    "ssid": "1",
-#                    "validate_certs": false
-#                },
-#                "base_volumes": [
-#                    "vg2_0",
-#                    "vg2_3",
-#                    "vg2_1",
-#                    "vg2_2"
-#                ]
-#            }
-#        }
-#    }
-
-
 - name: Determine storage systems info and volumes mapped to host with mounting info.
   set_fact:
     mapped_volume_info: |-
