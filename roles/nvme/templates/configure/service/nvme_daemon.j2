@@ -14,22 +14,6 @@ is_storage_port_connected() {
   return 1
 }
 
-# Trigger udev rules for all devices discovered.
-trigger_udev_device_rules() {
-  storage_nqn=$1
-  storage_address=$2
-
-  for controller_path in /sys/class/nvme-fabrics/ctl/nvme*; do
-    if grep "$storage_nqn" $controller_path/subsysnqn > /dev/null 2>&1 && grep "$storage_address" $controller_path/address > /dev/null 2>&1; then
-      for path in $controller_path/nvme*c*; do
-        if [ -w $path/uevent ]; then echo add > $path/uevent; fi
-      done
-    fi
-  done
-
-  return 1
-}
-
 # Connected port to already discover storage.
 connect_storage() {
   rc=1
@@ -53,7 +37,6 @@ connect_storage() {
     elif nvme discover --transport=rdma --traddr=$storage_address --trsvcid=$port --hostnqn=$host_nqn > /dev/null 2>&1; then
       if nvme connect --transport=rdma --traddr=$storage_address --nqn=$storage_nqn --queue-size=$queue_depth --ctrl-loss-tmo=$controller_loss_timeout > /dev/null 2>&1; then
         sleep 1
-        trigger_udev_device_rules $storage_nqn $storage_address
         echo "Connected."
         rc=0
       else
