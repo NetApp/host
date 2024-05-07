@@ -5,6 +5,22 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v1.3.2
+======
+
+Release Summary
+---------------
+
+Minor update to handle a change in default value of enable_foreign in multipath.conf
+
+
+Minor Changes
+-------------
+
+- Update to handle a change in default value of enable_foreign in rhel 9 resulted in the NVMe volume not being detected
+  by device mapper multipathing.
+
+
 v1.3.0
 ======
 
@@ -17,6 +33,8 @@ Minor Changes
 - netapp_eseries.host.ip - Add support for systemd-networkd in the 99-multihoming.j2 hook template.
 - netapp_eseries.host.ip - Fix bug in the 99-multihoming.j2 hook template that causes the hook to fail when routes and rules were not defined.
 - netapp_eseries.host.update_conf - Add timestamp to the update_conf module to avoid loosing previous changes by default.
+
+
 
 v1.2.0
 ======

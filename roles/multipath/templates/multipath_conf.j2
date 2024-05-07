@@ -1,19 +1,14 @@
 # Managed by NetApp E-Series Ansible
-{% set scratch = {"nvme": False, "enable_foreign_available": False} -%}
+{% set scratch = {"enable_foreign_available": False} -%}
 {%- set multipath_eseries_volumes = eseries_volumes | default([]) -%}
 {%- for line in current_multipath_configuration["stdout_lines"] if scratch["enable_foreign_available"] == False and line | regex_search("enable_foreign", ignorecase=True) -%}
   {%- if scratch.update({"enable_foreign_available": True}) -%}{%- endif -%}
-{%- endfor -%}
-{%- for volume in multipath_eseries_volumes if scratch["nvme"] == False %}
-  {%- for protocol in volume["host_port_protocols"] if protocol in eseries_multipath_nvme_protocols -%}
-    {%- if scratch.update({"nvme": True}) -%}{%- endif -%}
-  {%- endfor -%}
 {%- endfor -%}
 
 defaults {
   user_friendly_names {{ "yes" if eseries_multipath_configure_user_friendly_names == True  else "no" }}
   path_selector "{{ eseries_multipath_path_selector }}"
-{% if scratch["enable_foreign_available"] == True and scratch["nvme"] == True %}
+{% if scratch["enable_foreign_available"] == True %}
   enable_foreign "{{ eseries_multipath_foreign_library }}"
 {% endif %}
 }
@@ -29,7 +24,6 @@ multipaths {
 }
 
 devices {
-{% if scratch["nvme"] == True %}
   device {
     vendor "NVME"
     product "NetApp E-Series*"
@@ -37,5 +31,4 @@ devices {
     failback immediate
     no_path_retry 30
   }
-{% endif %}
 }

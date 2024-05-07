@@ -2,3 +2,5 @@
 .idea
 *.iml
 ansible.cfg
+.DS_Store
+

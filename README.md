@@ -196,5 +196,5 @@ BSD-3-Clause
 <a name="maintainer-information"></a>
 ## Maintainer Information
 
-- Nathan Swartz (@ndswartz)
-- Joe McCormick (@iamjoemccormick)
+- Vu Tran (@VuTran007)
+- Christian Whiteside (@mcwhiteside)
