@@ -35,6 +35,7 @@ Minor Changes
 - netapp_eseries.host.update_conf - Add timestamp to the update_conf module to avoid loosing previous changes by default.
 
 
+
 v1.2.0
 ======
 
@@ -42,7 +43,6 @@ Release Summary
 ---------------
 
 This release focused primarily on improving the code base for maintainability by relegating tasks to appropriate roles which significantly improved code reuse. While many of the role changes introduce improvements to inventory configuration options, backwards compatibility has been retained. Note that this release will now require Ansible 2.10 or later.
-
 
 Minor Changes
 -------------
