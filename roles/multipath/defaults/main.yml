@@ -1,5 +1,6 @@
 eseries_multipath_configure_user_friendly_names: true
 eseries_multipath_path_selector: "round-robin 0"
+eseries_multipath_command_timeout: 9000     # Set the timeout of multipathd interactive commands in milliseconds.
 
 eseries_multipath_conf_d_path: /etc/multipath/conf.d/
 eseries_multipath_modules_d: /etc/modules-load.d/
