@@ -1,8 +1,13 @@
 - name: Configure service for NVMe over InfiniBand and NVMe RoCE
   block:
+    - name: Check whether eseries_{{ eseries_nvme_protocol }}_deamon exists
+      stat:
+        path: "{{ eseries_nvme_daemon_path }}eseries_{{ eseries_nvme_protocol }}_deamon"
+      register: stat_result
+
     - name: Determine NVMe storage target information.
       set_fact:
-        eseries_nvme_daemon_name: eseries_{{ eseries_nvme_protocol }}_deamon.sh
+        eseries_nvme_daemon_name: "{{ 'eseries_'~eseries_nvme_protocol~'_deamon' if stat_result.stat.exists else 'eseries_'~eseries_nvme_protocol~'_daemon' }}"
         eseries_nvme_service_name: eseries_{{ eseries_nvme_protocol }}.service
         eseries_nvme_connections_file: eseries_{{ eseries_nvme_protocol }}_connections
 

@@ -7,6 +7,7 @@
 
 defaults {
   user_friendly_names {{ "yes" if eseries_multipath_configure_user_friendly_names == True  else "no" }}
+  uxsock_timeout {{ eseries_multipath_command_timeout }}
   path_selector "{{ eseries_multipath_path_selector }}"
 {% if scratch["enable_foreign_available"] == True %}
   enable_foreign "{{ eseries_multipath_foreign_library }}"
