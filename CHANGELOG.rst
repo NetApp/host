@@ -5,6 +5,22 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v1.3.3
+======
+
+Release Summary
+---------------
+
+Minor updates
+
+
+Minor Changes
+-------------
+
+- Update nvme_daemon.j2 to use udev rule to apply settings to NVMe device.
+- Change eseries_multipath_command_timeout from 4 to 9 sec.
+
+
 v1.3.2
 ======
 

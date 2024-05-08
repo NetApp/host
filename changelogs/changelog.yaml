@@ -177,3 +177,14 @@ releases:
     fragments:
     - multipath_conf.j2
     release_date: '2024-03-30'
+  1.3.3:
+    changes:
+      minor_changes:
+      - Update nvme_daemon.j2 to use udev rule to apply settings to NVMe device.
+      - Change eseries_multipath_command_timeout from 4 to 9 sec.
+    fragments:
+    - multipath_conf.j2
+    - nvme_daemon.j2
+    - service.yml
+    - tuned.yml
+    release_date: '2024-05-08'
