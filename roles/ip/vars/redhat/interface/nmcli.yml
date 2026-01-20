@@ -1,1 +1,1 @@
-eseries_ip_nmcli_path: /etc/sysconfig/network-scripts/
+eseries_ip_nmcli_path: /etc/NetworkManager/system-connections/

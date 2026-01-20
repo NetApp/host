@@ -3,10 +3,11 @@
     cmd: "wipefs --all {{ item['dev_mapper_path'] }}"
 #  no_log: true
   loop: "{{ unmount_volume_info }}"
-  when: '("volume_info" in item.keys() | list) and
-          item["volume_info"] != {} and
-          volume_host_control_map[item["volume_info"]["wwn"]] == inventory_hostname and
-          item["active_paths"] | length > 0'
+  when:
+    - '"volume_info" in item.keys() | list'
+    - item["volume_info"] != {}
+    - volume_host_control_map[item["volume_info"]["wwn"]] == inventory_hostname
+    - item["active_paths"] | length > 0
   register: wipefs_device
   failed_when: wipefs_device['rc'] == 1
   changed_when: wipefs_device['rc'] == 0 and wipefs_device['stdout'] != ''

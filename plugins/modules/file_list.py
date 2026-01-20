@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# (c) 2024, NetApp, Inc
+# (c) NetApp, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 ---
-module: update_file_list
+module: file_list
 short_description: Update log file containing comma separated list.
 description:
     - Add and remove items to comma separated list found in log file.
@@ -18,14 +18,14 @@ options:
         description: Absolute file path on remote system
         required: True
         type: str
-    item:
-        description: Item(s) to add or remove from file. 
-        required: True
-        type: str
+    items:
+        description: Item(s) to add or remove from file.
+        required: False
+        type: list
+        elements: str
     mode:
         description: Whether to add or remove items.
-        required: False
-        default: "add"
+        required: True
         choices: ["add", "remove", "content"]
         type: str
 """
@@ -67,7 +67,7 @@ class UpdateFileList(object):
     def __init__(self):
         ansible_options = dict(mode=dict(type='str', required=True, choices=["add", "remove", "content"]),
                                file=dict(type='str', required=True),
-                               items=dict(type='list', required=False))
+                               items=dict(type='list', required=False, elements='str'))
 
         required_if = [["mode", "add", ["items"]], ["mode", "remove", ["items"]]]
         self.module = AnsibleModule(argument_spec=ansible_options, required_if=required_if, supports_check_mode=True)

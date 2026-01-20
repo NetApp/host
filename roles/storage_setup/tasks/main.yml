@@ -1,7 +1,7 @@
 - name: Setup multipath and the required protocol.
   ansible.builtin.include_tasks: install.yml
-  when: not (eseries_common_uninstall | default(eseries_storage_setup_uninstall))
+  when: not (eseries_common_uninstall | default(eseries_storage_setup_uninstall) | bool)
 
 - name: Uninstall multipath and any installed protocols.
   ansible.builtin.include_tasks: uninstall.yml
-  when: eseries_common_uninstall | default(eseries_storage_setup_uninstall)
+  when: eseries_common_uninstall | default(eseries_storage_setup_uninstall) | bool

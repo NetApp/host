@@ -14,7 +14,7 @@
   community.general.modprobe:
     state: present
     name: "{{ item['name'] }}"
-    params: "{{ item['parameters'] }}"
+    params: "{{ item['parameters'] | default('', true) }}"
   become: true
   loop: "{{ eseries_nvme_kernel_modules }}"
 

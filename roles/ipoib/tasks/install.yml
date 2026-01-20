@@ -21,6 +21,7 @@
     eseries_ip_interfaces: "{{ eseries_ipoib_interfaces }}"
     eseries_ip_interface_common: "{{ eseries_ipoib_interface_common }}"
     eseries_ip_interface_defaults: "{{ eseries_ipoib_interface_defaults }}"
+    eseries_ip_interface_network_manager_options: "{{ eseries_ipoib_interface_network_manager_defaults | combine(eseries_ipoib_interface_network_manager_options) }}"
     eseries_ip_firewall_zone: "{{ eseries_ipoib_interface_common['zone'] | default(eseries_ipoib_firewall_zone
                                   | default(eseries_common_firewall_zone | default(''))) }}"
     eseries_ip_default_hook_templates: "{{ eseries_ipoib_default_hook_templates }}"

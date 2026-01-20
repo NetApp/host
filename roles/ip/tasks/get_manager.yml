@@ -29,53 +29,40 @@
       ansible.builtin.set_fact:
         eseries_ip_manager_tools: |-
           {%- set managers = [] -%}
-          {%- if netplan["rc"] == 0 -%}
-            {%- if managers.append("netplan") -%}{%- endif -%}
-          {%- endif -%}
           {%- if ifupdown["rc"] == 0 -%}
             {%- if managers.append("ifupdown") -%}{%- endif -%}
           {%- elif nmcli["rc"] == 0 -%}
             {%- if managers.append("nmcli") -%}{%- endif -%}
+          {%- elif netplan["rc"] == 0 -%}
+            {%- if managers.append("netplan") -%}{%- endif -%}
           {%- endif -%}
+
           {%- if ansible_facts["services"]["NetworkManager.service"] is defined and
                  (ansible_facts["services"]["NetworkManager.service"]["state"] == "running" or
                   ansible_facts["services"]["NetworkManager.service"]["status"] == "enabled") -%}
             {%- if managers.append("network_manager") -%}{%- endif -%}
-          {%- endif -%}
-          {%- if ansible_facts["services"]["systemd-networkd.service"] is defined and
+          {%- elif ansible_facts["services"]["systemd-networkd.service"] is defined and
                  (ansible_facts["services"]["systemd-networkd.service"]["state"] == "running" or
                   ansible_facts["services"]["systemd-networkd.service"]["status"] == "enabled") -%}
             {%- if managers.append("networkd") -%}{%- endif -%}
           {%- endif -%}
           {{- managers -}}
   when: eseries_ip_manager_tools is not defined
-  
+
 - name: Determine if Netplan or ifupdown or nmcli are installed.
   ansible.builtin.fail:
-    msg: "There should only be one compatible tool installed.
-          Remove the one you are not using or define eseries_ip_manager_tools in your
-            inventory with the desired tool."
+    msg: "Only one compatible network management tool should be installed.
+          Detected: {{ current_ip_tools }}.
+          Remove the unused tools or explicitly set eseries_ip_manager_tools in your inventory to the desired tool."
   when: current_ip_tools | length != 1
   vars:
-    current_ip_tools: |-
-      {%- set ip_tools = [] -%}
-      {%- for ip_tool in eseries_ip_manager_tools 
-        if ip_tool in ["netplan", "ifupdown", "nmcli"] -%}
-      {%- if ip_tools.append(ip_tool) -%}{%- endif -%}
-      {%- endfor -%}
-      {{- ip_tools -}}
+    current_ip_tools: "{{ eseries_ip_manager_tools | select('in', ['netplan', 'ifupdown', 'nmcli']) | list }}"
 
 - name: Determine if NetworkManager or systemd-networkd are installed.
   ansible.builtin.fail:
-    msg: "NetworkManager and systemd-networkd are both installed or none are installed! 
-          Remove the one you are not using or define eseries_ip_manager_tools 
-            in your inventory with the desired manager."
+    msg: "Either both NetworkManager and systemd-networkd are installed, or neither is installed!
+          Detected: {{ current_ip_tools }}.
+          Remove the unused tools or explicitly set eseries_ip_manager_tools in your inventory to the desired tool."
   when: current_ip_tools | length != 1
   vars:
-    current_ip_tools: |-
-      {%- set ip_tools = [] -%}
-      {%- for ip_tool in eseries_ip_manager_tools 
-        if ip_tool in ["network_manager", "networkd"] -%}
-      {%- if ip_tools.append(ip_tool) -%}{%- endif -%}
-      {%- endfor -%}
-      {{- ip_tools -}}
+    current_ip_tools: "{{ eseries_ip_manager_tools | select('in', ['network_manager', 'networkd']) | list }}"

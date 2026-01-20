@@ -1,7 +1,7 @@
 - name: Ensure interface(s) and firewall are configured.
   ansible.builtin.include_tasks: install.yml
-  when: not (eseries_common_uninstall | default(eseries_ip_uninstall))
+  when: not (eseries_common_uninstall | default(eseries_ip_uninstall) | bool)
 
 - name: Ensure interface(s) and firewall are unconfigured.
   ansible.builtin.include_tasks: uninstall.yml
-  when: eseries_common_uninstall | default(eseries_ip_uninstall)
+  when: eseries_common_uninstall | default(eseries_ip_uninstall) | bool

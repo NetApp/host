@@ -8,6 +8,13 @@ eseries_ib_iser_udev_rules: {}
 
 eseries_ib_iser_interface_common: {}
 eseries_ib_iser_interface_defaults: {}
+
+eseries_ib_iser_interface_network_manager_options: {}
+eseries_ib_iser_interface_network_manager_defaults:
+  infiniband:
+    transport-mode: datagram
+    mtu: 2044
+
 eseries_ib_iser_interface_required_keys:
   - name
   - address

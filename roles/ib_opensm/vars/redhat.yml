@@ -1,4 +1,3 @@
 eseries_ib_opensm_config_path: /etc/rdma/
 eseries_ib_opensm_daemon_path: /etc/rdma/
 eseries_ib_opensm_service_path: /etc/systemd/system/
-

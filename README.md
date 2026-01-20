@@ -51,17 +51,17 @@ NetApp E-Series E2800 platform or newer (For older platforms, use NetApp E-Serie
 <a name="requirements-for-e-series-hosts"></a>
 ### Requirements for E-Series Hosts.
 
-- Python3.6 or later
+- Python3.12 or later
 
 <a name="tested-ansible-versions"></a>
 ## Tested Ansible Versions
 
-Ansible 5.x (ansible-core 2.12)
+Ansible 12 (ansible-core 2.19)
 
 <a name="tested-platforms"></a>
 ## Tested Platforms
 
-- RHEL 8.4
+- RHEL 9.4
 
 <a name="feature-roles"></a>
 ## Feature Roles

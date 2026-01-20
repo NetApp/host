@@ -2,9 +2,9 @@
   block:
   - name: Install InfiniBand
     ansible.builtin.include_tasks: install.yml
-    when: not (eseries_common_uninstall | default(eseries_ib_uninstall))
+    when: not (eseries_common_uninstall | default(eseries_ib_uninstall) | bool)
 
   - name: Uninstall InfiniBand.
     ansible.builtin.include_tasks: uninstall.yml
-    when: eseries_common_uninstall | default(eseries_ib_uninstall)
+    when: eseries_common_uninstall | default(eseries_ib_uninstall) | bool
   when: not eseries_ib_skip

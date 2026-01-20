@@ -1,7 +1,7 @@
 - name: Install NVMe over InfiniBand.
   ansible.builtin.include_tasks: install.yml
-  when: not (eseries_common_uninstall | default(eseries_nvme_ib_uninstall))
+  when: not (eseries_common_uninstall | default(eseries_nvme_ib_uninstall) | bool)
 
 - name: Uninstall NVMe over InfiniBand.
   ansible.builtin.include_tasks: uninstall.yml
-  when: eseries_common_uninstall | default(eseries_nvme_ib_uninstall)
+  when: eseries_common_uninstall | default(eseries_nvme_ib_uninstall) | bool

@@ -18,7 +18,7 @@
     - name: Remove network interfaces using ifupdown configuration.
       ansible.builtin.include_tasks: uninstall/interface/ifupdown.yml
       when: '"ifupdown" in eseries_ip_manager_tools'
-  when: eseries_ip_configure_network
+  when: eseries_ip_configure_network | bool
 
 - name: Unconfigure persistent network interface names.
   ansible.builtin.include_role:
@@ -30,4 +30,4 @@
 
 - name: Remove any firewall configuration.
   ansible.builtin.include_tasks: interface/firewall_zone/remove.yml
-  when: eseries_ip_configure_firewall
+  when: eseries_ip_configure_firewall | bool

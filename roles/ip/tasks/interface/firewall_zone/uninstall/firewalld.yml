@@ -2,7 +2,7 @@
   ansible.builtin.systemd:
     state: reloaded
     name: firewalld.service
-  when: 'ansible_facts["services"]["firewalld.service"]["state"] == "running"'
+  when: ansible_facts["services"]["firewalld.service"]["state"] == "running"
   become: true
 
 - name: Get list of all firewall zones
@@ -36,8 +36,9 @@
     permanent: true
     offline: true
   register: firewall_zone
-  when: 'item["zone"] | default(eseries_ip_firewall_zone | default(False))
-         and item["zone"] | default(eseries_ip_firewall_zone) in zones_without_interfaces'
+  when:
+    - item["zone"] | default(eseries_ip_firewall_zone | default(False)) | bool
+    - item["zone"] | default(eseries_ip_firewall_zone) in zones_without_interfaces
   loop: "{{ eseries_ip_interfaces }}"
   become: true
 
@@ -45,5 +46,7 @@
   ansible.builtin.systemd:
     state: reloaded
     name: firewalld.service
-  when: 'firewall_zone["changed"] and ansible_facts["services"]["firewalld.service"]["state"] == "running"'
+  when:
+    - firewall_zone["changed"] | bool
+    - ansible_facts["services"]["firewalld.service"]["state"] == "running"
   become: true

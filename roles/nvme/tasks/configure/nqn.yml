@@ -3,4 +3,4 @@
     content: "{{ eseries_nvme_nqn }}"
     dest: "{{ eseries_nvme_hostnqn }}"
   become: true
-  when: eseries_nvme_nqn is defined and eseries_nvme_nqn
+  when: eseries_nvme_nqn is defined and eseries_nvme_nqn | length > 0

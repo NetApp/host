@@ -123,7 +123,7 @@
   become: true
   retries: 30
   delay: 2
-  until: iscsid_status['stdout'] | regex_search('Started Open-iSCSI|iSCSI daemon with pid=[0-9]* started!', multiline=True, ignorecase=True)  # TODO: Add fail condition and failed_when: with a matching condition to fail immediately.
+  until: iscsid_status['stdout'] | regex_search('Started Open-iSCSI|iSCSI daemon with pid=[0-9]* started!', multiline=True, ignorecase=True) is not none  # TODO: Add fail condition and failed_when: with a matching condition to fail immediately.
   changed_when: false
   when: iscsid_service['changed']
 

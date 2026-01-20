@@ -62,33 +62,23 @@
 
     - name: Update SELinux state (switching between enforcing and permissive does not require a reboot).
       ansible.builtin.command: "setenforce {{ eseries_selinux_state | capitalize }}"
-      when: update_required
-      vars:
-        update_required: |-
-          {#- Switching between enforcing and permissive does not require a reboot and can be updated with setenforce -#}
-          {%- set current_state = selinux_getenforce["stdout"] | lower -%}
-          {%- if current_state != eseries_selinux_state and current_state in ['enforcing', 'permissive']
-                 and eseries_selinux_state in ['enforcing', 'permissive'] -%}
-            True
-          {%- else -%}
-            False
-          {%- endif -%}
+      when: 
+        # Switching between enforcing and permissive does not require a reboot and can be updated with setenforce
+        - selinux_getenforce.stdout | lower in ['enforcing', 'permissive']
+        - eseries_selinux_state | lower in ['enforcing', 'permissive']
+        - selinux_getenforce.stdout | lower != eseries_selinux_state | lower
 
     - name: Reboot host to apply SELinux configuration changes.
       ansible.builtin.include_role:
         name: netapp_eseries.host.common
         tasks_from: reboot.yml
-      when: reboot_required
+      when: >
+        (
+          (selinux_getenforce.stdout | lower in ['enforcing', 'permissive'] and eseries_selinux_state | lower == 'disabled')
+          or
+          (selinux_getenforce.stdout | lower == 'disabled' and eseries_selinux_state | lower in ['enforcing', 'permissive'])
+        )
       vars:
         eseries_common_allow_host_reboot_reason: "SELinux configuration changed and a reboot is required."
-        reboot_required: |-
-          {%- set current_state = selinux_getenforce["stdout"] | lower -%}
-          {%- if (current_state == "enforcing" and eseries_selinux_state == "disabled")
-                 or (current_state == "permissive" and eseries_selinux_state == "disabled")
-                 or (current_state == "disabled" and eseries_selinux_state in ["enforcing", "permissive"]) -%}
-            True
-          {%- else -%}
-            False
-          {%- endif -%}
   when: selinux_getenforce["rc"] == 0
   become: true

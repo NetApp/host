@@ -2,5 +2,5 @@
   ansible.builtin.file:
     state: absent
     path: "{{ eseries_common_udev_rules_d }}{{ eseries_common_udev_name }}"
-  when: eseries_common_udev_name and eseries_common_udev_rules
+  when: eseries_common_udev_name != '' and eseries_common_udev_rules != {}
   become: true

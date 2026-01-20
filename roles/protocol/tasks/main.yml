@@ -1,7 +1,7 @@
 - name: Install protocols.
   ansible.builtin.include_tasks: install.yml
-  when: not (eseries_common_uninstall | default(eseries_protocol_uninstall))
+  when: not (eseries_common_uninstall | default(eseries_protocol_uninstall) | bool)
 
 - name: Uninstall protocols.
   ansible.builtin.include_tasks: uninstall.yml
-  when: eseries_common_uninstall | default(eseries_protocol_uninstall)
+  when: eseries_common_uninstall | default(eseries_protocol_uninstall) | bool

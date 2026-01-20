@@ -11,6 +11,13 @@ eseries_ipoib_interface_type: InfiniBand
 eseries_ipoib_interface_common: {}
 eseries_ipoib_interface_defaults: {}
 # eseries_ipoib_firewall_zone:  # Determined at runtime
+
+eseries_ipoib_interface_network_manager_options: {}
+eseries_ipoib_interface_network_manager_defaults:
+  infiniband:
+    transport-mode: datagram
+    mtu: 2044
+
 eseries_ipoib_default_hook_templates: []  # Default List of hook templates to apply to all defined interfaces.
 eseries_ipoib_interface_required_keys:
   - name

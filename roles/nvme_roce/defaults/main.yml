@@ -19,6 +19,11 @@ eseries_nvme_roce_interface_common: {}
 eseries_nvme_roce_interface_defaults:
   mtu: 4200
 
+eseries_nvme_roce_interface_network_manager_options: {}
+eseries_nvme_roce_interface_network_manager_defaults:
+  802-3-ethernet:
+    mtu: 4200
+
 # eseries_nvme_roce_firewall_zone:  # Determined at runtime.
 eseries_nvme_roce_default_hook_templates: []
 eseries_nvme_roce_interface_required_keys:
