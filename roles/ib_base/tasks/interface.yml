@@ -7,4 +7,4 @@
     - name: Configure InfiniBand IP network interfaces using netplan configuration.
       include_tasks: interface/netplan.yml
       when: eseries_ib_base_network_tool | default(eseries_ib_base_default_network_tool) == 'netplan'
-  when: eseries_ib_base_configure_network
+  when: eseries_ib_base_configure_network | bool

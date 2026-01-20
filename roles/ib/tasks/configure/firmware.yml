@@ -70,6 +70,6 @@
   ansible.builtin.include_role:
     name: common
     tasks_from: reboot.yml
-  when: mstconfig_set["changed"]
+  when: mstconfig_set["changed"] | bool
   vars:
     eseries_common_allow_host_reboot_reason: "InfiniBand device configuration changed. Reboot is required."

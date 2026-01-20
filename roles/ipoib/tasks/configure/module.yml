@@ -14,6 +14,6 @@
   community.general.modprobe:
     state: present
     name: "{{ item['name'] }}"
-    params: "{{ item['parameters'] }}"
+    params: "{{ item['parameters'] | default('', true) }}"
   loop: "{{ eseries_ipoib_kernel_modules }}"
   become: true

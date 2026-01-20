@@ -7,14 +7,14 @@
         permanent: true
         offline: true
       register: firewall_zone
-      when: item['zone'] | default(eseries_ip_firewall_zone | default(False))
+      when: item['zone'] | default(eseries_ip_firewall_zone) != ''
       loop: "{{ eseries_ip_interfaces }}"
 
     - name: Reload firewall to recognize the newly created zones.
       ansible.builtin.systemd:
         state: reloaded
         name: firewalld.service
-      when: firewall_zone["changed"]
+      when: firewall_zone["changed"] | bool
 
     - name: Ensure expected firewall zones have the expected interfaces.
       ansible.posix.firewalld:
@@ -24,7 +24,7 @@
         permanent: true
         immediate: true
         offline: true
-      when: item['zone'] | default(eseries_ip_firewall_zone | default(False))
+      when: item['zone'] | default(eseries_ip_firewall_zone) != ''
       loop: "{{ eseries_ip_interfaces }}"
-  when: 'ansible_facts["services"]["firewalld.service"]["state"] == "running"'
+  when: ansible_facts["services"]["firewalld.service"]["state"] == "running"
   become: true

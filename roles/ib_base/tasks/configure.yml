@@ -3,4 +3,3 @@
 
 - name: Ensure required InfiniBand kernel modules are loaded.
   ansible.builtin.include_tasks: configure/module.yml
-

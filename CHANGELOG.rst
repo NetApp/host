@@ -5,6 +5,27 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v2.0.0
+======
+
+Release Summary
+---------------
+
+This release focuses on improved code quality, compatibility with Ansible Core 2.19, and enhanced reliability for host
+configuration and multipath handling.
+
+
+Minor Changes
+-------------
+
+- Changed conditional checks to be explicit booleans for better code clarity and compatibility with Ansible Core 2.19.
+- Increased the timeout for the `multipath -ll` command to accommodate large number of volumes.
+- Updated the NetworkManager configuration to correct invalid interface profiles.
+- Updated logic to auto-select the IP manager tool if multiple tools are installed.
+- Ensured `/etc/iproute2` exists before configuring the routing table.
+- Removed redundant parentheses and unnecessary wrapping quotes in conditionals.
+
+
 v1.3.3
 ======
 
@@ -51,7 +72,6 @@ Minor Changes
 - netapp_eseries.host.update_conf - Add timestamp to the update_conf module to avoid loosing previous changes by default.
 
 
-
 v1.2.0
 ======
 
@@ -59,6 +79,7 @@ Release Summary
 ---------------
 
 This release focused primarily on improving the code base for maintainability by relegating tasks to appropriate roles which significantly improved code reuse. While many of the role changes introduce improvements to inventory configuration options, backwards compatibility has been retained. Note that this release will now require Ansible 2.10 or later.
+
 
 Minor Changes
 -------------

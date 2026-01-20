@@ -3,4 +3,4 @@
 
 - name: Ensure interface(s) are configured.
   ansible.builtin.include_tasks: interface.yml
-  when: eseries_ip_configure_network
+  when: eseries_ip_configure_network | bool

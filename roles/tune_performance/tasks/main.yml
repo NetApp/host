@@ -6,6 +6,5 @@
       when: ansible_facts['os_family'] | lower == 'debian'
     - name: Configure tuned when requested. 
       ansible.builtin.include_tasks: tuned.yml
-      when: tune_performance_configure_tuned
+      when: tune_performance_configure_tuned | bool
   become: True
-

@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
-# (c) 2024, NetApp, Inc
-# License: BSD-3-Clause
+# (c) NetApp, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
 DOCUMENTATION = """
 ---
-module: netapp_eseries.host.update_conf
+module: update_conf
 short_description: Update configuration file
 description:
     - Update an existing configuration file with specified options.
@@ -47,8 +47,8 @@ options:
     timestamp_backup:
         description:
             - Create a timestamped backup of the file when changes are made in case it is needed later.
-            - Do not conflate this option with M(backup_original) that will be overridden when new changes are made.
-        type: str
+            - Do not conflate this option with O(backup_original) that will be overridden when new changes are made.
+        type: bool
         required: false
         default: false
     src:
@@ -192,23 +192,23 @@ EXAMPLES = """
   become: true
 """
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
 import re
 from os.path import exists, isfile, abspath, basename, dirname
 from os import chmod, stat
 import time
 
+
 class UpdateConfigFile(object):
     def __init__(self):
         ansible_options = dict(
-            path=dict(type="str", require=False),
-            backup_original=dict(type="bool", require=False, default=True),
+            path=dict(type="str", required=False),
+            backup_original=dict(type="bool", required=False, default=True),
             backup_path=dict(type="str", required=False),
             backup_extension=dict(type="str", required=False, default=".~ansible-original"),
-            timestamp_backup=dict(type=bool, required=False, default=False),
-            src=dict(type="str", require=False),
-            dest=dict(type="str", require=False),
+            timestamp_backup=dict(type="bool", required=False, default=False),
+            src=dict(type="str", required=False),
+            dest=dict(type="str", required=False),
             options=dict(type="dict", required=False, default={}),
             pattern=dict(type="str", required=False, default="()([A-Za-z0-9._-]+)()(.*)"),
             padding=dict(type="str", required=False, choices=["left", "right", "both", "none"], default="none"),
@@ -236,7 +236,7 @@ class UpdateConfigFile(object):
             self.destination = self.source
             if args["backup_original"]:
                 if args["backup_path"]:
-                    backup_filename = "." + re.sub("[\/]+", "_", self.source) + args["backup_extension"]
+                    backup_filename = "." + re.sub(r"[\/]+", "_", self.source) + args["backup_extension"]
                     self.path_directory = args["backup_path"].rstrip("/")
                 else:
                     backup_filename = "." + basename(self.source) + args["backup_extension"]
@@ -254,7 +254,7 @@ class UpdateConfigFile(object):
 
         # Validate pattern and determine expected equivalence character.
         self.comment_character = args["comment_character"]
-        pattern_results = re.search("^\^?(\(.*\)).*(\(.+\)).*(\(.*\)).*(\(.*\)).*\$?$", args["pattern"])
+        pattern_results = re.search(r"^\^?(\(.*\)).*(\(.+\)).*(\(.*\)).*(\(.*\)).*\$?$", args["pattern"])
         if pattern_results:
             pattern_parts = list(pattern_results.groups())
             if len(pattern_parts) != 4:
@@ -332,16 +332,15 @@ class UpdateConfigFile(object):
                 if result:
                     comment, option, equivalence, value = list(result.groups())
                     if self.comment_character not in comment and option in self.options.keys():
-                            options_applied.append(option)
-                            value = self.options.pop(option)
-                            initial_line_spacing = comment  # Comment does not contain the self.comment_character so this is just initial line space.
-                            self.copy_lines_cached[index] = "%s%s%s%s\n" % (initial_line_spacing, option, equivalence, value)
+                        options_applied.append(option)
+                        value = self.options.pop(option)
+                        initial_line_spacing = comment  # Comment does not contain the self.comment_character so this is just initial line space.
+                        self.copy_lines_cached[index] = "%s%s%s%s\n" % (initial_line_spacing, option, equivalence, value)
 
                     # Comment out any expected options that have already been set previously to prevent duplicates
                     elif option in options_applied:
                         if self.comment_character not in comment:
                             self.copy_lines_cached[index] = "%s %s" % (self.comment_character, line)
-
 
             # Remove all options within existing comment block.
             if comment_block_begin_index is not None:
@@ -486,7 +485,7 @@ class UpdateConfigFile(object):
             self.module.fail_json(msg="Invalid configuration path was provided! Source [%s]." % self.source)
 
         if (self.backup_original_source_required or self.update_configuration_file_required or
-             self.update_mode_required):
+                self.update_mode_required):
             changed_required = True
 
         if changed_required and not self.module.check_mode:
@@ -509,6 +508,7 @@ class UpdateConfigFile(object):
 
         self.module.exit_json(msg=exit_message, timestamp_backup=self.timestamp_backup and changed_required, source=self.source,
                               backup=self.backup_source, destination=self.destination, changed=changed_required)
+
 
 def main():
     update_conf = UpdateConfigFile()

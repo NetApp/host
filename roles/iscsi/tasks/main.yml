@@ -1,7 +1,7 @@
 - name: Install iSCSI.
   ansible.builtin.include_tasks: install.yml
-  when: not (eseries_common_uninstall | default(eseries_iscsi_uninstall))
+  when: not (eseries_common_uninstall | default(eseries_iscsi_uninstall) | bool)
 
 - name: Uninstall iSCSI.
   ansible.builtin.include_tasks: uninstall.yml
-  when: eseries_common_uninstall | default(eseries_iscsi_uninstall)
+  when: eseries_common_uninstall | default(eseries_iscsi_uninstall) | bool

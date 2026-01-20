@@ -1,7 +1,7 @@
 - name: Install IP over InfiniBand.
   ansible.builtin.include_tasks: install.yml
-  when: not (eseries_common_uninstall | default(eseries_ipoib_uninstall))
+  when: not (eseries_common_uninstall | default(eseries_ipoib_uninstall) | bool)
 
 - name: Uninstall IP over InfiniBand.
   ansible.builtin.include_tasks: uninstall.yml
-  when: eseries_common_uninstall | default(eseries_ipoib_uninstall)
+  when: eseries_common_uninstall | default(eseries_ipoib_uninstall) | bool

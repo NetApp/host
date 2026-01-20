@@ -11,4 +11,4 @@
   - name: Configure ufw service.
     ansible.builtin.include_tasks: interface/firewall_zone/install/ufw.yml
     when: ansible_facts["services"]["ufw.service"] is defined
-  when: eseries_ip_configure_firewall
+  when: eseries_ip_configure_firewall | bool

@@ -5,13 +5,28 @@
   ansible.builtin.set_fact:
     eseries_ip_firewall_zone: "{{ eseries_ip_interface_common['zone'] | default(eseries_ip_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
 
-- name: Configure expected interfaces.
+- name: Configure expected interfaces on non-rhel server.
   ansible.builtin.template:
-    backup: true
+    backup: false
     src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
     dest: "{{ eseries_ip_nmcli_path }}ifcfg-{{ item['name'] }}"
+    mode: "0600"
+    owner: root
   register: nmcli
   loop: "{{ eseries_ip_interfaces }}"
+  when: ansible_os_family | lower != "redhat"
+  become: true
+
+- name: Configure expected interfaces on rhel server.
+  ansible.builtin.template:
+    backup: false
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
+    dest: "{{ eseries_ip_nmcli_path }}{{ item['name'] }}.nmconnection"
+    mode: "0600"
+    owner: root
+  register: nmcli
+  loop: "{{ eseries_ip_interfaces }}"
+  when: ansible_os_family | lower == "redhat"
   become: true
 
 # We tell dispatcher.yml if any interfaces changed so we can non-disruptively apply changes to dispatcher hooks if nothing else about the interface configuration changed.

@@ -32,49 +32,67 @@ eseries_ip_interface_ignore_keys:
   - hook_templates
 
 eseries_ip_interface_type: Ethernet
+
+eseries_ip_interface_network_manager_options: {}
+eseries_ip_interface_network_manager_defaults:
+  redhat:
+    connection:
+      id: "{{ item['name'] }}"
+      interface-name: "{{ item['name'] }}"
+      type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
+      autoconnect: true
+    ipv4:
+      method: manual
+      address1: "{{ item['address'] }}"
+    ipv6:
+      method: ignore
+    proxy: {}
+    general:
+      zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
+
 eseries_ip_interface_ifupdown_defaults: # Be sure to quote values that will be converted into a boolean value (on, off, yes, no, etc.) otherwise they will be converted into True/False.
   redhat:
     redhat7: &redhat7
-      type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
+      type: "{{ item.get('type') | default(eseries_ip_interface_type, true) }}"
       bootproto: "none"
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
       ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
       prefix: "{{ item['address'] | ansible.utils.ipaddr('prefix') }}"
-      zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
+      zone: "{{ item.get('zone') | default(eseries_ip_firewall_zone, true) }}"
     redhat8: &redhat8
-      type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
+      type: "{{ item.get('type') | default(eseries_ip_interface_type, true) }}"
       bootproto: "none"
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
       ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
       prefix: "{{ item['address'] | ansible.utils.ipaddr('prefix') }}"
-      zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
+      zone: "{{ item.get('zone') | default(eseries_ip_firewall_zone, true) }}"
     centos7: *redhat7
     centos8: *redhat8
     rocky8: *redhat8
     default: *redhat8
   suse:
     suse12: &suse12
-      type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
+      type: "{{ item.get('type') | default(eseries_ip_interface_type, true) }}"
       bootproto: "static"
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
       ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
       netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
-      zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
+      zone: "{{ item.get('zone') | default(eseries_ip_firewall_zone, true) }}"
     suse15: &suse15
-      type: "{{ item['type'] | default(eseries_ip_interface_type) }}"
+      type: "{{ item.get('type') | default(eseries_ip_interface_type, true) }}"
       bootproto: "static"
       onboot: "yes"
       name: "{{ item['name'] }}"
       device: "{{ item['name'] }}"
       ipaddr: "{{ item['address'] | ansible.utils.ipaddr('address') }}"
       netmask: "{{ item['address'] | ansible.utils.ipaddr('netmask') }}"
-      zone: "{{ item['zone'] | default(eseries_ip_firewall_zone) }}"
+      zone: "{{ item.get('zone') | default(eseries_ip_firewall_zone, true) }}"
     opensuse12: *suse12
     opensuse15: *suse15
     default: *suse15

@@ -18,6 +18,7 @@
     eseries_ip_interfaces: "{{ eseries_roce_interfaces }}"
     eseries_ip_interface_common: "{{ eseries_roce_interface_common }}"
     eseries_ip_interface_defaults: "{{ eseries_roce_interface_defaults }}"
+    eseries_ip_interface_network_manager_options: "{{ eseries_roce_interface_network_manager_defaults | combine(eseries_roce_interface_network_manager_options) }}"
     eseries_ip_firewall_zone: "{{ eseries_roce_interface_common['zone'] | default(eseries_roce_firewall_zone
                                   | default(eseries_common_firewall_zone | default(''))) }}"
     eseries_ip_default_hook_templates: "{{ eseries_roce_default_hook_templates }}"

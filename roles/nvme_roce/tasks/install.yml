@@ -10,6 +10,7 @@
     eseries_roce_interfaces: "{{ eseries_nvme_roce_interfaces }}"
     eseries_roce_interface_common: "{{ eseries_nvme_roce_interface_common }}"
     eseries_roce_interface_defaults: "{{ eseries_nvme_roce_interface_defaults }}"
+    eseries_roce_interface_network_manager_options: "{{ eseries_nvme_roce_interface_network_manager_defaults | combine(eseries_nvme_roce_interface_network_manager_options) }}"
     eseries_roce_firewall_zone: "{{ eseries_nvme_roce_interface_common['zone'] | default(eseries_nvme_roce_firewall_zone
                                     | default(eseries_common_firewall_zone | default(''))) }}"
     eseries_roce_default_hook_templates: "{{ eseries_nvme_roce_default_hook_templates }}"

@@ -21,7 +21,7 @@
       loop: "{{ eseries_common_udev_rules | dict2items }}"
       loop_control:
         loop_var: interface_rule
-  when: eseries_common_udev_name and eseries_common_udev_rules
+  when: eseries_common_udev_name != '' and eseries_common_udev_rules != {}
   become: true
   vars:
     interface_device_by_identifier: |-

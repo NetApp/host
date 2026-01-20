@@ -6,11 +6,22 @@
 
 {#- Template for RedHat and SUSE distributes #}
 {% if family in ["redhat", "suse"] %}
-{%    for key, value in interface_definition.items() if key not in eseries_ip_interface_ignore_keys %}
-{%      if value and not value | regex_search("__omit_place_holder__") %}
+{%    if eseries_ip_nmcli_path == "/etc/NetworkManager/system-connections/" %}
+{% set interface_definition = eseries_ip_interface_network_manager_defaults[family] | combine(eseries_ip_interface_network_manager_options) %}
+{%          for section, section_detail in interface_definition.items() %}
+[{{ section }}]
+{%                for key, value in section_detail.items() %}
+{{ key | lower }}={{ value | lower }}
+{%                endfor %}
+
+{%           endfor %}
+{%    else %}
+{%          for key, value in interface_definition.items() if key not in eseries_ip_interface_ignore_keys %}
+{%                if value and not value | regex_search("__omit_place_holder__") %}
 {{ key | upper }}="{{ value }}"
-{%      endif %}
-{%    endfor %}
+{%                endif %}
+{%          endfor %}
+{%    endif %}
 
 {#- Template for Ubuntu distributions.
       Ubuntu/Debian ifupdown package deviates from the ifcfg-x files used by RedHat/Suse #}

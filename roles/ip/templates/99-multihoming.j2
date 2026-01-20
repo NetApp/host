@@ -1,4 +1,20 @@
-#!/bin/bash -e
+#!/bin/bash -eu
+
+ensure_rt_tables_exists() {
+  iproute2_dir=$(dirname "$rt_tables")
+
+  if [ ! -d "$iproute2_dir" ]; then
+    mkdir -p "$iproute2_dir"
+  fi
+
+  if [ ! -f "$rt_tables" ]; then
+    if [ -f "/usr/share/iproute2/rt_tables" ]; then
+      cp /usr/share/iproute2/rt_tables "$rt_tables"
+    else
+      touch "$rt_tables"
+    fi
+  fi
+}
 
 update_rt_tables() {
   action=$1
@@ -117,6 +133,7 @@ from all to $address lookup $table"
 if [ "$interface" = "{{ item['interface']['name'] }}" ]; then
   case $action in
     up|routable)
+      ensure_rt_tables_exists
       update_rt_tables up $table
       add_routes "$routes" $table
       add_rules "$rules"

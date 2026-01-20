@@ -10,7 +10,7 @@
     dest: "{{ eseries_iscsi_conf_path }}initiatorname.iscsi"
   register: initiatorname_iscsi
   become: true
-  when: eseries_iscsi_iqn is defined and eseries_iscsi_iqn
+  when: eseries_iscsi_iqn is defined and eseries_iscsi_iqn | length > 0
 
 # Note: eseries_iscsi_node_settings is retained for backwards compatibility.
 - name: Configure iSCSI settings.

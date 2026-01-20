@@ -20,4 +20,4 @@
 - name: Apply any changes to Netplan configuration.
   ansible.builtin.command: netplan apply
   become: true
-  when: netplan['changed']
+  when: netplan['changed'] | bool

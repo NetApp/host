@@ -2,9 +2,9 @@
   block:
     - name: Ensure multipath has been installed and configured.
       ansible.builtin.include_tasks: install.yml
-      when: not (eseries_common_uninstall | default(eseries_multipath_uninstall))
+      when: not (eseries_common_uninstall | default(eseries_multipath_uninstall) | bool)
 
     - name: Uninstall multipath.
       ansible.builtin.include_tasks: uninstall.yml
-      when: eseries_common_uninstall | default(eseries_multipath_uninstall)
+      when: eseries_common_uninstall | default(eseries_multipath_uninstall) | bool
   when: not eseries_multipath_skip

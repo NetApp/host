@@ -31,7 +31,7 @@
 - name: Ensure InfiniBand OpenSM service loader for E-Series is started and enabled.
   ansible.builtin.systemd:
     name: opensm.service
-    state: "{% if opensm_update == True or loader_daemon.changed or loader_service.changed %}restarted{% else %}started{% endif %}"
+    state: "{% if opensm_update == True or loader_daemon.changed | bool or loader_service.changed | bool %}restarted{% else %}started{% endif %}"
     enabled: true
     daemon_reload: true
   register: opensm_service
@@ -57,4 +57,4 @@
   retries: 60
   delay: 2
   until: command_result['rc'] == 0
-  when: opensm_service['changed']
+  when: opensm_service['changed'] | bool

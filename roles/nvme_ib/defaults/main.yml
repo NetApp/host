@@ -11,6 +11,12 @@ eseries_nvme_ib_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command mus
 eseries_nvme_ib_interface_common: {}
 eseries_nvme_ib_interface_defaults: {}
 
+eseries_nvme_ib_interface_network_manager_options: {}
+eseries_nvme_ib_interface_network_manager_defaults:
+  infiniband:
+    transport-mode: datagram
+    mtu: 2044
+
 # eseries_nvme_ib_firewall_zone:  # Determined at runtime
 eseries_nvme_ib_default_hook_templates: []
 eseries_nvme_ib_interface_required_keys:

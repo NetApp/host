@@ -9,5 +9,5 @@
 - name: Apply changes to Netplan
   ansible.builtin.command:
     cmd: netplan apply
-  when: netplan['changed']
+  when: netplan['changed'] | bool
   become: true
