@@ -49,7 +49,10 @@
           {{- managers -}}
   when: eseries_ip_manager_tools is not defined
 
-- name: Determine if Netplan or ifupdown or nmcli are installed.
+# smcli is a configuration tool used with NetworkManager (network_manager).
+# ifupdown is a configuration tool used with the ifupdown networking system.
+# netplan is a configuration tool that can be used with either NetworkManager or networkd.
+- name: Determine which network configuration tool (Netplan or ifupdown or nmcli) is installed.
   ansible.builtin.fail:
     msg: "Only one compatible network management tool should be installed.
           Detected: {{ current_ip_tools }}.
@@ -58,11 +61,16 @@
   vars:
     current_ip_tools: "{{ eseries_ip_manager_tools | select('in', ['netplan', 'ifupdown', 'nmcli']) | list }}"
 
-- name: Determine if NetworkManager or systemd-networkd are installed.
+- name: Determine which network manager is installed.
   ansible.builtin.fail:
-    msg: "Either both NetworkManager and systemd-networkd are installed, or neither is installed!
-          Detected: {{ current_ip_tools }}.
-          Remove the unused tools or explicitly set eseries_ip_manager_tools in your inventory to the desired tool."
+    msg: >
+      Exactly one compatible network management tool should be installed.
+      Detected: {{ current_ip_tools }}.
+      Remove unused tools or explicitly set eseries_ip_manager_tools in your inventory to the desired tool.
   when: current_ip_tools | length != 1
   vars:
-    current_ip_tools: "{{ eseries_ip_manager_tools | select('in', ['network_manager', 'networkd']) | list }}"
+    supported_tools:
+      - network_manager
+      - networkd
+      - ifupdown
+    current_ip_tools: "{{ eseries_ip_manager_tools | select('in', supported_tools) | list }}"

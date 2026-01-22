@@ -5,6 +5,15 @@ Netapp E-Series Host Collection Release Notes
 .. contents:: Topics
 
 
+v2.0.1
+======
+
+Minor Changes
+-------------
+
+- Check for ifupdown in supported network management tools.
+
+
 v2.0.0
 ======
 
