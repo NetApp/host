@@ -1,7 +1,7 @@
 namespace: "netapp_eseries"
 description: "Configure your host storage connection for iSCSI, InfiniBand, and NVMe; Discover mapped E-Series volumes, format them to your specifications, and assign persistent mount points to them."
 name: "host"
-version: "2.0.0"
+version: "2.0.1"
 readme: "README.md"
 authors:
   - "Vu Tran (@VuTran007)"
