@@ -1,0 +1,2 @@
+- name: Install required InfiniBand packages.
+  ansible.builtin.include_tasks: "package/{{ ansible_os_family | lower }}.yml"

@@ -1,0 +1,4 @@
+# Managed by NetApp E-Series Ansible
+{% for module in eseries_nvme_fc_modules %}
+options {{ module["name"] }} {{ module["parameters"] }}
+{% endfor %}

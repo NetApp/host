@@ -1,0 +1,32 @@
+- name: Collect facts about systemd services.
+  service_facts:
+  become: true
+
+- name: Stop and disable multipathd
+  ansible.builtin.systemd:
+    name: multipathd.service
+    state: stopped
+    enabled: false
+  when: "'multipathd.service' in (ansible_facts['services'].keys() | list)"
+  become: true
+
+- name: Unconfigure and uninstall multipath.
+  include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure multipath.conf has been removed.
+  ansible.builtin.file:
+    state: absent
+    path: "/etc/multipath.conf"
+  become: true
+
+- name: Configure multipath.conf.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_multipath_conf_d_path }}eseries_multipath.conf"
+  become: true
+
+- name: Remove multipath modules from boot.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_multipath_modules_d }}eseries_multipath.conf"
+  become: true

@@ -1,0 +1,2 @@
+- name: Configure SELinux.
+  ansible.builtin.include_tasks: configure.yml

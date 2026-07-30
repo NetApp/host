@@ -1,0 +1,7 @@
+*.pyc
+.idea
+*.iml
+ansible.cfg
+.DS_Store
+.vscode
+tests/output/

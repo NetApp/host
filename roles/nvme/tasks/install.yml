@@ -1,0 +1,8 @@
+- name: Ensure NVMe packages are installed.
+  ansible.builtin.include_tasks: package.yml
+
+- name: Ensure NVMe is configured.
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Ensure required NVMe systemd service is configured.
+  ansible.builtin.include_tasks: service.yml

@@ -1,0 +1,26 @@
+- name: Unmount all unmapped volumes.
+  ansible.posix.mount:
+    state: unmounted
+    path: "{{ item['mount_path'] }}"
+  loop: "{{ unmount_volume_info }}"
+  when: item['mount_path'] != ''
+  become: true
+
+- name: Remove all persistent mount information.
+  block:
+    - name: Remove mount points for all unmapped volumes.
+      ansible.posix.mount:
+        state: absent
+        path: "{{ item['mount_path'] }}"
+      loop: "{{ unmount_volume_info }}"
+      when: item['mount_path'] != ''
+      become: true
+  when: eseries_unmount_temporary_unmount == False
+
+- name: Wipe all file system signatures on volume (Fast format).
+  include_tasks: wipe.yml
+  when: eseries_unmount_wipe_format_signatures == True
+
+- name: Purge volume from host.
+  include_tasks: purge.yml
+  when: eseries_unmount_purge == True

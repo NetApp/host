@@ -1,0 +1,10 @@
+- name: Remove any previously installed protocol packages and configuration.
+  include_role:
+    name: protocol
+    tasks_from: uninstall.yml
+
+- name: Remove multipath packages and configuration.
+  include_role:
+    name: multipath
+    tasks_from: uninstall.yml
+  when: eseries_storage_setup_uninstall_multipath == True

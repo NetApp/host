@@ -1,0 +1,8 @@
+- name: Ensure inventory information has been populated for the storage systems.
+  ansible.builtin.include_tasks: gather_storage_facts.yml
+
+- name: Determine volume information
+  ansible.builtin.include_tasks: volume_facts.yml
+
+- name: Determine host information
+  ansible.builtin.include_tasks: host_facts.yml

@@ -1,0 +1,52 @@
+eseries_common_group: eseries_storage_systems
+eseries_common_allow_host_reboot: true
+eseries_common_allow_host_reboot_reason: "Reboot is required."
+eseries_common_reboot_restart_services: []  # List of systemd services to check before reboot and restart after (if they were active). Example: [pacemaker.service, pacemaker]
+eseries_common_package_group: common  # This variable can be used to override the task name package group description.
+eseries_common_allow_upgrades: false
+eseries_common_skip_package_validation: false
+
+# Package manager repository controls.
+eseries_common_existing_repos_disabled: false
+eseries_common_yum_repos: []
+eseries_common_apt_repos: []
+
+eseries_common_custom_packages: {}
+#  files:
+#    "<source>": "<destination>"
+#    ...
+#  install:
+#    add_packages: []
+#    remove_packages: []
+#    commands: []
+#  uninstall:
+#    packages: []
+#    commands: []
+
+eseries_common_udev_name: 99-eseries_common_udev.rules
+eseries_common_udev_rules: {}
+eseries_common_udev_rules_d: /etc/udev/rules.d/
+
+eseries_common_docker_host: unix://var/run/docker.sock
+eseries_common_ignore_volumes: []
+eseries_common_target_scan_paths:
+  scsi:
+    sas: "for fp in /sys/class/sas_host/*/device/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+    fc: "for fp in /sys/class/fc_host/*/device/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+    ib_srp: "for fp in /sys/class/infiniband_srp/*/device/host*/scsi_host/host*/scan; do echo -n '- - -' > $fp; done"
+    iscsi: "for fp in /sys/class/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+    ib_iser: "for fp in /sys/class/scsi_host/host*/scan; do echo '- - -' > $fp; done"
+  nvme:
+    nvme_ib: ""
+    nvme_fc: ""
+    nvme_roce: ""
+
+# Volume Discovery Protocol Action Lists (Do not modify)
+eseries_common_discovery_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser", "nvme_ib", "nvme_fc", "nvme_roce"]
+eseries_common_discovery_rescan_iscsi_session_protocol_list: ["iscsi", "ib_iser"]
+eseries_common_discovery_rescan_scsi_bus_protocol_list: ["iscsi", "fc", "sas", "ib_srp", "ib_iser"]
+
+# Set to false to skip attempting to configure the firewall even if firewalld or ufw are installed.
+eseries_common_firewall_configure: true
+
+eseries_common_uninstall: false     # Common uninstall variable which can be used to uninstall any netapp_eseries.host role.

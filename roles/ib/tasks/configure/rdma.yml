@@ -1,0 +1,9 @@
+# @rdma soft memlock unlimited
+- name: Ensure RDMA soft limit for memlock is unlimited
+  community.general.pam_limits:
+    dest: "{{ eseries_ib_rdma_memory_conf }}"
+    domain: "*"
+    limit_type: "-"
+    limit_item: memlock
+    value: unlimited
+  become: true

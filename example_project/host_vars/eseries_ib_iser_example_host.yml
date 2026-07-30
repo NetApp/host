@@ -1,0 +1,10 @@
+# example_project/host_vars/eseries_ib_iser_example_host.yml
+ansible_host: 192.168.1.100
+ansible_ssh_user: admin
+ansible_become_password: adminpass
+
+eseries_ib_iser_interfaces:
+  - name: ib0
+    address: 192.168.2.10/24
+  - name: ib1
+    address: 192.168.3.10/24

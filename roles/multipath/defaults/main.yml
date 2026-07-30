@@ -1,0 +1,45 @@
+eseries_multipath_configure_user_friendly_names: true
+eseries_multipath_path_selector: "round-robin 0"
+eseries_multipath_command_timeout: 120000     # Set the timeout of multipathd interactive commands in milliseconds.
+
+eseries_multipath_conf_d_path: /etc/multipath/conf.d/
+eseries_multipath_modules_d: /etc/modules-load.d/
+eseries_multipath_initramfs_modules_path: /etc/initramfs-tools/modules
+eseries_multipath_dracut_conf_d: /etc/dracut.conf.d/
+# Optional: extra modules to include in the initramfs for E-Series multipath.
+# Leave empty by default. Example modules you may add:
+#   - multipath
+eseries_multipath_initramfs_modules: []
+
+# Optional: extra drivers to include in the initramfs for E-Series multipath.
+# Leave empty by default. Example drivers you may add:
+#   - dm_multipath
+eseries_multipath_kernel_drivers: []
+
+eseries_multipath_rhel_packages:
+  - device-mapper-multipath
+
+eseries_multipath_suse_packages:
+  - multipath-tools
+
+eseries_multipath_ubuntu_packages:
+  - multipath-tools
+  - multipath-tools-boot
+
+eseries_multipath_nvme_protocols: ["nvme_ib", "nvme_fc", "nvme_roce"]
+eseries_multipath_foreign_library: nvme  # enables foreign library when multipath enable_foreign option is available
+
+# Time (seconds) to wait for the udev event queue to settle after multipathd starts,
+# before rebuilding initramfs. Prevents a race between multipathd's transient boot-disk
+# claim attempt and dracut's systemd-cat logging handoff to journald (RHEL/SUSE).
+eseries_multipath_settle_timeout: 30
+
+# Hard timeout (seconds) for the dracut --force initramfs rebuild (RHEL/SUSE). If exceeded,
+# the task fails instead of hanging indefinitely.
+eseries_multipath_dracut_timeout: 600
+
+# Polling interval (seconds) while waiting for the dracut rebuild to complete.
+eseries_multipath_dracut_poll_interval: 5
+
+eseries_multipath_uninstall: false  # Whether to uninstall multipath role.
+eseries_multipath_skip: false   # Whether to do any multipath configuration (install or uninstall)

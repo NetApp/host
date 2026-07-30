@@ -1,0 +1,9 @@
+# example_project/group_vars/eseries_storage_systems.yml
+# SANtricity Web Services Proxy Variables
+#eseries_proxy_api_url: https://localhost:8443/devmgr/v2/    # REST API URL for SANtricity Web Services Proxy.
+#eseries_proxy_api_password: adminpass                       # Admin password for SANtricity Web Services Proxy.
+#eseries_subnet: 192.168.1.0/24                              # Subnet to search for E-Series storage systems.
+#eseries_prefer_embedded: false                              # Whether the storage system should be contacted through the embedded web services REST API if available (Default: false).
+#eseries_validate_certs: true                                # Whether the storage system SSL certificates should be validated (Default: true).
+
+# Add all role variables common to E-Series storage systems from netapp_eseries.santricity collection here.

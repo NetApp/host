@@ -1,0 +1,5 @@
+- name: Ensure iSCSI packages are installed.
+  ansible.builtin.include_tasks: package.yml
+
+- name: Ensure iSCSI is configured.
+  ansible.builtin.include_tasks: configure.yml

@@ -1,0 +1,12 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/uninstall/configure.yml"
+
+- name: Delete iSCSI session configuration directories.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - "{{ eseries_iscsi_node_path }}"
+    - "{{ eseries_iscsi_iface_path }}"
+    - "{{ eseries_iscsi_static_path }}"
+  become: true

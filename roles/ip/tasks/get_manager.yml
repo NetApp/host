@@ -1,0 +1,76 @@
+- name: Determine network management tools
+  block:
+    - name: Get systemd services
+      ansible.builtin.service_facts:
+      become: true
+
+    - name: Determine whether netplan is installed.
+      ansible.builtin.shell: command -v netplan
+      register: netplan
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Determine whether ifupdown or compatible tool is installed.
+      ansible.builtin.shell: command -v ifup
+      register: ifupdown
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Determine whether nmcli is installed.
+      ansible.builtin.shell: command -v nmcli
+      register: nmcli
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Populate eseries_ip_manager list.
+      ansible.builtin.set_fact:
+        eseries_ip_manager_tools: |-
+          {%- set managers = [] -%}
+          {%- if ifupdown["rc"] == 0 -%}
+            {%- if managers.append("ifupdown") -%}{%- endif -%}
+          {%- elif nmcli["rc"] == 0 -%}
+            {%- if managers.append("nmcli") -%}{%- endif -%}
+          {%- elif netplan["rc"] == 0 -%}
+            {%- if managers.append("netplan") -%}{%- endif -%}
+          {%- endif -%}
+
+          {%- if ansible_facts["services"]["NetworkManager.service"] is defined and
+                 (ansible_facts["services"]["NetworkManager.service"]["state"] == "running" or
+                  ansible_facts["services"]["NetworkManager.service"]["status"] == "enabled") -%}
+            {%- if managers.append("network_manager") -%}{%- endif -%}
+          {%- elif ansible_facts["services"]["systemd-networkd.service"] is defined and
+                 (ansible_facts["services"]["systemd-networkd.service"]["state"] == "running" or
+                  ansible_facts["services"]["systemd-networkd.service"]["status"] == "enabled") -%}
+            {%- if managers.append("networkd") -%}{%- endif -%}
+          {%- endif -%}
+          {{- managers -}}
+  when: eseries_ip_manager_tools is not defined
+
+# smcli is a configuration tool used with NetworkManager (network_manager).
+# ifupdown is a configuration tool used with the ifupdown networking system.
+# netplan is a configuration tool that can be used with either NetworkManager or networkd.
+- name: Determine which network configuration tool (Netplan or ifupdown or nmcli) is installed.
+  ansible.builtin.fail:
+    msg: "Only one compatible network management tool should be installed.
+          Detected: {{ current_ip_tools }}.
+          Remove the unused tools or explicitly set eseries_ip_manager_tools in your inventory to the desired tool."
+  when: current_ip_tools | length != 1
+  vars:
+    current_ip_tools: "{{ eseries_ip_manager_tools | select('in', ['netplan', 'ifupdown', 'nmcli']) | list }}"
+
+- name: Determine which network manager is installed.
+  ansible.builtin.fail:
+    msg: >
+      Exactly one compatible network management tool should be installed.
+      Detected: {{ current_ip_tools }}.
+      Remove unused tools or explicitly set eseries_ip_manager_tools in your inventory to the desired tool.
+  when: current_ip_tools | length != 1
+  vars:
+    supported_tools:
+      - network_manager
+      - networkd
+      - ifupdown
+    current_ip_tools: "{{ eseries_ip_manager_tools | select('in', supported_tools) | list }}"

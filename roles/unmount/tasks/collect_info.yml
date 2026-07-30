@@ -1,0 +1,155 @@
+- name: Get multipath map information for each mapping to be removed.
+  ansible.builtin.command:
+    cmd: "multipathd show maps raw format '%w,%n,%N,%s'"
+    #cmd: "multipathd show maps raw format '%w,%n,%N,%v,%p'"
+  register: multipathd_map_info
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Get multipath path information for each mapping to be removed.
+  ansible.builtin.command:
+    cmd: "multipathd show paths raw format '%w,%d'"
+  register: multipathd_path_info
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Get current mount information.
+  ansible.builtin.command:
+    cmd: "mount"
+    warn: "{{ omit if ansible_version.major >= 2 and ansible_version.minor >= 14 else false }}"
+  register: mount_info
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Determine volumes to unmap and delete from host.
+  set_fact:
+    unmap_volume_info: |-
+      {%- set mapped_volume_info = [] -%}
+      {%- for volume_info in initiator_volume_facts if volume_info["ignore_volume"] == False and
+                                                       (volume_info["name"] in eseries_unmount_volumes or "all_volumes" in eseries_unmount_volumes) -%}
+        {%- set info = {"volume_name": volume_info["name"], "volume_info": volume_info, "array_credentials": {}} -%}
+        {%- set array_info = hostvars[volume_info['ansible_array_name']] -%}
+        {%- set array_info_keys = array_info.keys() | list -%}
+        {%- if "current_eseries_ssid" in array_info_keys -%}
+          {%- if info["array_credentials"].update(
+            {"ssid": array_info['current_eseries_ssid'],
+             "api_url": array_info["current_eseries_api_url"],
+             "api_username": array_info["current_eseries_api_username"] | default("admin"),
+             "api_password": array_info["current_eseries_api_password"],
+             "validate_certs": array_info["current_eseries_validate_certs"]}) -%}
+          {%- endif -%}
+        {%- elif "eseries_system_api_url" in array_info_keys and "eseries_system_password" in array_info_keys -%}
+          {%- if info["array_credentials"].update(
+            {"ssid": "1",
+             "api_url": array_info["eseries_system_api_url"],
+             "api_username": array_info["eseries_system_username"] | default("admin"),
+             "api_password": array_info["eseries_system_password"],
+             "validate_certs": array_info["eseries_validate_certs"] | default(omit)}) -%}
+          {%- endif -%}
+        {%- elif "eseries_proxy_ssid" in array_info_keys and "eseries_proxy_api_url" in array_info_keys and "eseries_proxy_api_password" in array_info_keys -%}
+          {%- if info["array_credentials"].update(
+            {"ssid": array_info["eseries_proxy_ssid"],
+            "api_url": array_info["eseries_proxy_api_url"],
+            "api_username": array_info["eseries_proxy_api_username"] | default("admin"),
+            "api_password": array_info["eseries_proxy_api_password"],
+            "validate_certs": array_info["eseries_validate_certs"] | default(omit)}) -%}
+          {%- endif -%}
+        {%- elif "eseries_api_url" in array_info_keys and "eseries_api_password" in array_info_keys -%}
+          {%- if info["array_credentials"].update(
+            {"ssid": array_info["eseries_ssid"] | default("1"),
+            "api_url": array_info["eseries_api_url"],
+            "api_username": array_info["eseries_api_username"] | default("admin"),
+            "api_password": array_info["eseries_api_password"],
+            "validate_certs": array_info["eseries_validate_certs"] | default(omit)}) -%}
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if mapped_volume_info.append(info) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- mapped_volume_info -}}
+
+- name: Determine volumes to unmount and purge from host.
+  set_fact:
+    unmount_volume_info: |-
+      {#- Create dictionary mapping mount devices to mount path -#}
+      {%- set unmount_volume_info = {} -%}
+      {%- for line in mount_info["stdout_lines"] -%}
+        {%- set info = line.split() -%}
+        {%- if unmount_volume_info.update({info[0]: info[2]}) -%}{%- endif -%}
+      {%- endfor -%}
+
+      {#- Create regex pattern of volume WWNs/EUIs to effect -#}
+      {%- set volumes_list = [] -%}
+      {%- for volume_info in initiator_volume_facts if volume_info["ignore_volume"] == False -%}
+        {%- if volume_info["wwn"] and volumes_list.append(volume_info["wwn"]) -%}{%- endif -%}
+        {%- if volume_info["eui"] and volumes_list.append(volume_info["eui"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- set volume_pattern = volumes_list | join("|") -%}
+
+      {#- Create list of volume information used to unmap the volumes. -#}
+      {%- set mapped_info = [] -%}
+      {%- set mapped_info_dict = {} -%}
+      {%- if multipathd_map_info["rc"] == 0 -%}
+        {%- for map_info_line in multipathd_map_info["stdout_lines"] if map_info_line | regex_search(volume_pattern, ignorecase=True) -%}
+
+          {%- set map_info = (map_info_line | regex_replace("\s*", "")).split(",") -%}
+          {%- for volume_name in eseries_unmount_volumes if map_info[1] not in (mapped_info_dict.keys() | list) and (volume_name == "all_volumes" or volume_name == map_info[1]) -%}
+
+            {#- Add host information -#}
+            {%- if map_info[2] | regex_search("NVMe", ignorecase=True) -%}
+              {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
+                                                            "volume_name": map_info[1],
+                                                            "wwid": map_info[0],
+                                                            "blocks": [],
+                                                            "active_paths": map_info[2],
+                                                            "dev_mapper_path": "/dev/disk/by-id/nvme-" ~ map_info[0],
+                                                            "mount_path": unmount_volume_info["/dev/disk/by-id/nvme-" ~ map_info[0]] | default(""),
+                                                            "is_nvme": True }}) -%}{%- endif -%}
+            {%- else -%}
+              {%- if mapped_info_dict.update({map_info[1]: {"volume_info": {},
+                                                            "volume_name": map_info[1],
+                                                            "wwid": map_info[0],
+                                                            "blocks": [],
+                                                            "active_paths": map_info[2],
+                                                            "dev_mapper_path": "/dev/mapper/" ~ map_info[1],
+                                                            "mount_path": unmount_volume_info["/dev/mapper/" ~ map_info[1]] | default(""),
+                                                            "is_nvme": False }}) -%}{%- endif -%}
+            {%- endif -%}
+
+            {#- Collect storage volume information -#}
+            {%- for volume_info in initiator_volume_facts if (volume_info["wwn"] and map_info[0] | regex_search(volume_info["wwn"], ignorecase=True)) or
+                                                             (volume_info["eui"] and map_info[0] | regex_search(volume_info["eui"], ignorecase=True)) -%}
+              {%- if mapped_info_dict[map_info[1]]["volume_info"].update(volume_info) -%}{%- endif -%}
+            {%- endfor -%}
+
+            {#- Add path block devices -#}
+            {%- for path_info_line in multipathd_path_info["stdout_lines"] if path_info_line | regex_search(map_info[0], ignorecase=True) -%}
+              {%- set path_info = path_info_line.split(",") -%}
+              {%- if mapped_info_dict[map_info[1]]["blocks"].append(path_info[1]) -%}{%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        {%- endfor -%}
+
+        {# Add volumes to mapped_info -#}
+        {%- for volume_name, volume_info in mapped_info_dict.items() -%}
+          {%- if mapped_info.append(volume_info) -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{ mapped_info }}
+
+- name: Determine which host will control storage system changes.
+  set_fact:
+    volume_host_control_map: |-
+      {%- set volume_host_control_map = {} -%}
+      {%- for host in ansible_play_hosts_all if "unmap_volume_info" in (hostvars[host].keys() | list) -%}
+        {%- for info in hostvars[host]["unmap_volume_info"] if info["volume_info"] != {} -%}
+          {%- if info["volume_info"]["wwn"] not in volume_host_control_map -%}
+            {%- if volume_host_control_map.update({info["volume_info"]["wwn"]: host}) -%}{%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- volume_host_control_map -}}
+  run_once: true

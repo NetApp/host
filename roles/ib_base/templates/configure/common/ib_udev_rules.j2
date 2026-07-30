@@ -1,0 +1,3 @@
+{% for device, name in (eseries_ib_base_udev_rules.items() | list) %}
+ACTION=="add", SUBSYSTEM=="net", KERNELS=="{{ device }}", NAME:="{{ name }}"
+{% endfor %}

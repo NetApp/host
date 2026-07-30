@@ -1,0 +1,17 @@
+- name: Delete E-Series volume.
+  netapp_eseries.santricity.na_santricity_volume:
+    ssid: "{{ item['array_credentials']['ssid'] }}"
+    api_url: "{{ item['array_credentials']['api_url'] }}"
+    api_username: "{{ item['array_credentials']['api_username'] }}"
+    api_password: "{{ item['array_credentials']['api_password'] }}"
+    validate_certs: "{{ item['array_credentials']['validate_certs'] }}"
+    state: absent
+    name: "{{ item['volume_name'] }}"
+  loop: "{{ unmap_volume_info }}"
+  when:
+    - '"volume_info" in item.keys() | list'
+    - item["volume_info"] != {}
+    - volume_host_control_map[item["volume_info"]["wwn"]] == inventory_hostname
+    - '"array_credentials" in (item.keys() | list)'
+    - item["array_credentials"] != {}
+  delegate_to: localhost

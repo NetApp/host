@@ -1,0 +1,15 @@
+eseries_mount_skip_unmount: false
+eseries_mount_force_format: false  # WARNING! Forces the file system to be applied regardless whether one exists. Note that this option is not idempotent and it is recommended to set using --extra-vars.
+
+eseries_mount_volumes: ["all_volumes"]
+eseries_mount_format_type: ext4
+eseries_mount_format_type_options:
+  xfs: "-d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk"
+  ext4: ""
+  btrfs: ""
+  lustre: ""      # Legacy/compat alias. Prefer lustre_tgt for Lustre server-target volumes.
+  lustre_tgt: ""  # Explicit Lustre server-target volume type (MGT/MDT/OST).
+
+#eseries_mount_format_options: ""
+eseries_mount_persistent_mount_options: "_netdev"  #"noatime,nodiratime,nobarrier,_netdev"
+eseries_mount_root_directory: /mnt/

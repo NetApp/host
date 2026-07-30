@@ -1,0 +1,5 @@
+- name: Ensure expected multipath packages are installed (RHEL).
+  ansible.builtin.yum:
+    state: present
+    name: "{{ eseries_multipath_rhel_packages }}"
+  become: true

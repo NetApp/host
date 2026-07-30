@@ -1,0 +1,5 @@
+- name: Ensure expected InfiniBand packages are installed (RHEL).
+  ansible.builtin.yum:
+    state: present
+    name: "{{ eseries_ib_rhel_packages }}"
+  become: true

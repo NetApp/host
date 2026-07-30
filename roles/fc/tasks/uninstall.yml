@@ -1,0 +1,3 @@
+- name: Ensure NVMe over Fibre Channel is configured.
+  debug:
+    msg: "Currently there is nothing to do specifically for the Fibre Channel protocol."

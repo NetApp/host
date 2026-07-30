@@ -1,0 +1,14 @@
+- name: Ensure srp_daemon.service is correct.
+  ansible.builtin.template:
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', (ansible_os_family | lower) ~ 'srp_daemon_service.j2') }}"
+    dest: "{{ eseries_ib_srp_daemon_service }}"
+  register: srp_daemon_service
+  become: true
+
+- name: Ensure srp_daemon.service is updated, running and enabled
+  ansible.builtin.systemd:
+    name: srp_daemon.service
+    state: "{{ 'restarted' if srp_daemon_service['changed'] else 'started'}}"
+    enabled: true
+    daemon_reload: true
+  become: true

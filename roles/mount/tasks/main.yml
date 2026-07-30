@@ -1,0 +1,42 @@
+- name: Discover mapped-volume information from associated storage systems.
+  include_role:
+    name: common
+    tasks_from: host_facts.yml
+  when: eseries_volumes is not defined
+
+- name: Ensure volumes are mounted on hosts.
+  include_tasks: collect_facts/unmount.yml
+
+- name: Ensure expected unmounted volumes are not mounted.
+  block:
+    - name: Collect information for volumes that need to be unmounted
+      include_role:
+        name: unmount
+        tasks_from: collect_info.yml
+    - name: Ensure any unmapped volume is unmounted.
+      include_role:
+        name: unmount
+        tasks_from: unmount.yml
+  vars:
+    eseries_unmount_volumes: "{{ volume_unmount_list }}"
+    eseries_unmount_purge: true
+  when:
+    - not (eseries_mount_skip_unmount | bool)
+    - volume_unmount_list | length > 0
+
+- name: Ensure multipath is configured.
+  include_role:
+    name: multipath
+    tasks_from: configure/configure_eseries_multipath.yml
+
+- name: Collect mount info for volumes on hosts.
+  include_tasks: collect_facts/mount.yml
+
+- name: Ensure expected volumes are formatted.
+  include_tasks: format_volume.yml
+
+- name: Ensure expected volumes are mounted.
+  include_tasks: mount.yml
+  loop: "{{ volume_mount_info }}"
+  when:
+    - inventory_hostname == item['primary_node']

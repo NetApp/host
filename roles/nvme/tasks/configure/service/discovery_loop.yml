@@ -1,0 +1,13 @@
+- name: Increment NVMe discovery attempt counter.
+  ansible.builtin.set_fact:
+    _nvme_discovery_attempt: "{{ (_nvme_discovery_attempt | int) + 1 }}"
+  changed_when: false
+
+- name: Run NVMe discovery attempt {{ _nvme_discovery_attempt }}.
+  ansible.builtin.include_tasks: discovery_attempt.yml
+
+- name: Continue NVMe discovery attempts until ready or retry limit.
+  ansible.builtin.include_tasks: discovery_loop.yml
+  when:
+    - not (_nvme_discovery_ready | default(false))
+    - (_nvme_discovery_attempt | int) < (_nvme_discovery_retries | int)

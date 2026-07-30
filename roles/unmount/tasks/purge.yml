@@ -1,0 +1,5 @@
+- name: Purge selected SCSI storage volumes from host.
+  include_tasks: purge/scsi.yml
+
+- name: Purge selected NVMe storage volumes from host.
+  include_tasks: purge/nvme.yml

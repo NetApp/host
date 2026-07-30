@@ -1,0 +1,80 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/nmcli.yml"
+
+- name: Determine facts for configuring firewall configuration.
+  ansible.builtin.set_fact:
+    eseries_ip_firewall_zone: "{{ eseries_ip_interface_common['zone'] | default(eseries_ip_firewall_zone | default(eseries_common_firewall_zone | default(''))) }}"
+
+- name: Configure expected interfaces on non-rhel server.
+  ansible.builtin.template:
+    backup: false
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
+    dest: "{{ eseries_ip_nmcli_path }}ifcfg-{{ item['name'] }}"
+    mode: "0600"
+    owner: root
+  register: nmcli
+  loop: "{{ eseries_ip_interfaces }}"
+  when: ansible_os_family | lower != "redhat"
+  become: true
+
+- name: Configure expected interfaces on rhel server.
+  ansible.builtin.template:
+    backup: false
+    src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'nmcli.j2') }}"
+    dest: "{{ eseries_ip_nmcli_path }}{{ item['name'] }}.nmconnection"
+    mode: "0600"
+    owner: root
+  register: nmcli
+  loop: "{{ eseries_ip_interfaces }}"
+  when: ansible_os_family | lower == "redhat"
+  become: true
+
+# We tell dispatcher.yml if any interfaces changed so we can non-disruptively apply changes to dispatcher hooks if nothing else about the interface configuration changed.
+# If hooks configuration changed:
+# * If the interface configuration did not change, then dispatcher.yml will call the stop action on the old hook(s), configure any new hooks then call start action on the hook(s).
+# * If the interface configuration changed then it will only call the stop action on the old hook(s) and configure any new hook(s). The up action on the new hook will be called automatically when the interface is reloaded after it is reconfigured.
+# The ordering of these tasks is important to avoid scenarios where we try to stop or start a hook on an interface in an unconfigured or invalid state for the action.
+- name: Install any network manager dispatcher hooks.
+  ansible.builtin.include_tasks: hook/dispatcher.yml
+  when: '"network_manager" in eseries_ip_manager_tools or "networkd" in eseries_ip_manager_tools'
+  vars:
+    interface_config_results: '{{ nmcli["results"] }}'
+
+- name: Get link status for interfaces.
+  ansible.builtin.command: "ip -4 address show {{ item['name'] }}"
+  changed_when: false
+  register: link_info
+  loop: "{{ eseries_ip_interfaces }}"
+  become: true
+
+- name: Reload changed interfaces.
+  ansible.builtin.command: "nmcli connection reload"
+  when: update_interfaces | length > 0
+  become: true
+  register: reload_interfaces
+  vars:
+    update_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for result in nmcli["results"] if result["changed"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}
+
+- name: Wait for reloaded configuration to propagate.
+  ansible.builtin.pause:
+    seconds: 10
+  when: not reload_interfaces.skipped | default(false)
+
+- name: Bring reloaded interfaces up.
+  ansible.builtin.command: "nmcli connection up {{ item }}"
+  loop: "{{ update_interfaces }}"
+  vars:
+    update_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for result in nmcli["results"] if result["changed"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for result in link_info["results"] if "state UP" not in result["stdout"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}

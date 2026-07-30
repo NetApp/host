@@ -1,0 +1,35 @@
+- name: Ensure non-Lustre volume ({{ item.name }}) is mounted with persistent mount point.
+  ansible.posix.mount:
+    state: mounted
+    backup: true
+    path: "{{ item['mount_directory'] }}"
+    src: "{{ item['path'] }}"
+    fstype: "{{ item['fs_type'] }}"
+    opts: "{{ item['mount_options'] | default(omit) }}"
+  register: volume_mount
+  when: (item['fs_type'] | lower) not in ['lustre', 'lustre_tgt']
+  become: true
+
+- name: Ensure Lustre volume is mounted.
+  block:
+    - name: Ensure MGT volume ({{ item.name }}) is mounted with persistent mount point.
+      ansible.posix.mount:
+        state: mounted
+        path: "{{ item['mount_directory'] }}"
+        src: "{{ item['path'] }}"
+        fstype: "{{ item['fs_type'] }}"
+        opts: "{{ item['mount_options'] | default(omit) }}"
+      when:
+        - item['fs_options'] is not search('--mgsnode')
+
+    - name: Ensure non-MGT volume ({{ item.name }}) is mounted with persistent mount point.
+      ansible.posix.mount:
+        state: mounted
+        path: "{{ item['mount_directory'] }}"
+        src: "{{ item['path'] }}"
+        fstype: "{{ item['fs_type'] }}"
+        opts: "{{ item['mount_options'] | default(omit) }}"
+      when:
+        - item['fs_options'] is search('--mgsnode')
+  when: (item['fs_type'] | lower) in ['lustre', 'lustre_tgt']
+  become: true

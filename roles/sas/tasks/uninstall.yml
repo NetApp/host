@@ -1,0 +1,3 @@
+- name: Ensure SAS is configured.
+  debug:
+    msg: "Currently there is nothing to do specifically for the SAS protocol."

@@ -1,0 +1,5 @@
+- name: Remove required NVMe packages (SUSE).
+  community.general.zypper:
+    state: absent
+    name: "{{ eseries_nvme_suse_packages }}"
+  become: true

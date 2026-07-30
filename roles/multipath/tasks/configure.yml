@@ -1,0 +1,63 @@
+- name: Check whether /etc/multipath.conf exists
+  stat:
+    path: "/etc/multipath.conf"
+  register: multipath_conf
+  become: true
+
+- name: Ensure that multipath.conf exists.
+  ansible.builtin.file:
+    state: touch
+    path: "/etc/multipath.conf"
+  when: not multipath_conf["stat"]["exists"]
+  become: true
+
+- name: Check whether eseries_multipath.conf exists
+  stat:
+    path: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
+  register: eseries_multipath_conf
+  become: true
+
+- name: Configure eseries_multipath.conf
+  block:
+    - name: Determine current multipath configuration.
+      ansible.builtin.command:
+        cmd: multipath -t
+      register: current_multipath_configuration
+      changed_when: false
+      become: true
+
+    - name: Ensure multipath configuration directory exists.
+      ansible.builtin.file:
+        state: directory
+        path: "{{ eseries_multipath_conf_d_path }}"
+      become: true
+
+    - name: Configure eseries_multipath.conf
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'multipath_conf.j2') }}"
+        dest: "{{eseries_multipath_conf_d_path}}eseries_multipath.conf"
+      become: true
+  when: not eseries_multipath_conf["stat"]["exists"]
+
+- name: Ensure multipathd daemon has been started and is enabled.
+  ansible.builtin.systemd:
+    state: started
+    name: multipathd.service
+    enabled: true
+    daemon_reload: true
+  become: true
+
+# multipathd's startup triggers a transient scan/claim attempt on every block device,
+# including the boot disk, which generates a burst of device-mapper and udev activity
+# If dracut runs immediately after multipathd starts, its systemd-cat logging handoff
+# to journald can race with this churn and hang indefinitely.
+# Waiting for the udev queue to settle here closes that window.
+- name: Wait for udev queue to settle after multipathd startup.
+  ansible.builtin.command: "udevadm settle --timeout={{ eseries_multipath_settle_timeout }}"
+  changed_when: false
+  become: true
+
+# Based on testing we have to rebuild initramfs after running the above tasks.
+# Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot.
+- name: Ensure initramfs includes multipath support.
+  include_tasks: "configure/{{ ansible_os_family | lower }}.yml"

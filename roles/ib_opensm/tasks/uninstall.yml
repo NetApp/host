@@ -1,0 +1,57 @@
+- name: Uninstall InfiniBand opensm custom packages.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: installer/uninstall.yml
+  when: '"uninstall" in (eseries_ib_opensm_custom_packages.keys() | list)'
+  vars:
+    eseries_common_package_group: "InfiniBand OpenSM"
+    eseries_common_custom_packages: "{{ eseries_ib_opensm_custom_packages | default({}) }}"
+    eseries_common_allow_upgrades: "{{ eseries_ib_opensm_allow_upgrades | default(false) }}"
+    eseries_common_skip_package_validation: "{{ eseries_ib_opensm_skip_package_validation | default(false) }}"
+
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Collect facts about systemd services.
+  ansible.builtin.service_facts:
+  become: true
+
+- name: Ensure InfiniBand OpenSM service loader for E-Series is stopped and disabled.
+  ansible.builtin.systemd:
+    name: opensm.service
+    state: stopped
+    enabled: false
+    daemon_reload: true
+  when: "'opensm.service' in (ansible_facts['services'].keys() | list)"
+  become: true
+
+- name: Ensure InfiniBand packages are uninstalled.
+  ansible.builtin.include_tasks: "uninstall/{{ ansible_os_family | lower }}.yml"
+
+- name: Create InfiniBand OpenSM service loader daemon for E-Series.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ib_opensm_daemon_path }}eseries_opensm"
+  become: true
+
+- name: Create InfiniBand OpenSM service loader for E-Series.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ib_opensm_service_path }}opensm.service"
+  become: true
+
+- name: Determine existing OpenSM configuration files.
+  ansible.builtin.find:
+    path: "{{ eseries_ib_opensm_config_path }}"
+    pattern: "opensm.conf(.[0-9]+)?$"
+    use_regex: true
+  register: existing_opensm_configs
+  become: true
+
+- name: Remove no longer needed OpenSM configuration files.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ item }}"
+  register: delete_opensm_config
+  loop: "{{ existing_opensm_configs['files'] }}"
+  become: true

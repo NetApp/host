@@ -1,0 +1,55 @@
+- name: Ensure non-Lustre volumes are formatted.
+  community.general.filesystem:
+    fstype: "{{ item['fs_type'] }}"
+    opts: "{{ item['fs_options'] }}"
+    dev: "{{ item['path'] }}"
+    force: "{{ eseries_mount_force_format }}"
+  when: (item['fs_type'] | lower) not in ['lustre', 'lustre_tgt']
+  loop: "{{ format_volumes_by_host[inventory_hostname] }}"
+  become: true
+
+- name: Ensure Lustre volumes are formatted.
+  # Ansible does not support applying `loop` to `block`; keep per-task loops inside this block.
+  # We intentionally avoid `include_tasks` + `loop` here to preserve normal host-level parallelism.
+  block:
+    - name: Probe existing filesystem signatures.
+      ansible.builtin.command:
+        cmd: "wipefs -O type -i {{ item['path'] }}"
+      loop: "{{ format_volumes_by_host[inventory_hostname] }}"
+      loop_control:
+        index_var: lustre_volume_idx
+      when: (item['fs_type'] | lower) in ['lustre', 'lustre_tgt']
+      register: wipefs_output
+      changed_when: false
+
+    - name: Format new Lustre volumes.
+      ansible.builtin.command:
+        cmd: mkfs.lustre {{ item['fs_options'] }} {{ item['path'] }}
+      loop: "{{ format_volumes_by_host[inventory_hostname] }}"
+      loop_control:
+        index_var: lustre_volume_idx
+      when:
+        - (item['fs_type'] | lower) in ['lustre', 'lustre_tgt']
+        - (wipefs_output.results[lustre_volume_idx].rc | default(1)) == 0
+        - (wipefs_output.results[lustre_volume_idx].stdout | default('') | trim) == '' or (eseries_mount_force_format | bool) or (item['force_format'] | bool)
+
+    - name: Probe device with tunefs.lustre
+      ansible.builtin.command: "tunefs.lustre --dryrun {{ item['path'] }}"
+      loop: "{{ format_volumes_by_host[inventory_hostname] }}"
+      loop_control:
+        index_var: lustre_volume_idx
+      when: (item['fs_type'] | lower) in ['lustre', 'lustre_tgt']
+      register: tunefs_result
+      failed_when: false
+      changed_when: false
+
+    - name: Fail if device is not Lustre-formatted.
+      ansible.builtin.fail:
+        msg: "Device {{ item['name'] }}: {{ item['path'] }} is NOT formatted with Lustre!"
+      loop: "{{ format_volumes_by_host[inventory_hostname] }}"
+      loop_control:
+        index_var: lustre_volume_idx
+      when:
+        - (item['fs_type'] | lower) in ['lustre', 'lustre_tgt']
+        - (tunefs_result.results[lustre_volume_idx].rc | default(1)) != 0
+  become: true

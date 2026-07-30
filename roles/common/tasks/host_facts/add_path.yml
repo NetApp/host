@@ -1,0 +1,13 @@
+- name: Scan for all mapped volumes.
+  ansible.builtin.include_tasks: host_facts/find_path.yml
+
+- name: Add volume paths to information.
+  set_fact:
+    eseries_volumes: |-
+      {%- set volumes = [] %}
+      {%- for volume in initiator_volume_facts -%}
+        {%- if volume.update({"path": volume_paths[volume["name"]]["path"],
+                              "host_wwid": volume_paths[volume["name"]]["host_wwid"]}) -%}{%- endif -%}
+        {%- if volumes.append(volume) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ volumes | list }}

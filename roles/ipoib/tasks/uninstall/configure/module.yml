@@ -1,0 +1,19 @@
+- name: Ensure required IP over InfiniBand kernel modules have been removed to boot process.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ipoib_modules_load_d }}eseries_ipoib.conf"
+  become: true
+
+- name: Ensure required IP over InfiniBand kernel module parameters have been removed to boot process.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ipoib_modules_d }}eseries_ipoib.conf"
+  become: true
+
+- name: Ensure required IP over InfiniBand modules are unloaded.
+  community.general.modprobe:
+    state: absent
+    name: "{{ item['name'] }}"
+  loop: "{{ eseries_ipoib_kernel_modules }}"
+  ignore_errors: true
+  become: true

@@ -1,0 +1,7 @@
+- name: Ensure host is setup for expected protocol
+  include_role:
+    name: protocol
+
+- name: Ensure multipath is configured.
+  include_role:
+    name: multipath

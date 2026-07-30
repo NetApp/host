@@ -1,0 +1,167 @@
+- name: Get the host NVMe Qualified Name (NQN).
+  ansible.builtin.command: "{{ eseries_nvme_nqn_command }}"
+  changed_when: false
+  register: hostnqn_output
+  become: true
+
+# IMPORTANT: Refresh storage facts must be done in order to get the latest interface link statuses.
+- name: Set NVMe discovery polling policy.
+  ansible.builtin.set_fact:
+    _nvme_discovery_retries: "{{ eseries_nvme_target_discovery_retries | int }}"
+    _nvme_discovery_delay: "{{ eseries_nvme_target_discovery_delay | int }}"
+    _nvme_require_all_interfaces: "{{ eseries_nvme_require_all_interfaces | bool }}"
+    _nvme_discovery_ready: false
+    _nvme_discovery_expected_interfaces: []
+    _nvme_discovery_matched_interfaces: []
+    _nvme_discovery_missing_interfaces: []
+  changed_when: false
+
+- name: Refresh storage facts until NVMe target discovery is ready.
+  ansible.builtin.include_tasks: configure/service/discovery_loop.yml
+  vars:
+    _nvme_discovery_attempt: 0
+  when: not (_nvme_discovery_ready | default(false))
+
+- name: Warn when NVMe target discovery remains partial after retries (require_all_interfaces disabled).
+  ansible.builtin.debug:
+    msg: >-
+      Proceeding with partial NVMe target discovery after {{ _nvme_discovery_retries }} attempts.
+      Expected interfaces={{ _nvme_discovery_expected_interfaces }},
+      matched={{ _nvme_discovery_matched_interfaces }},
+      missing={{ _nvme_discovery_missing_interfaces }}.
+  when:
+    - not (_nvme_require_all_interfaces | bool)
+    - not (_nvme_discovery_ready | default(false))
+
+- name: Fail when NVMe target discovery remains incomplete after retries (require_all_interfaces enabled).
+  ansible.builtin.fail:
+    msg: >-
+      NVMe target discovery incomplete after {{ _nvme_discovery_retries }} attempts.
+      Expected interfaces={{ _nvme_discovery_expected_interfaces }},
+      matched={{ _nvme_discovery_matched_interfaces }},
+      missing={{ _nvme_discovery_missing_interfaces }}.
+      Verify all IB/RoCE cables are connected and ports are active, then retry.
+      To suppress this error and proceed with partial connectivity, set
+      eseries_nvme_require_all_interfaces: false.
+  when:
+    - _nvme_require_all_interfaces | bool
+    - not (_nvme_discovery_ready | default(false))
+
+- name: Check whether eseries_{{ eseries_nvme_protocol }}_deamon exists
+  stat:
+    path: "{{ eseries_nvme_daemon_path }}eseries_{{ eseries_nvme_protocol }}_deamon"
+  register: stat_result
+
+- name: Configure service for NVMe over InfiniBand and NVMe RoCE
+  block:
+    - name: Determine NVMe storage target information.
+      set_fact:
+        eseries_nvme_daemon_name: "{{ 'eseries_'~eseries_nvme_protocol~'_deamon' if stat_result.stat.exists else 'eseries_'~eseries_nvme_protocol~'_daemon' }}"
+        eseries_nvme_service_name: eseries_{{ eseries_nvme_protocol }}.service
+        eseries_nvme_connections_file: eseries_{{ eseries_nvme_protocol }}_connections.conf
+        targets: |-
+          {%- set targets = {} -%}
+          {%- for volume in initiator_volume_facts if volume["host_port_information"][eseries_nvme_protocol] is defined -%}
+            {%- for host_port_information in volume["host_port_information"][eseries_nvme_protocol] -%}
+              {%- if host_port_information["link_status"] in ["up", "active"] and host_port_information["ipv4"] -%}
+                {%- for interface_info in eseries_nvme_interfaces -%}
+                  {%- if host_port_information["ipv4"]["address"] | ansible.utils.ipaddr(interface_info["address"]) -%}
+                    {%- if targets.update({volume["ansible_array_name"] ~ ":" ~ host_port_information["interface_reference"]: {
+                            "array_name": volume["ansible_array_name"],
+                            "address": host_port_information["ipv4"]["address"],
+                            "port": interface_info["port"] | default(eseries_nvme_port),
+                            "queue_depth": interface_info["queue_depth"] | default(eseries_nvme_queue_depth),
+                            "controller_loss_timeout": interface_info["controller_loss_timeout"] | default(eseries_nvme_controller_loss_timeout),
+                            "hostnqn": hostnqn_output["stdout"],
+                            "nqn": host_port_information["nqn"] }}) -%}{%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+          {{- targets -}}
+
+    - name: Determine expected and active arrays from NVMe targets.
+      ansible.builtin.set_fact:
+        _nvme_expected_arrays: |-
+          {%- set arrays = [] -%}
+          {%- for volume in initiator_volume_facts
+              if volume["host_port_information"][eseries_nvme_protocol] is defined -%}
+            {%- if volume["ansible_array_name"] not in arrays -%}
+              {%- if arrays.append(volume["ansible_array_name"]) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{- arrays -}}
+        _nvme_active_arrays: |-
+          {%- set arrays = [] -%}
+          {%- for key, target in targets.items() -%}
+            {%- if target["array_name"] not in arrays -%}
+              {%- if arrays.append(target["array_name"]) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{- arrays -}}
+      changed_when: false
+
+    - name: Determine storage arrays with no active NVMe ports.
+      ansible.builtin.set_fact:
+        _nvme_missing_arrays: "{{ _nvme_expected_arrays | difference(_nvme_active_arrays) }}"
+      changed_when: false
+
+    - name: Fail if any storage array has no active NVMe ports.
+      ansible.builtin.fail:
+        msg: >-
+          One or more storage arrays have no active NVMe ports after {{ _nvme_discovery_retries }} attempts.
+          Arrays with no active ports: {{ _nvme_missing_arrays }}.
+          Check physical connections and interface configuration for the affected arrays.
+      when: _nvme_missing_arrays | length > 0
+
+    - name: Create NVMe service daemon connections file.
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/service/nvme_connections.j2') }}"
+        dest: "{{ eseries_nvme_daemon_path }}{{ eseries_nvme_connections_file }}"
+        mode: "0644"
+      register: nvme_connections
+      become: true
+
+    - name: Create NVMe service daemon.
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/service/nvme_daemon.j2') }}"
+        dest: "{{ eseries_nvme_daemon_path }}{{ eseries_nvme_daemon_name }}"
+        mode: "0755"
+      register: nvme_daemon
+      become: true
+
+    - name: Create NVMe systemd service file.
+      ansible.builtin.template:
+        src: "{{ lookup('netapp_eseries.host.eseries_template_path', 'configure/service/nvme_service.j2') }}"
+        dest: "{{ eseries_nvme_service_path }}{{ eseries_nvme_service_name }}"
+        mode: "0644"
+      register: nvme_service
+      become: true
+
+    - name: Ensure NVMe service is running.
+      ansible.builtin.systemd:
+        name: "{{ eseries_nvme_service_name }}"
+        state: "{% if nvme_connections['changed'] or nvme_daemon['changed'] or nvme_service['changed'] %}reloaded{% else %}started{% endif %}"
+        enabled: true
+        daemon_reload: true
+      register: nvme_service_start
+      become: true
+
+    - name: Wait for NVMe service to complete.
+      ansible.builtin.shell: "systemctl --state=exited | grep {{ eseries_nvme_service_name }}"
+      become: true
+      changed_when: false
+      register: command_result
+      retries: 60
+      delay: 2
+      until: command_result['rc'] == 0
+      failed_when: (_nvme_require_all_interfaces | bool) and (command_result['rc'] != 0)
+      when: nvme_service_start['changed']
+
+  when: eseries_nvme_protocol in ['nvme_ib', 'nvme_roce']
+
+# TODO: This should enable NVMe systemd service for discover/connect to targets via udev triggers.
+# - name: Configure service for NVMe over Fibre Channel
+#   block:
+#   when: eseries_nvme_protocol in ['nvme_fc']

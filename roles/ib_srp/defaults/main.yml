@@ -1,0 +1,3 @@
+eseries_ib_srp_daemon_service: /etc/systemd/system/srp_daemon.service
+
+eseries_ib_srp_uninstall: false  # Whether to uninstall ib_srp role.

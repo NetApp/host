@@ -1,0 +1,22 @@
+all:
+  children:
+
+    # Example inventory group for all E-Series storage systems.
+    eseries_storage_systems:
+      vars:
+        # Add group role variables here or group_vars/eseries_storage_systems.yml
+      hosts:
+        eseries_ib_iser_example_array:
+          # Add variables here or to host_vars/eseries_array.yml
+        eseries_iscsi_example_array:
+          # Add variables here or to host_vars/eseries_array.yml
+
+    # Example inventory group for all hosts connecting to E-Series storage systems.
+    eseries_hosts:
+      vars:
+        # Add group role variables here or group_vars/eseries_hosts.yml
+      hosts:
+        eseries_ib_iser_example_host:
+          # Add role variables here or to host_vars/eseries_ib_iser_example_host.yml
+        eseries_iscsi_example_host:
+          # Add role variables here or to host_vars/eseries_iscsi_example_host.yml

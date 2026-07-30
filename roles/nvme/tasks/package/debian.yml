@@ -1,0 +1,5 @@
+- name: Ensure expected NVMe packages are installed (Ubuntu).
+  ansible.builtin.apt:
+    state: present
+    name: "{{ eseries_nvme_ubuntu_packages }}"
+  become: true

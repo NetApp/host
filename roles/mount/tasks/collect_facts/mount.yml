@@ -1,0 +1,93 @@
+- name: Collect volume mount info.
+  ansible.builtin.include_tasks: collect_facts/volume_mount_info.yml
+
+- name: Determine which host should handle the formatting if needed.
+  set_fact:
+    format_volumes_by_host: |-
+      {%- set info = {} -%}
+      {%- set volume_accounted_for = [] -%}
+
+      {#- Search each host in the inventory for eseries_volumes -#}
+      {%- for host in (hostvars.keys() | list) -%}
+        {%- if "eseries_volumes" in (hostvars[host].keys() | list) -%}
+
+          {#- Append volume information to host entry if its the first time the volume is encountered -#}
+          {%- if info.update({host: []}) -%}{%- endif -%}
+          {%- for volume in hostvars[host]["eseries_volumes"] if volume["ignore_volume"] == False -%}
+            {%- set primary_node = volume["volume_metadata"]["primary_node"] | default(host) -%}
+            {%- if (volume["wwn"] ~ volume["eui"] not in volume_accounted_for) and (primary_node == host) -%}
+              {%- if volume_accounted_for.append(volume["wwn"] ~ volume["eui"]) -%}{%- endif -%}
+
+              {#- Determine file system and mounting parameters -#}
+              {%- set force_format = volume['volume_metadata']['force_format'] | default(False) -%}
+              {%- set volume_fs_type = volume['volume_metadata'].get('mount_type') -%}
+              {%- set fs_type = volume_fs_type
+                                | default(hostvars[host]['eseries_mount_format_type']
+                                | default(eseries_mount_format_type)) -%}
+              {%- set segment_size_kb = volume['segment_size_kb'] | int -%}
+              {%- set stripe_count = volume['stripe_count'] | int -%}
+              {%- set volume_block_size_kb = volume['volume_metadata']
+                                             .get('block_size_kb', volume.get('block_size_kb', 4))
+                                             | int -%}
+              {%- set auto_stride = (segment_size_kb // volume_block_size_kb) -%}
+              {%- set auto_stripe_width = auto_stride * stripe_count -%}
+
+              {%- set base_fs_options = volume['volume_metadata']['format_options']
+                                        | default(hostvars[host]['eseries_mount_format_options']
+                                        | default(hostvars[host]['eseries_mount_format_type_options'][fs_type]
+                                        | default(hostvars[host]['eseries_mount_format_type_options']
+                                        [eseries_mount_format_type]
+                                        | default(eseries_mount_format_type_options[eseries_mount_format_type])))) -%}
+              {%- set fs_options = base_fs_options
+                                   | regex_replace('VOLUME_SEGMENT_SIZE_KB', segment_size_kb | string)
+                                   | regex_replace('VOLUME_STRIPE_COUNT', stripe_count | string)
+                                   | regex_replace('AUTO_STRIDE', auto_stride | string)
+                                   | regex_replace('AUTO_STRIPE_WIDTH', auto_stripe_width | string) -%}
+
+              {%- set mgsnode_values = volume["volume_metadata"]
+                                        | dict2items
+                                        | selectattr('key', 'match', '^mgsnode')
+                                        | map(attribute='value')
+                                        | list -%}
+              {%- set servicenode_values = volume["volume_metadata"]
+                                        | dict2items
+                                        | selectattr('key', 'match', '^servicenode')
+                                        | map(attribute='value')
+                                        | list -%}
+              {%- set mkfsoptions = volume["volume_metadata"].get("mkfsoptions", "")
+                                   | regex_replace('VOLUME_SEGMENT_SIZE_KB', segment_size_kb | string)
+                                   | regex_replace('VOLUME_STRIPE_COUNT', stripe_count | string)
+                                   | regex_replace('AUTO_STRIDE', auto_stride | string)
+                                   | regex_replace('AUTO_STRIPE_WIDTH', auto_stripe_width | string) -%}
+              {%- set ns = namespace(fs_options=fs_options) -%}
+
+              {%- for mgsnode in mgsnode_values -%}
+                {%- set ns.fs_options = ns.fs_options ~ ' --mgsnode="' ~ mgsnode ~ '"' -%}
+              {%- endfor %}
+
+              {%- for servicenode in servicenode_values -%}
+                {%- set ns.fs_options = ns.fs_options ~ ' --servicenode="' ~ servicenode ~ '"' -%}
+              {%- endfor %}
+
+              {%- if mkfsoptions | length > 0 -%}
+                {%- set ns.fs_options = ns.fs_options ~ ' --mkfsoptions="' ~ mkfsoptions ~ '"' -%}
+              {%- endif %}
+
+              {%- set fs_options = ns.fs_options %}
+
+              {#- Append volume info volume_mount_info -#}
+              {%- if info[host].append({"name": volume["name"],
+                                  "wwn": volume["wwn"],
+                                  "host_wwid": volume["host_wwid"],
+                                  "eui": volume["eui"],
+                                  "path": volume["path"],
+                                  "primary_node": primary_node,
+                                  "force_format": force_format,
+                                  "fs_type": fs_type,
+                                  "fs_options": fs_options}) -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- info -}}
+  run_once: true

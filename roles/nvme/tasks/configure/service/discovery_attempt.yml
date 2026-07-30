@@ -1,0 +1,49 @@
+- name: Discover mapped-volume information from associated storage systems (attempt {{ (_nvme_discovery_attempt | int) + 1 }}/{{ _nvme_discovery_retries }}).
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: gather_storage_facts.yml
+
+- name: Build initiator volume facts for NVMe target discovery (attempt {{ (_nvme_discovery_attempt | int) + 1 }}/{{ _nvme_discovery_retries }}).
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: volume_facts.yml
+
+- name: Collect NVMe discovery interface status for this attempt.
+  ansible.builtin.set_fact:
+    _nvme_discovery_expected_interfaces: "{{ eseries_nvme_interfaces | map(attribute='name') | list }}"
+    _nvme_discovery_matched_interfaces: |-
+      {%- set matched = [] -%}
+      {%- for volume in initiator_volume_facts if volume["host_port_information"][eseries_nvme_protocol] is defined -%}
+        {%- for host_port_information in volume["host_port_information"][eseries_nvme_protocol] -%}
+          {%- if host_port_information["link_status"] in ["up", "active"] and host_port_information["ipv4"] -%}
+            {%- for interface_info in eseries_nvme_interfaces -%}
+              {%- if host_port_information["ipv4"]["address"] | ansible.utils.ipaddr(interface_info["address"]) -%}
+                {%- if interface_info["name"] not in matched and matched.append(interface_info["name"]) -%}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{- matched -}}
+  changed_when: false
+
+- name: Compute missing NVMe interfaces for this attempt.
+  ansible.builtin.set_fact:
+    _nvme_discovery_missing_interfaces: "{{ _nvme_discovery_expected_interfaces | difference(_nvme_discovery_matched_interfaces) }}"
+  changed_when: false
+
+- name: Evaluate NVMe target discovery readiness for this attempt.
+  ansible.builtin.set_fact:
+    _nvme_discovery_ready: >-
+      {{
+        (_nvme_require_all_interfaces and ((_nvme_discovery_expected_interfaces | length > 0) and (_nvme_discovery_missing_interfaces | length == 0))) or
+        ((not _nvme_require_all_interfaces) and (_nvme_discovery_matched_interfaces | length > 0))
+      }}
+  changed_when: false
+
+- name: Wait before next NVMe discovery attempt.
+  ansible.builtin.pause:
+    seconds: "{{ _nvme_discovery_delay }}"
+  when:
+    - not _nvme_discovery_ready
+    - ((_nvme_discovery_attempt | int) + 1) < (_nvme_discovery_retries | int)

@@ -1,0 +1,6 @@
+- name: Ensure eseries_nvme_fc.service is configured.
+  include_tasks: services/eseries_nvme_fc.yml
+
+- name: Ensure NVMe-FC persistent connections using nvme-boot-connections.service.
+  include_tasks: services/nvmefc_boot_connections.yml
+  when: eseries_nvme_fc_use_nvmefc_boot_connections == True

@@ -1,0 +1,31 @@
+eseries_nvme_ib_configure_network: true
+eseries_nvme_ib_configure_firewall: true
+eseries_nvme_ib_udev_name: 99-eseries_nvme_ib_udev.rules
+eseries_nvme_ib_udev_rules: {}
+
+eseries_nvme_ib_port: 4420
+eseries_nvme_ib_queue_depth: 1024
+eseries_nvme_ib_controller_loss_timeout: 3600
+eseries_nvme_ib_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
+
+eseries_nvme_ib_interface_common: {}
+eseries_nvme_ib_interface_defaults: {}
+
+eseries_nvme_ib_interface_network_manager_options: {}
+eseries_nvme_ib_interface_network_manager_defaults:
+  infiniband:
+    transport-mode: datagram
+    mtu: 2044
+
+# eseries_nvme_ib_firewall_zone:  # Determined at runtime
+eseries_nvme_ib_default_hook_templates: []
+eseries_nvme_ib_interface_required_keys:
+  - name
+  - address
+eseries_nvme_ib_interface_ignore_keys:
+  - address
+  - hook_templates
+  - configure
+  - mstconfig
+
+eseries_nvme_ib_uninstall: false  # Whether to uninstall nvme_ib role.

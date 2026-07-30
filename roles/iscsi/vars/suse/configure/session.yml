@@ -1,0 +1,2 @@
+eseries_iscsi_initiator_service: iscsi.service
+eseries_iscsi_node_path: /etc/iscsi/nodes/

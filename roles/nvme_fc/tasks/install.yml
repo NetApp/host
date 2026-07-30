@@ -1,0 +1,14 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure all packages are installed for NVMe over Fibre Channel.
+  ansible.builtin.include_tasks: "package/{{ ansible_os_family | lower }}.yml"
+
+- name: Ensure volumes are discovered by host.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: volume_facts.yml
+  when: netapp_volumes_by_initiators is not defined
+
+- name: Ensure NVMe over Fibre Channel is configured.
+  ansible.builtin.include_tasks: configure.yml

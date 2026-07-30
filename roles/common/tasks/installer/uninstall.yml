@@ -1,0 +1,5 @@
+- name: "Uninstall {{ eseries_common_package_group }} packages and modules."
+  include_tasks: installer/execute.yml
+  loop: "{{ eseries_common_custom_packages['uninstall'] | default([]) }}"
+  loop_control:
+    loop_var: execute_config

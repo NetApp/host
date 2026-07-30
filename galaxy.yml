@@ -1,0 +1,24 @@
+namespace: "netapp_eseries"
+description: "Configure your host storage connection for iSCSI, InfiniBand, and NVMe; Discover mapped E-Series volumes, format them to your specifications, and assign persistent mount points to them."
+name: "host"
+version: "2.0.2"
+readme: "README.md"
+authors:
+  - "Vu Tran (@VuTran007)"
+  - "Christian Whiteside (@mcwhiteside)"
+dependencies:
+  "ansible.posix": "*"
+  "ansible.utils": "*"
+  "community.general": "*"
+  "ansible.windows": "*"
+  "netapp_eseries.santricity": ">=2.0.2"
+license:
+  - "BSD-3-Clause"
+repository: "https://www.github.com/netapp/host"
+tags:
+  - netapp
+  - eseries
+  - santricity
+  - storage
+homepage: "https://www.github.com/netapp/host"
+issues: "https://github.com/netapp/host/issues"

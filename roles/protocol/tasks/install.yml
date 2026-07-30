@@ -1,0 +1,8 @@
+- name: Discover mapped-volume information from associated storage systems.
+  ansible.builtin.include_role:
+    name: netapp_eseries.host.common
+    tasks_from: volume_facts.yml
+  when: netapp_volumes_by_initiators is not defined
+
+- name: Setup expected host protocol.
+  ansible.builtin.include_tasks: protocol.yml

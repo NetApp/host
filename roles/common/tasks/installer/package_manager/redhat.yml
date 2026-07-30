@@ -1,0 +1,70 @@
+- name: Discover existing yum .repo files.
+  ansible.builtin.find:
+    paths: /etc/yum.repos.d
+    patterns: '*.repo'
+    file_type: file
+  register: _common_yum_repo_files_result
+  changed_when: false
+  failed_when: false
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Discover existing dnf .repo files.
+  ansible.builtin.find:
+    paths: /etc/dnf/repos.d
+    patterns: '*.repo'
+    file_type: file
+  register: _common_dnf_repo_files_result
+  changed_when: false
+  failed_when: false
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Disable existing yum/dnf repositories.
+  ansible.builtin.replace:
+    path: '{{ item }}'
+    regexp: '^(enabled\s*=\s*)1\s*$'
+    replace: '\g<1>0'
+  loop: >-
+    {{
+      (
+        _common_yum_repo_files_result.files
+        | default([])
+        | map(attribute='path')
+        | list
+      )
+      +
+      (
+        _common_dnf_repo_files_result.files
+        | default([])
+        | map(attribute='path')
+        | list
+      )
+    }}
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Add yum repositories (RedHat/Rocky/CentOS).
+  ansible.builtin.yum_repository:
+    name: '{{ item.name }}'
+    description: '{{ item.description | default(item.name) }}'
+    baseurl: '{{ item.url }}'
+    enabled: '{{ item.enabled | default(omit) }}'
+    gpgcheck: '{{ item.gpgcheck | default(omit) }}'
+    gpgkey: '{{ item.gpgkey | default(omit) }}'
+    sslverify: '{{ item.sslverify | default(omit) }}'
+    repo_gpgcheck: '{{ item.repo_gpgcheck | default(omit) }}'
+    priority: '{{ item.priority | default(omit) }}'
+  loop: '{{ eseries_common_yum_repos }}'
+
+- name: Refresh dnf metadata cache to verify repository reachability.
+  block:
+    - name: Refresh dnf metadata cache.
+      ansible.builtin.command: dnf makecache --refresh
+      changed_when: false
+      register: _common_repo_check_result
+  rescue:
+    - name: Fail with clear dnf repository reachability message.
+      ansible.builtin.fail:
+        msg: >-
+          Package repository reachability check failed. The host cannot reach one or more
+          configured yum/dnf repositories. Common causes include missing DNS configuration,
+          no network route to the mirror, or a proxy misconfiguration.
+          Error: {{ _common_repo_check_result.stderr }}

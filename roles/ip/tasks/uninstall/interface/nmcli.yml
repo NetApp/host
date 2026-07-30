@@ -1,0 +1,30 @@
+- name: Include operating specific variables.
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}/interface/nmcli.yml"
+
+- name: Ensure nmcli configuration files are removed for each interface.
+  ansible.builtin.file:
+    state: absent
+    path: "{{ eseries_ip_nmcli_path }}ifcfg-{{ item['name'] }}"
+  register: ifcfg
+  loop: "{{ eseries_ip_interfaces }}"
+  become: true
+
+- name: Delete address from interface.
+  ansible.builtin.command: "ip address delete {{ item['address'] }} dev {{ item['name'] }}"
+  register: ip_delete
+  changed_when: ip_delete['rc'] == 0
+  failed_when: false
+  loop: "{{ eseries_ip_interfaces }}"
+  become: true
+
+- name: Reload changed interfaces.
+  ansible.builtin.command: "nmcli connection reload"
+  when: update_interfaces | length > 0
+  become: true
+  vars:
+    update_interfaces: |-
+      {%- set interfaces = [] -%}
+      {%- for result in ifcfg["results"] if result["changed"] -%}
+        {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
+      {%- endfor -%}
+      {{- interfaces -}}

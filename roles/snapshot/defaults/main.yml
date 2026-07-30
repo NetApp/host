@@ -1,0 +1,12 @@
+eseries_snapshot_pit_safe: true           # Whether to wait for all files to be close, sync and unmount volume before taking a point-in-time snapshot
+                                          #   image; otherwise, a simple filesystem suspend (dmsetup suspend) will be issued (Default: True).
+eseries_snapshot_pit_timeout_sec: 600     # Maximum time to wait for files to closes when I(eseries_snapshot_pits_safe==True)
+eseries_snapshot_pits:                    # List of consistency group point-in-time snapshot definitions.
+  - group_name:                           # Snapshot consistency group name
+    pit_name:                             # (Optional) Name for the point-in-time snapshot.
+    pit_description:                      # (Optional) Description for the point-in-time snapshot.
+    volumes:                              # (Optional) List of volumes that are a subset of the consistency group's volume members.
+
+eseries_snapshot_rhel_packages: []        # Any required packages for RHEL distributions.
+eseries_snapshot_suse_packages: []        # Any required packages for SLES distributions.
+eseries_snapshot_ubuntu_packages: []      # Any required packages for Ubuntu distributions.

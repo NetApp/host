@@ -1,0 +1,14 @@
+- name: Determine firewall services.
+  ansible.builtin.service_facts:
+  become: true
+
+- name: Apply firewall configuration. 
+  block:
+  - name: Configure firewalld service.
+    ansible.builtin.include_tasks: interface/firewall_zone/install/firewalld.yml
+    when: ansible_facts["services"]["firewalld.service"] is defined
+
+  - name: Configure ufw service.
+    ansible.builtin.include_tasks: interface/firewall_zone/install/ufw.yml
+    when: ansible_facts["services"]["ufw.service"] is defined
+  when: eseries_ip_configure_firewall | bool

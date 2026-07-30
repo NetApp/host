@@ -1,0 +1,61 @@
+- name: Get the multipathd maps
+  ansible.builtin.command: multipathd show maps raw format "%w,%n,%s"
+  register: multipath_maps
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Find mapped volume paths on the host.
+  set_fact:
+    volume_paths: |-
+      {%- set paths = {} -%}
+      {%- for volume in initiator_volume_facts -%}
+        {%- if paths.update({volume["name"]: {"path": "", "host_wwid": "", "host_port_protocols": volume["host_port_protocols"]}}) -%}{%- endif -%}
+      {%- endfor -%}
+      {%- for volume in initiator_volume_facts -%}
+        {%- for map in multipath_maps["stdout_lines"] | default([])-%}
+          {%- set map_info = map.split(",") -%}
+
+          {%- if (volume["wwn"] and map_info[0] | regex_search(volume["wwn"], ignorecase=True)) or
+                 (volume["eui"] and map_info[0] | regex_search(volume["eui"], ignorecase=True)) -%}
+
+            {%- if map_info[2] | regex_search("NVMe", ignorecase=True) -%}
+              {%- if paths[volume["name"]].update({"path": "/dev/disk/by-id/nvme-" ~ map_info[0], "host_wwid": map_info[0]}) -%}{%- endif -%}
+            {%- else -%}
+              {%- if paths[volume["name"]].update({"path": "/dev/mapper/" ~ map_info[1], "host_wwid": map_info[0]}) -%}{%- endif -%}
+            {%- endif -%}
+
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ paths }}
+
+- name: Determine the protocols for which mapped volumes are missing.
+  set_fact:
+    rescan_protocols: |-
+      {%- set rescan = [] -%}
+      {%- for key, value in volume_paths.items() -%}
+        {%- if value["path"] == "" -%}
+          {%- for protocol in value["host_port_protocols"] if protocol in eseries_common_discovery_protocol_list and protocol not in rescan -%}
+            {%- if rescan.append(protocol) -%}{%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ rescan }}
+
+- name: Determine required rescan actions.
+  set_fact:
+    rescan_actions: |-
+      {%- set actions = [] -%}
+      {%- for protocol in rescan_protocols -%}
+        {%- if protocol in eseries_common_discovery_protocol_list and "rescan" not in actions -%}
+          {%- if actions.append("rescan") -%}{%- endif -%}
+        {%- endif -%}
+        {%- if protocol in eseries_common_discovery_rescan_iscsi_session_protocol_list and "rescan_iscsi_sessions" not in actions  -%}
+          {%- if actions.append("rescan_iscsi_sessions") -%}{%- endif -%}
+        {%- endif -%}
+        {%- if protocol in eseries_common_discovery_rescan_scsi_bus_protocol_list and "rescan_scsi_bus" not in actions -%}
+          {%- if actions.append("rescan_scsi_bus") -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- actions -}}
