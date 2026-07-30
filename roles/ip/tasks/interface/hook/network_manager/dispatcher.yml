@@ -91,12 +91,9 @@
       {%- set hook_up_cmds = [] -%}
       {%- for hooks_result in hooks["results"] if hooks_result["changed"] -%}
         {%- set interface = hooks_result["item"]["interface"]["name"] -%}
-
-        {%- for hooks_stats_result in hooks_stats["results"]
-              if hooks_stats_result["item"]["interface"]["name"] == interface and interface not in changed_interfaces and
-                 hooks_stats_result["stat"]["exists"] and interface in up_interfaces -%}
+        {%- if interface not in changed_interfaces and interface in up_interfaces -%}
           {%- set hook_path = eseries_ip_network_manager_dispatcher_d ~ hooks_result["item"]["filename"] -%}
           {%- if hook_up_cmds.append(hook_path ~ " " ~ interface ~ " up") -%}{%- endif -%}
-        {%- endfor -%}
+        {%- endif -%}
       {%- endfor -%}
       {{- hook_up_cmds -}}

@@ -1,3 +1,11 @@
+- name: Check whether configured services are active before reboot.
+  ansible.builtin.command: "systemctl is-active --quiet {{ item }}"
+  changed_when: false
+  failed_when: false
+  register: _reboot_service_states_before
+  loop: "{{ eseries_common_reboot_restart_services }}"
+  become: true
+
 - name: Reboot nodes.
   ansible.builtin.reboot:
     test_command: "systemctl is-active default.target"
@@ -14,3 +22,11 @@
   delay: 5
   until: command_result['rc'] == 0
   when: eseries_common_reboot_test_command is defined
+
+- name: Ensure configured services are running after reboot when they were active before reboot.
+  ansible.builtin.systemd:
+    name: "{{ item.item }}"
+    state: started
+  when: item.rc == 0
+  loop: "{{ _reboot_service_states_before.results | default([]) }}"
+  become: true

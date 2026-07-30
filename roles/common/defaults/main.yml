@@ -1,9 +1,16 @@
 eseries_common_group: eseries_storage_systems
 eseries_common_allow_host_reboot: true
 eseries_common_allow_host_reboot_reason: "Reboot is required."
+eseries_common_reboot_restart_services: []  # List of systemd services to check before reboot and restart after (if they were active). Example: [pacemaker.service, pacemaker]
 eseries_common_package_group: common  # This variable can be used to override the task name package group description.
 eseries_common_allow_upgrades: false
 eseries_common_skip_package_validation: false
+
+# Package manager repository controls.
+eseries_common_existing_repos_disabled: false
+eseries_common_yum_repos: []
+eseries_common_apt_repos: []
+
 eseries_common_custom_packages: {}
 #  files:
 #    "<source>": "<destination>"

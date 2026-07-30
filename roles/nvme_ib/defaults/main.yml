@@ -24,7 +24,7 @@ eseries_nvme_ib_interface_required_keys:
   - address
 eseries_nvme_ib_interface_ignore_keys:
   - address
-  - hook_template
+  - hook_templates
   - configure
   - mstconfig
 

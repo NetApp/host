@@ -1,0 +1,102 @@
+- name: Discover existing apt .list repository files.
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: '*.list'
+    file_type: file
+  register: _common_apt_list_files_result
+  changed_when: false
+  failed_when: false
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Discover existing deb822 apt repository files.
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: '*.sources'
+    file_type: file
+  register: _common_apt_sources_files_result
+  changed_when: false
+  failed_when: false
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Disable existing apt repositories.
+  ansible.builtin.replace:
+    path: '{{ item }}'
+    regexp: '^(deb(?:-src)?\s+.*)$'
+    replace: '# \1'
+  loop: >-
+    {{
+      ['/etc/apt/sources.list']
+      +
+      (
+        _common_apt_list_files_result.files
+        | default([])
+        | map(attribute='path')
+        | list
+      )
+    }}
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Disable existing deb822 apt repositories.
+  ansible.builtin.replace:
+    path: '{{ item }}'
+    regexp: '^(Enabled:\s*)yes\s*$'
+    replace: '\1no'
+  loop: >-
+    {{
+      _common_apt_sources_files_result.files
+      | default([])
+      | map(attribute='path')
+      | list
+    }}
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Ensure trusted GPG keyring directory exists.
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d
+    state: directory
+    mode: '0755'
+
+- name: Download GPG keys for apt repositories (Debian/Ubuntu).
+  ansible.builtin.command: >-
+    curl -fsSL
+    {{ '--insecure' if not (item['sslverify'] | bool) else '' }}
+    "{{ item['gpgkey'] }}"
+    -o "{{ item['keyring'] | default('/etc/apt/trusted.gpg.d/' + (item['gpgkey'] | basename)) }}"
+  loop: '{{ eseries_common_apt_repos }}'
+  when: item['gpgkey'] | default('') | length > 0
+
+- name: Add apt repositories (Debian/Ubuntu).
+  ansible.builtin.apt_repository:
+    state: present
+    filename: '{{ item[''filename''] }}'
+    repo: >-
+      {{ item['type'] }}
+      [{{ item['options'] | join(' ') }}]
+      {{ item['url'] }}
+      {{ item['suite'] }}
+      {{ item['components'] | default([]) | join(' ') }}
+    update_cache: true
+  loop: '{{ eseries_common_apt_repos }}'
+
+- name: Disable default apt sources.list entries.
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '^(deb(?:-src)?\s+.*)$'
+    replace: '# \1'
+    backup: true
+  when: eseries_common_existing_repos_disabled | bool
+
+- name: Refresh apt metadata cache to verify repository reachability.
+  block:
+    - name: Refresh apt metadata cache.
+      ansible.builtin.apt:
+        update_cache: true
+      register: _common_repo_check_result
+  rescue:
+    - name: Fail with clear apt repository reachability message.
+      ansible.builtin.fail:
+        msg: >-
+          Package repository reachability check failed. The host cannot reach one or more
+          configured apt repositories. Common causes include missing DNS configuration,
+          no network route to the mirror, or a proxy misconfiguration.
+          Error: {{ _common_repo_check_result.msg }}

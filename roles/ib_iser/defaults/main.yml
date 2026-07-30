@@ -20,7 +20,7 @@ eseries_ib_iser_interface_required_keys:
   - address
 eseries_ib_iser_interface_ignore_keys:
   - address
-  - hook_template
+  - hook_templates
   - iface
   - node
   - configure

@@ -9,16 +9,18 @@ eseries_common_ignore_volumes:             # List of volumes to ignore (Default:
 
 eseries_mount_volumes:                    # List of volumes to mount (Default: ["all_volumes"].
 eseries_mount_format_type:                # Volume format type (Default: xfs)
-eseries_mount_format_options:             # Volume format type options (Default: -d su=VOLUME_SEGMENT_SIZE_KBk,sw=VOLUME_STRIPE_COUNT -l version=2,su=VOLUME_SEGMENT_SIZE_KBk)
+eseries_mount_format_options:             # Volume format type options where:
                                           #   VOLUME_SEGMENT_SIZE_KB will be replaced with the volume's segment size in kilobytes.
                                           #   VOLUME_STRIPE_COUNT will be replaced with the volume's RAID stripe count.
+                                          #   AUTO_STRIDE will be replaced with (segment_size_kb / block_size_kb).
+                                          #   AUTO_STRIPE_WIDTH will be replaced with (AUTO_STRIDE * stripe_count).
 eseries_mount_persistent_mount_options:   # Volume mount options (Default: _netdev)
 eseries_mount_root_directory:             # Volume mount path directory. (Default: /mnt/)
 eseries_mount_force_format:               # WARNING! Forces the file system to be applied regardless whether one exists. Note that this option is not idempotent and it is recommended to set using --extra-vars.
 
 Tips
 ----
-Add mount_to_hosts, format_type, format_options, mount_dir, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See inventory example below and SANtricity collection for more details.
+Add mount_to_hosts, mount_type, format_options, mount_dir, mount_options to the volume's volume_metadata tags to provide information for mounting. This can be done with netapp_eseries.santricity.nar_santricity_host role. See inventory example below and SANtricity collection for more details.
 
     mount_to_hosts
     # Example inventory structure for E-Series storages system.

@@ -1,41 +1,5 @@
-- name: Mark all eseries volumes for mounting details
-  set_fact:
-    volume_mount_info: |-
-      {%- set info = [] -%}
-      {%- for volume in eseries_volumes if volume["ignore_volume"] == False -%}
-
-        {#- Determine hosts that should which volumes mounted -#}
-        {%- set is_mount_to_hosts_defined = "volume_metadata" in (volume.keys() | list) and "mount_to_hosts" in (volume["volume_metadata"].keys() | list) -%}
-        {%- set mounts_by_host = (volume["volume_metadata"]["mount_to_hosts"] | default("")).split(",") -%}
-        {%- set mounts_by_volume = eseries_mount_volumes | default([]) -%}
-
-        {%- if (is_mount_to_hosts_defined and inventory_hostname in mounts_by_host) or
-               (not is_mount_to_hosts_defined and (volume["name"] in mounts_by_volume or "all_volumes" in mounts_by_volume)) -%}
-
-          {#- Determine file system and mounting parameters -#}
-          {%- set fs_type = volume['volume_metadata']['format_type'] | default(hostvars[inventory_hostname]["eseries_mount_format_type"] | default(eseries_mount_format_type)) -%}
-          {%- set fs_options = volume['volume_metadata']['format_options'] |
-                               default(hostvars[inventory_hostname]['eseries_mount_format_options'] |
-                               default(hostvars[inventory_hostname]['eseries_mount_format_type_options'][volume['volume_metadata']['format_type']] |
-                               default(hostvars[inventory_hostname]['eseries_mount_format_type_options'][eseries_mount_format_type] |
-                               default(eseries_mount_format_type_options[eseries_mount_format_type])))) | regex_replace("VOLUME_SEGMENT_SIZE_KB", volume["segment_size_kb"] | string)
-                                                                                                        | regex_replace("VOLUME_STRIPE_COUNT", volume["stripe_count"] | string) -%}
-          {%- set mount_options = volume["volume_metadata"]["mount_options"] | default(eseries_mount_persistent_mount_options) -%}
-          {%- set mount_directory = (volume["volume_metadata"]["mount_dir"] | default(eseries_mount_root_directory)) | regex_replace('//*$', '') -%}
-
-          {#- Append volume info volume_mount_info -#}
-          {%- if info.append({"name": volume["name"],
-                              "wwn": volume["wwn"],
-                              "host_wwid": volume["host_wwid"],
-                              "eui": volume["eui"],
-                              "path": volume["path"],
-                              "fs_type": fs_type,
-                              "fs_options": fs_options,
-                              "mount_options": mount_options,
-                              "mount_directory": mount_directory ~ "/" ~ volume["name"]}) -%}{%- endif -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {{- info -}}
+- name: Collect volume mount info.
+  ansible.builtin.include_tasks: collect_facts/volume_mount_info.yml
 
 - name: Get the multipathd maps
   ansible.builtin.command: multipathd show maps raw format "%w,%n,%N,%v,%p"

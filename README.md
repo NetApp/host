@@ -23,6 +23,7 @@ specifications, and assign persistent mount points to them.
     - [Unmount](#unmount)
     - [Snapshot](#snapshot)
   - [Support Roles](#support-roles)
+    - [Common](#common)
     - [Protocol](#protocol)
     - [Multipath](#multipath)
     - [SELinux](#selinux)
@@ -102,6 +103,13 @@ The snapshot role attempts to create filesystem safe point-in-time snapshot imag
 ## Support Roles
 
 Support Role are intended to aid the feature roles but may be called directly in unique situations.
+
+<a name="common"></a>
+### Common
+
+The common role provides shared host setup helpers used by other roles, including inventory fact collection,
+host reboot coordination, and OS package-manager repository controls. See
+[netapp_eseries.host.common documentation](roles/common/README.md) for details.
 
 <a name="protocol"></a>
 ### Protocol

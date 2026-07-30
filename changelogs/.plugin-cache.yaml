@@ -6,6 +6,7 @@ plugins:
   callback: {}
   cliconf: {}
   connection: {}
+  filter: {}
   httpapi: {}
   inventory: {}
   lookup:
@@ -20,8 +21,14 @@ plugins:
       name: file_list
       namespace: ''
       version_added: null
+    update_conf:
+      description: Update configuration file
+      name: update_conf
+      namespace: ''
+      version_added: null
   netconf: {}
   shell: {}
   strategy: {}
+  test: {}
   vars: {}
-version: 1.3.3
+version: 2.0.2

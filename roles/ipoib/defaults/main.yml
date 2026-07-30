@@ -24,7 +24,7 @@ eseries_ipoib_interface_required_keys:
   - address
 eseries_ipoib_interface_ignore_keys:
   - address
-  - hook_template
+  - hook_templates
   - configure
   - mstconfig
 

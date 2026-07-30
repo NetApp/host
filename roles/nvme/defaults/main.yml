@@ -6,6 +6,9 @@ eseries_nvme_port: 4420
 eseries_nvme_queue_depth: 1024
 eseries_nvme_controller_loss_timeout: 3600
 eseries_nvme_nqn_command: grep -o nqn.* /etc/nvme/hostnqn  # This command must return the system iqn.
+eseries_nvme_require_all_interfaces: true
+eseries_nvme_target_discovery_retries: 30
+eseries_nvme_target_discovery_delay: 10
 
 #eseries_nvme_service_name: #eseries_nvme.service - GENERATED
 #eseries_nvme_daemon_name: #eseries_nvme_daemon - GENERATED

@@ -123,12 +123,9 @@
       {%- set hook_routable_cmds = [] -%}
       {%- for hooks_result in hooks["results"] if hooks_result["changed"] -%}
         {%- set interface = hooks_result["item"]["interface"]["name"] -%}
-
-        {%- for hooks_stats_result in hooks_stats["results"]
-              if hooks_stats_result["item"]["interface"]["name"] == interface and interface not in changed_interfaces and
-                 hooks_stats_result["stat"]["exists"] and interface in up_interfaces -%}
-          {%- set hook_path = eseries_ip_networkd_dispatcher ~ hooks_result["item"]["filename"] -%}
+        {%- if interface not in changed_interfaces and interface in up_interfaces -%}
+          {%- set hook_path = eseries_ip_networkd_dispatcher ~ "routable.d/" ~ hooks_result["item"]["filename"] -%}
           {%- if hook_routable_cmds.append("IFACE=" ~ interface ~ " STATE=routable " ~ hook_path) -%}{%- endif -%}
-        {%- endfor -%}
+        {%- endif -%}
       {%- endfor -%}
       {{- hook_routable_cmds -}}

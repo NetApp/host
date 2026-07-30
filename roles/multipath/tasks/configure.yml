@@ -47,6 +47,16 @@
     daemon_reload: true
   become: true
 
+# multipathd's startup triggers a transient scan/claim attempt on every block device,
+# including the boot disk, which generates a burst of device-mapper and udev activity
+# If dracut runs immediately after multipathd starts, its systemd-cat logging handoff
+# to journald can race with this churn and hang indefinitely.
+# Waiting for the udev queue to settle here closes that window.
+- name: Wait for udev queue to settle after multipathd startup.
+  ansible.builtin.command: "udevadm settle --timeout={{ eseries_multipath_settle_timeout }}"
+  changed_when: false
+  become: true
+
 # Based on testing we have to rebuild initramfs after running the above tasks.
 # Otherwise if the boot device is picked up by multipath Linux will drop in to emergency mode after a reboot.
 - name: Ensure initramfs includes multipath support.

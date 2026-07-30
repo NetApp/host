@@ -51,6 +51,7 @@
   ansible.builtin.command: "nmcli connection reload"
   when: update_interfaces | length > 0
   become: true
+  register: reload_interfaces
   vars:
     update_interfaces: |-
       {%- set interfaces = [] -%}
@@ -58,6 +59,11 @@
         {%- if interfaces.append(result["item"]["name"]) -%}{%- endif -%}
       {%- endfor -%}
       {{- interfaces -}}
+
+- name: Wait for reloaded configuration to propagate.
+  ansible.builtin.pause:
+    seconds: 10
+  when: not reload_interfaces.skipped | default(false)
 
 - name: Bring reloaded interfaces up.
   ansible.builtin.command: "nmcli connection up {{ item }}"

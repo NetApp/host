@@ -20,15 +20,23 @@
   vars:
     eseries_unmount_volumes: "{{ volume_unmount_list }}"
     eseries_unmount_purge: true
-  when: eseries_mount_skip_unmount == False and volume_unmount_list | length > 0
+  when:
+    - not (eseries_mount_skip_unmount | bool)
+    - volume_unmount_list | length > 0
 
 - name: Ensure multipath is configured.
   include_role:
     name: multipath
     tasks_from: configure/configure_eseries_multipath.yml
 
-- name: Ensure volumes are mounted on hosts.
+- name: Collect mount info for volumes on hosts.
   include_tasks: collect_facts/mount.yml
 
-- name: Ensure expected mounted volumes are mounted.
+- name: Ensure expected volumes are formatted.
+  include_tasks: format_volume.yml
+
+- name: Ensure expected volumes are mounted.
   include_tasks: mount.yml
+  loop: "{{ volume_mount_info }}"
+  when:
+    - inventory_hostname == item['primary_node']

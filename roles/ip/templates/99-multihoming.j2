@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -eu
 
 ensure_rt_tables_exists() {
   iproute2_dir=$(dirname "$rt_tables")
@@ -26,11 +28,11 @@ update_rt_tables() {
 
   case $action in
     up)
-      if ! grep -qE "[0-9]+ *$table" $rt_tables; then
-        rt_tables_numbers=$(grep "^[0-9]" $rt_tables | tr "\t" " " | cut -f 1 -d " ")
+      if ! grep -qE "[0-9]+ *$table" "$rt_tables"; then
+        rt_tables_numbers=$(grep "^[0-9]" "$rt_tables" | tr "\t" " " | cut -f 1 -d " ")
         for proposed_number in $(seq 1 252); do
-          if ! echo $rt_tables_numbers | grep -qw "$proposed_number"; then
-            echo "$proposed_number $table" >> $rt_tables
+          if ! echo "$rt_tables_numbers" | grep -qw "$proposed_number"; then
+            echo "$proposed_number $table" >> "$rt_tables"
             break
           fi
         done
@@ -38,8 +40,8 @@ update_rt_tables() {
       ;;
 
     down)
-      if grep -qE "[0-9]+ *$table" $rt_tables; then
-        sed -i "/^[0-9]* *$table$/d" $rt_tables
+      if grep -qE "[0-9]+ *$table" "$rt_tables"; then
+        sed -i "/^[0-9]* *$table$/d" "$rt_tables"
       fi
       ;;
   esac
@@ -52,66 +54,64 @@ add_routes() {
   routes=$1
   table=$2
 
-  while read line; do
-    if ! ip route show table $table > /dev/null 2>&1 || ! ip route show table $table | grep -q "$line"; then
-      ip route add $line table $table
+  while IFS= read -r line; do
+    if ! ip route show table "$table" > /dev/null 2>&1 || ! ip route show table "$table" | grep -q "$line"; then
+      ip route add $line table "$table"
     fi
-  done <<< $routes
+  done <<< "$routes"
 }
 
 delete_routes() {
   routes=$1
   table=$2
 
-  if ip route show table $table > /dev/null 2>&1; then
-    while read line; do
-      if ip route show table $table | grep -q "$line"; then
-        ip route del $line table $table
+  if ip route show table "$table" > /dev/null 2>&1; then
+    while IFS= read -r line; do
+      if ip route show table "$table" | grep -q "$line"; then
+        ip route del $line table "$table"
       fi
-    done <<< $routes
+    done <<< "$routes"
   fi
 }
 
 add_rules() {
   rules=$1
-  while read line; do
+  while IFS= read -r line; do
     if ! ip rule show all | grep -q "$line"; then
       ip rule add $line
     fi
-  done <<< $rules
+  done <<< "$rules"
 }
 
 delete_rules() {
   rules=$1
-  while read line; do
+  while IFS= read -r line; do
     if ip rule show all | grep -q "$line"; then
       ip rule del $line
     fi
-  done <<< $rules
+  done <<< "$rules"
 }
 
-configure_kernel() {
-  interface=$1
-  arp_announce=$2
-  arp_filter=$3
-  arp_ignore=$4
-  rp_filter=$5
+{%  set interface_name = item['interface']['name'] %}
 
-  sysctl -qw net.ipv4.conf.$interface.arp_announce=$arp_announce
-  sysctl -qw net.ipv4.conf.$interface.arp_filter=$arp_filter
-  sysctl -qw net.ipv4.conf.$interface.arp_ignore=$arp_ignore
-  sysctl -qw net.ipv4.conf.$interface.rp_filter=$rp_filter
+configure_kernel() {
+{% for key, value in eseries_ip_default_hook_templates_settings.sysctl.items() %}
+{%  set parts = key.split('.') %}
+{%  set replaced_parts = parts | map('regex_replace', '^(all|default)$', interface_name) | list %}
+  sysctl -qw {{ replaced_parts | join('.') }}={{ value }}
+{% endfor %}
+}
+
+unconfigure_kernel() {
+{% for key, value in eseries_ip_default_hook_templates_settings.sysctl.items() %}
+{%  set parts = key.split('.') %}
+{%  set replaced_parts = parts | map('regex_replace', '^(all|default)$', interface_name) | list %}
+{%  set value = 0 %}
+  sysctl -qw {{ replaced_parts | join('.') }}={{ value }}
+{% endfor %}
 }
 
 rt_tables=/etc/iproute2/rt_tables
-interface_down_arp_announce=0
-interface_down_arp_filter=0
-interface_down_arp_ignore=0
-interface_down_rp_filter=0
-interface_up_arp_announce=2
-interface_up_arp_filter=1
-interface_up_arp_ignore=2
-interface_up_rp_filter=1
 
 {% if "network_manager" in eseries_ip_manager_tools %}
 interface=$1
@@ -124,26 +124,25 @@ table=multihoming-{{ item['interface']['name'] }}
 address={{ item['interface']['address'] | ansible.utils.ipaddr("address") }}
 network={{ item['interface']['address'] | ansible.utils.ipaddr("network/prefix") }}
 
-routes="default via $address dev $interface
-$network dev $interface scope link src $address"
+routes="$network dev $interface scope link src $address"
 
 rules="from $address lookup $table
 from all to $address lookup $table"
 
-if [ "$interface" = "{{ item['interface']['name'] }}" ]; then
+if [ "$interface" = "{{ interface_name }}" ]; then
   case $action in
     up|routable)
       ensure_rt_tables_exists
-      update_rt_tables up $table
-      add_routes "$routes" $table
+      update_rt_tables up "$table"
+      add_routes "$routes" "$table"
       add_rules "$rules"
-      configure_kernel $interface $interface_up_arp_announce $interface_up_arp_filter $interface_up_arp_ignore $interface_up_rp_filter
+      configure_kernel
       ;;
     down|off)
-      configure_kernel $interface $interface_down_arp_announce $interface_down_arp_filter $interface_down_arp_ignore $interface_down_rp_filter
+      unconfigure_kernel
       delete_rules "$rules"
-      delete_routes "$routes" $table
-      update_rt_tables down $table
+      delete_routes "$routes" "$table"
+      update_rt_tables down "$table"
       ;;
   esac
 fi

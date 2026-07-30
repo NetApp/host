@@ -1,4 +1,4 @@
-- name: "Ensure multipath has been added to {{ eseries_multipath_initramfs_modules_path }} file."
+- name: Render multipath initramfs module configuration.
   lineinfile:
     state: present
     path: "{{ eseries_multipath_initramfs_modules_path }}"
@@ -11,4 +11,5 @@
 - name: Update initramfs image.
   ansible.builtin.command: update-initramfs -u
   become: true
-  when: initramfs_modules['changed'] == True
+  when:
+    - initramfs_modules["changed"] | bool

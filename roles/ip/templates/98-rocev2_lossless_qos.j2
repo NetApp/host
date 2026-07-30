@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+set -eu
+
+{% if "network_manager" in eseries_ip_manager_tools %}
+interface=$1
+action=$2
+{% elif "networkd" in eseries_ip_manager_tools %}
+interface=$IFACE
+action=$STATE
+{% elif "ifupdown" in eseries_ip_manager_tools %}
+interface=$IFACE
+action=$MODE
+{% endif %}
+
+{% set iface_lossless = item['interface']['roce_lossless'] | default({}) %}
+{% set _lossless = eseries_roce_lossless | default({}) | combine(iface_lossless, recursive=true) %}
+{% set _mlnx = _lossless.mlnx_qos | default({}) %}
+{% set _flag_items = _mlnx | dict2items | list %}
+{% set _ecn  = _lossless.ecn | default({}) %}
+expected_interface="{{ item['interface']['name'] }}"
+{% set _ecn_priorities = _ecn.priorities | default([]) %}
+
+if [ "$interface" != "$expected_interface" ]; then
+  exit 0
+fi
+
+case "$action" in
+  up|routable)
+    # --- Dynamic mlnx_qos flags ---
+    if command -v mlnx_qos > /dev/null 2>&1; then
+{% for flag_item in _flag_items %}
+{%  set _flag = flag_item.key %}
+{%  set _value = flag_item.value %}
+{%    if (_value is sequence) and (_value is not string) and (_value is not mapping) %}
+{%      if flag_item.key == 'dscp2prio' %}
+{%        for op in _value %}
+  mlnx_qos -i "$interface" --{{ _flag }} "{{ op }}"
+{%        endfor %}
+{%      else %}
+      mlnx_qos -i "$interface" --{{ _flag }} "{{ _value | join(',') }}"
+{%      endif %}
+{%    elif _value is not none %}
+      mlnx_qos -i "$interface" --{{ _flag }} "{{ _value }}"
+{%    endif %}
+{% endfor %}
+    else
+      echo "mlnx_qos not found — skipping QoS/PFC configuration for $interface" >&2
+    fi
+{% if _ecn_priorities | length > 0 %}
+
+    # --- ECN / DCQCN ---
+    ecn_base="/sys/class/net/$interface/ecn"
+    if [ -d "$ecn_base" ]; then
+{%  for prio in _ecn_priorities %}
+      echo {{ _ecn.roce_np | default(1) }} > "$ecn_base/roce_np/enable/{{ prio }}"
+      echo {{ _ecn.roce_rp | default(1) }} > "$ecn_base/roce_rp/enable/{{ prio }}"
+{%  endfor %}
+    else
+      echo "ECN sysfs not found for $interface — skipping DCQCN configuration" >&2
+    fi
+{% endif %}
+    ;;
+esac
+
+exit 0

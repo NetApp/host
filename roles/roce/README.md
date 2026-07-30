@@ -21,11 +21,33 @@
                                             #   can be determined by 'grep PCI_SLOT_NAME /sys/class/net/<INTERFACE_NAME>/device/uevent',
                                             #   adding 1 to the last number from the PCI slot name and converting to decimal.
                                             #     Example: PCI_SLOT_NAME=0000:2f:00.2 (2 + 1 -> HCA port 3) -> LINK_TYPE_P3: eth
+        roce_lossless:                      # Optional per-interface overrides for eseries_roce_lossless when using 98-rocev2_lossless_qos.j2.
+          mlnx_qos:                         # mlnx_qos flags rendered dynamically as --<flag> <value>.
+            trust:                          # Trust mode. (Default: dscp)
+            pfc:                            # PFC bitmap list for priorities 0..7. (Default: [0,0,0,1,0,0,0,0])
+            prio_tc:                        # Optional UP-to-TC mapping list for priorities 0..7.
+            dscp2prio:                      # Optional list of mlnx_qos dscp2prio operations.
+                                             #   Example: ["set,26,3", "set,30,4"]
+          ecn:
+            priorities:                     # Priorities to apply ECN/DCQCN sysfs settings.
+            roce_np:                        # ECN notification point enable value. (Default: 1)
+            roce_rp:                        # ECN reaction point enable value. (Default: 1)
     eseries_roce_interface_common:          # Dictionary containing any common valid key-value pair for Netplan or ifupdown configuration files. Be sure to quote
                                             #   values that will be converted into a boolean value (on, off, yes, no, etc.) otherwise they will be converted
                                             #   into True/False.
     eseries_roce_default_hook_templates:    # Default list of hook templates for Network Manager dispatcher (interface definition will be accessible through
                                             #    the interface variable within the hook templates).
+    eseries_roce_lossless:                  # Dictionary of RoCE QoS/PFC/ECN settings used by 98-rocev2_lossless_qos.j2.
+      mlnx_qos:                             # mlnx_qos flags rendered dynamically.
+        trust:                              # mlnx_qos trust mode. (Default: dscp)
+        pfc:                                # mlnx_qos PFC bitmap list. (Default: [0,0,0,1,0,0,0,0])
+        prio_tc:                            # Optional mlnx_qos prio_tc list.
+        dscp2prio:                          # Optional list of mlnx_qos dscp2prio operations.
+                                             #   Example: ["set,26,3"]
+      ecn:                                  # ECN/DCQCN sysfs settings.
+        priorities:                         # Priority list for ECN settings.
+        roce_np:                            # ECN notification point enable value. (Default: 1)
+        roce_rp:                            # ECN reaction point enable value. (Default: 1)
     eseries_roce_firewall_zone:             # Default firewall zone. (Note: Only implemented for firewalld)
     eseries_roce_nqn:                       # Host NVMe qualified name.
     eseries_roce_udev_name:                 # Filename for applying eseries_roce_udev_rules

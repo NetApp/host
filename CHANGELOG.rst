@@ -4,6 +4,24 @@ Netapp E-Series Host Collection Release Notes
 
 .. contents:: Topics
 
+v2.0.2
+======
+
+Minor Changes
+-------------
+
+- common/installer - Improve package manager task flow and distro-specific package handling.
+- ip - Improve multihoming template behavior and related variable-driven configuration handling.
+- multipath - Improve configuration idempotency and multipathd restart behavior.
+- multipath - Update initramfs handling and add local-disk blacklist support.
+- nvme - Make default NVMe connection policy stricter and improve discovery loop behavior.
+- roce/ip - Add an opt-in QoS/PFC dispatcher hook for RoCE v2 lossless networking profiles.
+
+Bugfixes
+--------
+
+- common - Remove redundant service checks/starts in host readiness flow to reduce unnecessary service operations.
+- nvme - Require at least one NVMe target port in the up state during discovery and fail fast after exhausted retries.
 
 v2.0.1
 ======
@@ -13,27 +31,23 @@ Minor Changes
 
 - Check for ifupdown in supported network management tools.
 
-
 v2.0.0
 ======
 
 Release Summary
 ---------------
 
-This release focuses on improved code quality, compatibility with Ansible Core 2.19, and enhanced reliability for host
-configuration and multipath handling.
-
+This release focuses on improved code quality, compatibility with Ansible Core 2.19, and enhanced reliability for host configuration and multipath handling.
 
 Minor Changes
 -------------
 
 - Changed conditional checks to be explicit booleans for better code clarity and compatibility with Ansible Core 2.19.
-- Increased the timeout for the `multipath -ll` command to accommodate large number of volumes.
-- Updated the NetworkManager configuration to correct invalid interface profiles.
-- Updated logic to auto-select the IP manager tool if multiple tools are installed.
 - Ensured `/etc/iproute2` exists before configuring the routing table.
+- Increased the timeout for the `multipath -ll` command to accommodate large number of volumes.
 - Removed redundant parentheses and unnecessary wrapping quotes in conditionals.
-
+- Updated logic to auto-select the IP manager tool if multiple tools are installed.
+- Updated the NetworkManager configuration to correct invalid interface profiles.
 
 v1.3.3
 ======
@@ -43,13 +57,11 @@ Release Summary
 
 Minor updates
 
-
 Minor Changes
 -------------
 
-- Update nvme_daemon.j2 to use udev rule to apply settings to NVMe device.
 - Change eseries_multipath_command_timeout from 4 to 9 sec.
-
+- Update nvme_daemon.j2 to use udev rule to apply settings to NVMe device.
 
 v1.3.2
 ======
@@ -59,13 +71,10 @@ Release Summary
 
 Minor update to handle a change in default value of enable_foreign in multipath.conf
 
-
 Minor Changes
 -------------
 
-- Update to handle a change in default value of enable_foreign in rhel 9 resulted in the NVMe volume not being detected
-  by device mapper multipathing.
-
+- Update to handle a change in default value of enable_foreign in rhel 9 resulted in the NVMe volume not being detected by device mapper multipathing.
 
 v1.3.0
 ======
@@ -80,7 +89,6 @@ Minor Changes
 - netapp_eseries.host.ip - Fix bug in the 99-multihoming.j2 hook template that causes the hook to fail when routes and rules were not defined.
 - netapp_eseries.host.update_conf - Add timestamp to the update_conf module to avoid loosing previous changes by default.
 
-
 v1.2.0
 ======
 
@@ -88,7 +96,6 @@ Release Summary
 ---------------
 
 This release focused primarily on improving the code base for maintainability by relegating tasks to appropriate roles which significantly improved code reuse. While many of the role changes introduce improvements to inventory configuration options, backwards compatibility has been retained. Note that this release will now require Ansible 2.10 or later.
-
 
 Minor Changes
 -------------

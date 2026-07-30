@@ -1,0 +1,7 @@
+- name: Configure RedHat package repositories.
+  ansible.builtin.include_tasks: installer/package_manager/redhat.yml
+  when: ansible_os_family | lower == 'redhat'
+
+- name: Configure Debian package repositories.
+  ansible.builtin.include_tasks: installer/package_manager/debian.yml
+  when: ansible_os_family | lower == 'debian'

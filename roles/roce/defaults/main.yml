@@ -25,13 +25,29 @@ eseries_roce_interface_network_manager_defaults:
 
 # eseries_roce_firewall_zone:  # Determined at runtime
 eseries_roce_default_hook_templates: []
+eseries_roce_lossless:                      # RoCE QoS/PFC/ECN settings for the 98-rocev2_lossless_qos.j2 hook.
+  mlnx_qos:
+    trust: dscp                             #   mlnx_qos --trust <mode>
+    pfc: [0, 0, 0, 1, 0, 0, 0, 0]          #   mlnx_qos --pfc <bitmap>
+    # prio_tc: [0, 0, 0, 3, 0, 0, 0, 0]    #   mlnx_qos --prio_tc
+    # dscp2prio:                            #   mlnx_qos --dscp2prio <operation>
+    #   - set,26,3
+  ecn:
+    priorities: []                          #   sysfs roce_np/roce_rp enable per priority
+    roce_np: 1                              #   ECN notification point (send CNPs on ECN marks)
+    roce_rp: 1                              #   ECN reaction point (throttle on received CNPs)
+
 eseries_roce_interface_required_keys:
   - name
   - address
+
 eseries_roce_interface_ignore_keys:
   - address
-  - hook_template
+  - hook_templates
   - configure
   - mstconfig
+  - roce_lossless
+  - roce_qos_pfc
+  - ecn
 
 eseries_roce_uninstall: false  # Whether to uninstall roce role.

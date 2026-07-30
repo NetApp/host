@@ -1,0 +1,61 @@
+- name: Mark all eseries volumes for mounting details
+  set_fact:
+    volume_mount_info: |-
+      {%- set info = [] -%}
+      {%- for volume in eseries_volumes if volume["ignore_volume"] == False -%}
+
+        {#- Determine which hosts should have volumes mounted -#}
+        {%- set is_mount_to_hosts_defined = "volume_metadata" in (volume.keys() | list)
+                   and "mount_to_hosts" in (volume["volume_metadata"].keys() | list) -%}
+        {%- set mounts_by_host = (volume["volume_metadata"]["mount_to_hosts"] | default("")).split(",") -%}
+        {%- set mounts_by_volume = eseries_mount_volumes | default([]) -%}
+
+         {%- if (is_mount_to_hosts_defined and inventory_hostname in mounts_by_host)
+           or (not is_mount_to_hosts_defined
+           and (volume["name"] in mounts_by_volume or "all_volumes" in mounts_by_volume)) -%}
+
+          {#- Determine file system and mounting parameters -#}
+          {%- set volume_fs_type = volume['volume_metadata'].get('mount_type') -%}
+          {%- set fs_type = volume_fs_type
+                           | default(hostvars[inventory_hostname]['eseries_mount_format_type']
+                           | default(eseries_mount_format_type)) -%}
+          {%- set segment_size_kb = volume['segment_size_kb'] | int -%}
+          {%- set stripe_count = volume['stripe_count'] | int -%}
+          {%- set volume_block_size_kb = volume['volume_metadata']
+                                         .get('block_size_kb', volume.get('block_size_kb', 4))
+                                         | int -%}
+          {%- set auto_stride = (segment_size_kb // volume_block_size_kb) -%}
+          {%- set auto_stripe_width = auto_stride * stripe_count -%}
+
+          {%- set base_fs_options = volume['volume_metadata']['format_options'] |
+                                    default(hostvars[inventory_hostname]['eseries_mount_format_options'] |
+                                    default(hostvars[inventory_hostname]['eseries_mount_format_type_options'][fs_type] |
+                                    default(hostvars[inventory_hostname]['eseries_mount_format_type_options']
+                                    [eseries_mount_format_type] |
+                                    default(eseries_mount_format_type_options[eseries_mount_format_type])))) -%}
+          {%- set fs_options = base_fs_options
+                               | regex_replace('VOLUME_SEGMENT_SIZE_KB', segment_size_kb | string)
+                               | regex_replace('VOLUME_STRIPE_COUNT', stripe_count | string)
+                               | regex_replace('AUTO_STRIDE', auto_stride | string)
+                               | regex_replace('AUTO_STRIPE_WIDTH', auto_stripe_width | string) -%}
+          {%- set mount_options = volume["volume_metadata"]["mount_options"]
+                                 | default(eseries_mount_persistent_mount_options) -%}
+          {%- set mount_directory = (volume["volume_metadata"]["mount_dir"]
+                                   | default(eseries_mount_root_directory))
+                                   | regex_replace('//*$', '') -%}
+          {%- set primary_node = volume["volume_metadata"]["primary_node"] | default(inventory_hostname) -%}
+
+          {#- Append volume info volume_mount_info -#}
+          {%- if info.append({"name": volume["name"],
+                              "wwn": volume["wwn"],
+                              "host_wwid": volume["host_wwid"],
+                              "eui": volume["eui"],
+                              "path": volume["path"],
+                              "fs_type": fs_type,
+                              "fs_options": fs_options,
+                              "primary_node": primary_node,
+                              "mount_options": mount_options,
+                              "mount_directory": mount_directory ~ "/" ~ volume["name"]}) -%}{%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- info -}}
